@@ -162,3 +162,38 @@ easy to wave through at thumbnail size:
   the same directory; a reader could genuinely live and study in the frame.
 - **No people:** a long-exposure night shot across the river. There is no figure
   in it.
+
+## Why Poland card photos (added 2026-10-12)
+
+Three Why Poland cards that previously had only an icon now carry a photo.
+Same rules as above: CC0 / CC BY only (no SA, NC or ND), and no identifiable
+person as the subject. Each was resized to 800px wide; the Warsaw Spire frame
+also had its bottom 5% cropped to remove the photographer's corner watermark.
+
+| File | Card | Source | Author | Licence |
+| --- | --- | --- | --- | --- |
+| `why-degrees.jpg` | 02 Affordable, EU-recognised degrees | [Collegium Novum, Jagiellonian University, Kraków](https://commons.wikimedia.org/wiki/File:Jagiellonian_University_Collegium_Novum,_1882_designed_by_Feliks_Ksi%C4%99%C5%BCarski,_24_Go%C5%82%C4%99bia_street,_Old_Town,_Krak%C3%B3w,_Poland_(1).jpg) | Igor123121 | CC BY 4.0 |
+| `why-work.jpg` | 04 Work with no weekly cap | [Warsaw Spire, Poland 23 June 2016](https://commons.wikimedia.org/wiki/File:Warsaw_Spire,_Poland_23_June_2016.jpg) | AGC Glass Europe | CC BY 2.0 |
+| `why-research.jpg` | 06 Doctoral schools that fund you | [Close-up of the testing tubes with microscope](https://commons.wikimedia.org/wiki/File:Close-up_of_the_testing_tubes_with_microscope_in_a_blurry_background.jpg) | Shixart1985 | CC BY 2.0 |
+
+The research photo is a generic laboratory still life rather than a Polish
+subject: no CC0 / CC BY photograph of a Polish laboratory or reading room
+without people in frame turned up. The footer credit line in `index.html` was
+updated by hand; if `_tooling/localise_pl.py` regenerates it, add these three
+to its `PHOTO_CREDIT` constant too.
+
+## Hero photographs, HD (added 2026-10-12)
+
+Five iconic views for the first section, in `assets/img/photos/hero/`, each saved at
+2560px (desktop) and 1280px (`-1280`, phones) wide. Same licence rule as above: CC0 / CC BY
+only, and no identifiable person as the subject.
+
+| File | Subject | Source | Author | Licence |
+| --- | --- | --- | --- | --- |
+| `warsaw-old-town.jpg` | Castle Square and the Old Town, Warsaw, by night | [Warsaw Old Town (52278170319)](https://commons.wikimedia.org/wiki/File:Warsaw_Old_Town_(52278170319).jpg) | Radek Kucharski | CC BY 2.0 |
+| `gdansk-crane.jpg` | The medieval crane on the Motława, Gdańsk | [Gdańsk Żuraw Gdańsk](https://commons.wikimedia.org/wiki/File:Gda%C5%84sk_%C5%BBuraw_Gda%C5%84sk.jpg) | Sylwiadek | CC BY 3.0 |
+| `krakow-wawel.jpg` | Wawel Castle above the Vistula, Kraków | [Wawel Wisła from Above](https://commons.wikimedia.org/wiki/File:Wawel_Wis%C5%82a_from_Above.jpg) | Galileo01 | CC0 |
+| `malbork-castle.jpg` | Malbork Castle across the Nogat | [Panorama of Malbork Castle - Edit Taxi](https://commons.wikimedia.org/wiki/File:Panorama_of_Malbork_Castle_-_Edit_Taxi.jpg) | DerHexer; derivative by Wladyslaw | CC BY 3.0 |
+| `morskie-oko.jpg` | Morskie Oko, Tatra Mountains, at dawn | [Morskie Oko o poranku](https://commons.wikimedia.org/wiki/File:Morskie_Oko_o_poranku.jpg) | Aneta Pawska | CC BY 3.0 |
+
+The footer credit line in `index.html` names all five.

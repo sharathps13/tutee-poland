@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
   <meta name="color-scheme" content="light">
   <meta name="theme-color" content="#760d0d">
   <title>Polish Universities — Tutee Connect</title>
@@ -66,8 +66,6 @@
   </defs>
 </svg>
 
-<div class="curtain" aria-hidden="true"><span></span><span></span><div class="curtain-logo"><img src="./assets/img/logo/icon.png" alt=""></div></div>
-<div class="progress" aria-hidden="true"></div>
 
 <header class="site-header" data-header>
   <div class="wrap">
@@ -108,67 +106,85 @@
     <div class="bird" style="top:30%;width:22px;animation-duration:36s;animation-delay:-20s"><svg viewBox="0 0 40 20"><path d="M2 12 Q11 2 20 11 Q29 2 38 12" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/></svg></div>
   </div>
   <div class="wrap u-hero-grid">
-    <div>
-      <span class="eyebrow" data-hero style="--d:.1s">Elite placement partners</span>
+    <div class="u-hero-copy">
+      <span class="eyebrow" data-hero style="--d:.1s">University directory</span>
       <h1 class="display" data-hero style="--d:.2s">Every university that can <em>welcome</em> you.</h1>
-      <p class="lede" data-hero style="--d:.3s">Explore all <b>227</b> higher education institutions across Poland that can legally admit an international student — each one either exempt from the Ministry of the Interior's approval requirement or on its published approved list, which is what a residence permit for studies depends on. We secure direct admission pathways at them.</p>
+      <p class="lede" data-hero style="--d:.3s">All <b>227</b> Polish higher education institutions that can legally admit an international student — each either on the Ministry of the Interior's approved list or exempt from it, which is what a residence permit for studies depends on.</p>
       <div class="u-stats" data-hero style="--d:.4s">
         <div><b data-count="227">0</b><span>Institutions</span></div>
         <div><b data-count="64">0</b><span>Cities</span></div>
         <div><b data-count="20">0</b><span>QS-ranked</span></div>
         <div><b data-count="10">0</b><span>IDUB research</span></div>
       </div>
-    </div>
-    <div class="u-map" data-hero style="--d:.3s">
-      <div class="pl-map in">
-        <svg viewBox="-20 -20 640 610" role="group" aria-label="Map of Poland — choose a city to filter the directory">
-          <path class="land" d="M12.8,101.2 L35.0,96.5 L93.2,75.7 L139.8,47.3 L166.0,37.8 L206.8,21.8 L252.2,15.1 L279.6,36.0 L262.1,36.0 L265.0,50.1 L270.9,58.7 L291.3,61.5 L328.0,52.0 L378.6,56.8 L436.9,63.4 L489.3,60.6 L512.6,59.6 L553.4,80.4 L552.2,99.3 L577.9,170.3 L575.5,217.6 L535.9,257.4 L562.1,317.0 L559.2,340.6 L588.3,392.7 L579.6,433.3 L550.5,449.4 L503.9,496.7 L515.5,558.2 L498.6,560.1 L460.2,531.8 L413.6,529.9 L384.5,529.9 L358.3,539.3 L337.9,548.8 L317.5,510.9 L291.3,529.9 L282.5,518.5 L268.0,482.5 L233.0,473.1 L212.6,447.5 L168.9,430.5 L128.2,413.5 L139.8,458.9 L116.5,416.3 L81.6,397.4 L47.8,390.8 L58.3,354.8 L42.5,321.7 L35.0,283.9 L32.0,227.1 L8.7,203.4 L26.2,165.6 L12.8,101.2Z"/>
-          <path class="land-draw" d="M12.8,101.2 L35.0,96.5 L93.2,75.7 L139.8,47.3 L166.0,37.8 L206.8,21.8 L252.2,15.1 L279.6,36.0 L262.1,36.0 L265.0,50.1 L270.9,58.7 L291.3,61.5 L328.0,52.0 L378.6,56.8 L436.9,63.4 L489.3,60.6 L512.6,59.6 L553.4,80.4 L552.2,99.3 L577.9,170.3 L575.5,217.6 L535.9,257.4 L562.1,317.0 L559.2,340.6 L588.3,392.7 L579.6,433.3 L550.5,449.4 L503.9,496.7 L515.5,558.2 L498.6,560.1 L460.2,531.8 L413.6,529.9 L384.5,529.9 L358.3,539.3 L337.9,548.8 L317.5,510.9 L291.3,529.9 L282.5,518.5 L268.0,482.5 L233.0,473.1 L212.6,447.5 L168.9,430.5 L128.2,413.5 L139.8,458.9 L116.5,416.3 L81.6,397.4 L47.8,390.8 L58.3,354.8 L42.5,321.7 L35.0,283.9 L32.0,227.1 L8.7,203.4 L26.2,165.6 L12.8,101.2Z"/>
-          <g data-umap-cities></g>
-        </svg>
+      <div class="u-hero-cta" data-hero style="--d:.5s">
+        <a class="btn" href="#directory" data-jump-directory>Browse the directory <svg class="arrow" width="18" height="18"><use href="#i-arrow"/></svg></a>
+        <a class="btn ghost" href="./index.html#contact">Get a free shortlist</a>
       </div>
-      <p class="u-map-hint">Tap a city to filter the directory</p>
+    </div>
+    <div class="u-map-card" data-hero style="--d:.3s">
+      <div class="u-map-head"><b>Institutions by city</b><span><i class="dot-key"></i>Dot size = number of institutions</span></div>
+      <div class="u-map">
+        <div class="pl-map in">
+          <svg viewBox="-20 -20 640 610" role="group" aria-label="Map of Poland — choose a city to filter the directory">
+            <path class="land" d="M559.4,329.6 L562.5,336.1 L563.8,341.2 L562.5,345.2 L562.9,349.2 L565.7,353.5 L574.5,366.6 L578.8,379.3 L581.6,384.2 L588.0,390.6 L588.6,393.3 L586.0,395.7 L583.9,396.0 L582.2,396.6 L581.2,398.9 L582.8,401.3 L585.1,404.8 L587.9,414.9 L587.7,423.0 L585.5,425.1 L582.7,430.0 L580.8,434.4 L565.6,437.5 L562.0,442.3 L553.7,451.5 L548.0,456.8 L539.6,466.4 L526.3,482.8 L521.4,489.7 L517.8,495.4 L507.1,510.5 L503.8,516.9 L504.4,522.1 L507.9,534.4 L508.6,540.0 L508.0,545.1 L506.8,549.7 L507.0,551.7 L510.2,555.0 L515.3,560.2 L515.6,562.0 L514.8,564.3 L513.1,566.0 L506.8,564.2 L499.7,560.6 L497.3,561.1 L493.5,560.2 L477.7,553.4 L467.1,548.1 L466.1,544.6 L464.1,539.6 L459.5,535.4 L449.2,531.8 L445.0,528.9 L428.1,527.3 L420.8,527.3 L415.6,528.5 L412.3,528.3 L407.8,535.8 L404.6,537.9 L400.0,538.1 L396.0,536.8 L391.9,532.9 L385.3,530.9 L380.6,531.8 L377.1,531.0 L374.1,530.8 L373.0,531.6 L370.6,531.5 L367.1,533.3 L363.2,536.0 L359.0,538.0 L355.7,542.3 L352.8,550.8 L344.6,547.0 L341.8,548.6 L337.9,549.7 L335.3,548.6 L335.9,545.7 L337.1,542.4 L337.1,537.8 L336.3,532.7 L333.7,531.1 L329.9,530.4 L327.9,529.4 L327.7,527.8 L325.8,525.6 L322.4,520.1 L319.2,513.4 L316.9,511.4 L313.7,514.6 L308.8,518.2 L305.8,519.5 L299.9,530.1 L289.4,530.4 L288.7,525.5 L287.6,520.8 L281.5,519.6 L281.3,516.8 L280.0,509.8 L267.6,496.2 L266.1,490.5 L266.6,488.3 L265.7,484.7 L263.1,482.5 L253.3,479.9 L250.8,481.4 L248.5,479.9 L244.9,476.6 L238.8,473.9 L238.1,472.6 L235.9,470.2 L234.6,469.9 L233.8,471.3 L232.0,473.4 L225.7,475.9 L223.2,474.8 L220.9,472.6 L218.2,467.9 L214.4,463.7 L211.3,462.2 L209.5,460.1 L209.1,458.4 L216.1,454.9 L217.6,451.4 L216.7,445.0 L215.6,444.2 L212.9,446.4 L207.0,448.3 L201.7,449.1 L198.9,449.1 L183.6,437.4 L173.6,433.9 L167.8,432.8 L167.1,434.0 L169.8,440.6 L174.4,448.7 L174.1,450.8 L168.7,454.1 L165.5,455.6 L161.9,458.4 L158.8,462.3 L156.1,464.0 L153.7,463.6 L151.3,461.7 L144.9,449.8 L136.9,440.6 L136.0,438.5 L133.5,438.1 L130.0,436.0 L128.8,433.2 L130.5,430.2 L133.0,427.5 L137.3,425.9 L138.6,424.3 L139.4,422.0 L141.0,419.0 L140.5,417.9 L137.5,414.4 L132.9,411.2 L120.4,413.6 L116.9,415.4 L115.0,413.1 L113.5,409.8 L110.3,409.2 L106.0,406.2 L100.8,403.2 L95.8,402.4 L85.3,398.1 L81.3,397.9 L78.9,396.4 L76.5,393.2 L74.4,389.7 L73.3,382.5 L65.6,379.3 L57.9,377.2 L57.4,378.3 L57.7,385.5 L57.3,389.3 L52.2,391.7 L47.2,391.9 L47.5,390.7 L53.5,377.8 L56.2,369.6 L59.2,354.7 L55.5,342.9 L54.5,337.4 L52.8,334.7 L42.2,329.0 L41.4,327.0 L43.1,319.2 L42.3,316.0 L39.7,312.5 L36.4,305.6 L35.1,299.8 L39.3,292.9 L40.4,287.9 L42.2,281.0 L43.6,277.2 L43.9,276.2 L41.1,273.5 L40.4,269.7 L41.1,264.3 L39.6,260.3 L35.9,257.6 L33.5,254.2 L32.3,249.9 L33.2,243.1 L36.1,233.9 L30.0,222.8 L14.8,209.8 L7.5,200.8 L8.1,195.6 L11.3,190.9 L17.1,186.7 L21.5,179.3 L24.0,170.4 L24.0,168.7 L24.2,162.4 L17.4,136.6 L16.3,130.1 L15.5,122.3 L15.1,120.2 L28.4,125.7 L34.0,128.7 L33.3,125.3 L32.2,122.3 L32.9,117.9 L32.6,111.3 L20.5,108.0 L12.5,106.8 L11.6,102.3 L12.3,99.3 L14.6,101.0 L22.4,101.7 L41.7,92.9 L75.1,81.3 L110.7,70.5 L119.0,69.4 L127.4,67.1 L130.5,63.1 L133.5,60.4 L138.4,53.2 L149.1,42.2 L168.1,38.1 L175.2,32.9 L190.0,25.5 L223.8,17.3 L238.0,15.5 L251.8,15.2 L264.2,21.7 L277.2,29.8 L279.6,34.6 L272.5,31.6 L262.2,24.4 L258.4,24.1 L267.2,46.0 L272.0,53.8 L281.7,59.6 L289.8,61.6 L314.9,58.0 L323.8,53.4 L326.4,51.1 L328.7,52.3 L345.1,53.5 L361.6,54.8 L388.2,56.1 L415.9,57.5 L444.6,58.9 L475.8,60.5 L508.6,61.4 L510.6,60.8 L513.9,57.1 L518.0,57.6 L522.8,59.9 L525.1,61.6 L526.0,63.5 L526.6,65.8 L529.3,66.2 L534.1,67.9 L540.6,71.8 L545.7,75.6 L550.6,81.0 L552.2,87.1 L552.3,94.0 L552.0,98.5 L552.4,100.3 L559.1,132.5 L570.1,163.6 L574.2,178.6 L575.8,186.6 L577.1,198.3 L577.5,206.4 L577.5,211.0 L576.7,217.3 L573.4,221.0 L552.1,231.7 L548.1,235.1 L541.8,243.4 L536.1,251.9 L534.7,254.9 L534.4,256.8 L535.6,259.6 L543.2,264.2 L550.9,267.9 L553.4,270.6 L559.0,274.2 L561.1,277.3 L562.2,280.1 L562.1,286.5 L559.6,295.3 L560.6,302.0 L558.0,306.4 L555.9,311.4 L555.6,320.0 L559.4,329.6Z"/>
+            <path class="land-draw" d="M559.4,329.6 L562.5,336.1 L563.8,341.2 L562.5,345.2 L562.9,349.2 L565.7,353.5 L574.5,366.6 L578.8,379.3 L581.6,384.2 L588.0,390.6 L588.6,393.3 L586.0,395.7 L583.9,396.0 L582.2,396.6 L581.2,398.9 L582.8,401.3 L585.1,404.8 L587.9,414.9 L587.7,423.0 L585.5,425.1 L582.7,430.0 L580.8,434.4 L565.6,437.5 L562.0,442.3 L553.7,451.5 L548.0,456.8 L539.6,466.4 L526.3,482.8 L521.4,489.7 L517.8,495.4 L507.1,510.5 L503.8,516.9 L504.4,522.1 L507.9,534.4 L508.6,540.0 L508.0,545.1 L506.8,549.7 L507.0,551.7 L510.2,555.0 L515.3,560.2 L515.6,562.0 L514.8,564.3 L513.1,566.0 L506.8,564.2 L499.7,560.6 L497.3,561.1 L493.5,560.2 L477.7,553.4 L467.1,548.1 L466.1,544.6 L464.1,539.6 L459.5,535.4 L449.2,531.8 L445.0,528.9 L428.1,527.3 L420.8,527.3 L415.6,528.5 L412.3,528.3 L407.8,535.8 L404.6,537.9 L400.0,538.1 L396.0,536.8 L391.9,532.9 L385.3,530.9 L380.6,531.8 L377.1,531.0 L374.1,530.8 L373.0,531.6 L370.6,531.5 L367.1,533.3 L363.2,536.0 L359.0,538.0 L355.7,542.3 L352.8,550.8 L344.6,547.0 L341.8,548.6 L337.9,549.7 L335.3,548.6 L335.9,545.7 L337.1,542.4 L337.1,537.8 L336.3,532.7 L333.7,531.1 L329.9,530.4 L327.9,529.4 L327.7,527.8 L325.8,525.6 L322.4,520.1 L319.2,513.4 L316.9,511.4 L313.7,514.6 L308.8,518.2 L305.8,519.5 L299.9,530.1 L289.4,530.4 L288.7,525.5 L287.6,520.8 L281.5,519.6 L281.3,516.8 L280.0,509.8 L267.6,496.2 L266.1,490.5 L266.6,488.3 L265.7,484.7 L263.1,482.5 L253.3,479.9 L250.8,481.4 L248.5,479.9 L244.9,476.6 L238.8,473.9 L238.1,472.6 L235.9,470.2 L234.6,469.9 L233.8,471.3 L232.0,473.4 L225.7,475.9 L223.2,474.8 L220.9,472.6 L218.2,467.9 L214.4,463.7 L211.3,462.2 L209.5,460.1 L209.1,458.4 L216.1,454.9 L217.6,451.4 L216.7,445.0 L215.6,444.2 L212.9,446.4 L207.0,448.3 L201.7,449.1 L198.9,449.1 L183.6,437.4 L173.6,433.9 L167.8,432.8 L167.1,434.0 L169.8,440.6 L174.4,448.7 L174.1,450.8 L168.7,454.1 L165.5,455.6 L161.9,458.4 L158.8,462.3 L156.1,464.0 L153.7,463.6 L151.3,461.7 L144.9,449.8 L136.9,440.6 L136.0,438.5 L133.5,438.1 L130.0,436.0 L128.8,433.2 L130.5,430.2 L133.0,427.5 L137.3,425.9 L138.6,424.3 L139.4,422.0 L141.0,419.0 L140.5,417.9 L137.5,414.4 L132.9,411.2 L120.4,413.6 L116.9,415.4 L115.0,413.1 L113.5,409.8 L110.3,409.2 L106.0,406.2 L100.8,403.2 L95.8,402.4 L85.3,398.1 L81.3,397.9 L78.9,396.4 L76.5,393.2 L74.4,389.7 L73.3,382.5 L65.6,379.3 L57.9,377.2 L57.4,378.3 L57.7,385.5 L57.3,389.3 L52.2,391.7 L47.2,391.9 L47.5,390.7 L53.5,377.8 L56.2,369.6 L59.2,354.7 L55.5,342.9 L54.5,337.4 L52.8,334.7 L42.2,329.0 L41.4,327.0 L43.1,319.2 L42.3,316.0 L39.7,312.5 L36.4,305.6 L35.1,299.8 L39.3,292.9 L40.4,287.9 L42.2,281.0 L43.6,277.2 L43.9,276.2 L41.1,273.5 L40.4,269.7 L41.1,264.3 L39.6,260.3 L35.9,257.6 L33.5,254.2 L32.3,249.9 L33.2,243.1 L36.1,233.9 L30.0,222.8 L14.8,209.8 L7.5,200.8 L8.1,195.6 L11.3,190.9 L17.1,186.7 L21.5,179.3 L24.0,170.4 L24.0,168.7 L24.2,162.4 L17.4,136.6 L16.3,130.1 L15.5,122.3 L15.1,120.2 L28.4,125.7 L34.0,128.7 L33.3,125.3 L32.2,122.3 L32.9,117.9 L32.6,111.3 L20.5,108.0 L12.5,106.8 L11.6,102.3 L12.3,99.3 L14.6,101.0 L22.4,101.7 L41.7,92.9 L75.1,81.3 L110.7,70.5 L119.0,69.4 L127.4,67.1 L130.5,63.1 L133.5,60.4 L138.4,53.2 L149.1,42.2 L168.1,38.1 L175.2,32.9 L190.0,25.5 L223.8,17.3 L238.0,15.5 L251.8,15.2 L264.2,21.7 L277.2,29.8 L279.6,34.6 L272.5,31.6 L262.2,24.4 L258.4,24.1 L267.2,46.0 L272.0,53.8 L281.7,59.6 L289.8,61.6 L314.9,58.0 L323.8,53.4 L326.4,51.1 L328.7,52.3 L345.1,53.5 L361.6,54.8 L388.2,56.1 L415.9,57.5 L444.6,58.9 L475.8,60.5 L508.6,61.4 L510.6,60.8 L513.9,57.1 L518.0,57.6 L522.8,59.9 L525.1,61.6 L526.0,63.5 L526.6,65.8 L529.3,66.2 L534.1,67.9 L540.6,71.8 L545.7,75.6 L550.6,81.0 L552.2,87.1 L552.3,94.0 L552.0,98.5 L552.4,100.3 L559.1,132.5 L570.1,163.6 L574.2,178.6 L575.8,186.6 L577.1,198.3 L577.5,206.4 L577.5,211.0 L576.7,217.3 L573.4,221.0 L552.1,231.7 L548.1,235.1 L541.8,243.4 L536.1,251.9 L534.7,254.9 L534.4,256.8 L535.6,259.6 L543.2,264.2 L550.9,267.9 L553.4,270.6 L559.0,274.2 L561.1,277.3 L562.2,280.1 L562.1,286.5 L559.6,295.3 L560.6,302.0 L558.0,306.4 L555.9,311.4 L555.6,320.0 L559.4,329.6Z"/>
+            <g data-umap-cities></g>
+          </svg>
+        </div>
+      </div>
+      <p class="u-map-hint"><svg width="14" height="14"><use href="#i-pin"/></svg>Tap a city to filter the directory</p>
     </div>
   </div>
 </section>
 
-<div class="u-tools" data-u-tools>
-  <div class="wrap">
-    <div class="searchbar">
-      <svg><use href="#i-search"/></svg>
-      <input type="search" data-uni-search placeholder="Search all 227 institutions by name, city or subject…" aria-label="Search institutions" autocomplete="off">
-      <button type="button" class="clear hidden" data-uni-clear>Clear</button>
-      <button type="button" class="btn sm" data-uni-show-results>Search</button>
-    </div>
-    <div class="filters" role="toolbar" aria-label="Filter by type">
-      <button type="button" class="pill on" data-type-filter="">All <i data-type-count=""></i></button>
-      <button type="button" class="pill" data-type-filter="ranked">QS-ranked <i data-type-count="ranked"></i></button>
-      <button type="button" class="pill" data-type-filter="Research University">Research University <i data-type-count="Research University"></i></button>
-      <button type="button" class="pill" data-type-filter="University">University <i data-type-count="University"></i></button>
-      <button type="button" class="pill" data-type-filter="University of Applied Sciences">Applied Sciences <i data-type-count="University of Applied Sciences"></i></button>
-      <button type="button" class="pill" data-type-filter="Private University">Private <i data-type-count="Private University"></i></button>
-      <label class="pill"><span class="sr-only">Region</span><select data-region-filter aria-label="Filter by region"><option value="">All regions</option></select></label>
+<div class="dir-shell" id="directory">
+  <div class="u-tools" data-u-tools>
+    <div class="wrap">
+      <div class="tools-row">
+        <div class="searchbar">
+          <svg width="20" height="20"><use href="#i-search"/></svg>
+          <input type="search" data-uni-search placeholder="Search by name, city or subject…" aria-label="Search institutions" autocomplete="off">
+          <button type="button" class="clear hidden" data-uni-clear>Clear</button>
+          <button type="button" class="btn sm" data-uni-show-results>Search</button>
+        </div>
+        <label class="select-pill"><span>Region</span><select data-region-filter aria-label="Filter by region"><option value="">All regions</option></select></label>
+        <label class="select-pill"><span>Sort</span><select data-uni-sort aria-label="Sort institutions">
+          <option value="rank">Rank in Poland</option>
+          <option value="name">Name A–Z</option>
+          <option value="programmes">Most programmes</option>
+        </select></label>
+      </div>
+      <div class="filters" role="toolbar" aria-label="Filter by type">
+        <button type="button" class="pill on" data-type-filter="">All <i data-type-count=""></i></button>
+        <button type="button" class="pill" data-type-filter="ranked">QS-ranked <i data-type-count="ranked"></i></button>
+        <button type="button" class="pill" data-type-filter="Research University">Research University <i data-type-count="Research University"></i></button>
+        <button type="button" class="pill" data-type-filter="University">University <i data-type-count="University"></i></button>
+        <button type="button" class="pill" data-type-filter="University of Applied Sciences">Applied Sciences <i data-type-count="University of Applied Sciences"></i></button>
+        <button type="button" class="pill" data-type-filter="Private University">Private <i data-type-count="Private University"></i></button>
+      </div>
     </div>
   </div>
+
+  <section class="wrap dir-body">
+    <div class="dir-meta">
+      <div>
+        <h2><b data-uni-count-n>227</b> <span data-uni-count-noun>institutions</span> <span data-uni-count-scope></span></h2>
+        <p class="dir-note">The #1–#20 positions rank the 20 Polish institutions in the QS World University Rankings 2027 against each other — they are positions within Poland, not world ranks. Everything else is listed without one. "Research University" marks the 10 members of the Excellence Initiative — Research University programme. Select institutions to apply to several at once, or open any card for details.</p>
+      </div>
+    </div>
+    <div data-uni-results>
+      <div class="u-grid" data-uni-grid></div>
+      <div class="more-wrap" data-uni-more-wrap><button type="button" class="btn ghost" data-uni-more>Show more universities</button><p class="more-note" data-uni-shown></p></div>
+    </div>
+    <div class="empty hidden" data-uni-empty>
+      <svg viewBox="0 0 200 200" width="90" height="90" style="margin:auto;color:var(--red);opacity:.3" aria-hidden="true"><use href="#rosette"/></svg>
+      <h3>No institutions found</h3>
+      <p>Try a different spelling, a city name, or clear the filters.</p>
+    </div>
+  </section>
 </div>
 
-<section class="wrap" style="padding-bottom:40px">
-  <div class="dir-meta">
-    <div>
-      <h2><b data-uni-count-n>227</b> <span data-uni-count-noun>institutions</span> <span data-uni-count-scope></span></h2>
-      <p class="dir-note">Ranked positions are shown for the 20 Polish institutions in the QS World University Rankings 2027. Universities of applied sciences, private universities and specialist institutions that published world rankings do not cover are listed without a position. "Research University" marks the 10 members of the Ministry's Excellence Initiative — Research University programme, which is not the same set.</p>
-    </div>
-  </div>
-  <div data-uni-results>
-    <div class="u-grid" data-uni-grid></div>
-    <div class="more-wrap" data-uni-more-wrap><button type="button" class="btn ghost" data-uni-more>Load more universities</button></div>
-  </div>
-  <div class="empty hidden" data-uni-empty>
-    <svg viewBox="0 0 200 200" width="90" height="90" style="margin:auto;color:var(--red);opacity:.3" aria-hidden="true"><use href="#rosette"/></svg>
-    <h3>No institutions found</h3>
-    <p>Try a different spelling, a city name, or clear the filters.</p>
-  </div>
-
+<section class="wrap u-cta-wrap">
   <div class="family u-cta" data-reveal>
     <div class="img"><img src="./assets/img/photos/poland-city.jpg" alt="Ostrów Tumski in Wrocław at night" loading="lazy"></div>
     <div class="copy">
@@ -184,34 +200,7 @@
 <div class="tray" data-uni-bar role="status">
   <span class="c" data-uni-bar-count>0</span>
   <span data-uni-bar-noun>Institutions selected</span>
-  <button type="button" class="btn sm" data-uni-proceed>Proceed to application <svg class="arrow" width="16" height="16"><use href="#i-arrow"/></svg></button>
-</div>
-
-<div class="modal" data-uni-modal aria-hidden="true">
-  <div class="form-card" role="dialog" aria-modal="true" aria-labelledby="modal-title">
-    <button type="button" class="x" data-uni-modal-close aria-label="Close"><svg width="18" height="18"><use href="#i-x"/></svg></button>
-    <h3 id="modal-title">Submit application</h3>
-    <p class="sub">Your shortlist:</p>
-    <div class="picked" data-uni-picked></div>
-    <form data-lead-form novalidate>
-  <input type="hidden" name="access_key" value="">
-  <input type="hidden" name="subject" value="New Lead from Tutee Connect Landing Page!">
-  <input type="hidden" name="from_name" value="Tutee Connect Notification System">
-  <input type="checkbox" name="botcheck" class="hidden" tabindex="-1" autocomplete="off">
-  <div class="alert ok hidden" data-form-success role="status"><svg width="20" height="20"><use href="#i-check"/></svg>Profile submitted successfully! We will contact you soon.</div>
-  <div class="alert err hidden" data-form-error role="alert"><span data-form-error-text>Submission failed. Please try again.</span></div>
-  <div class="field"><input id="m-name" name="name" type="text" placeholder=" " required autocomplete="name"><label for="m-name">Your name *</label></div>
-  <div class="field phone">
-    <select name="country_code" aria-label="Country code"><option value="+971">AE (+971)</option><option value="+93">AF (+93)</option><option value="+54">AR (+54)</option><option value="+43">AT (+43)</option><option value="+61">AU (+61)</option><option value="+32">BE (+32)</option><option value="+55">BR (+55)</option><option value="+41">CH (+41)</option><option value="+56">CL (+56)</option><option value="+86">CN (+86)</option><option value="+57">CO (+57)</option><option value="+49">DE (+49)</option><option value="+45">DK (+45)</option><option value="+213">DZ (+213)</option><option value="+20">EG (+20)</option><option value="+34">ES (+34)</option><option value="+358">FI (+358)</option><option value="+33">FR (+33)</option><option value="+30">GR (+30)</option><option value="+36">HU (+36)</option><option value="+62">ID (+62)</option><option value="+353">IE (+353)</option><option value="+91" selected>IN (+91)</option><option value="+98">IR (+98)</option><option value="+39">IT (+39)</option><option value="+81">JP (+81)</option><option value="+254">KE (+254)</option><option value="+82">KR (+82)</option><option value="+94">LK (+94)</option><option value="+212">MA (+212)</option><option value="+95">MM (+95)</option><option value="+52">MX (+52)</option><option value="+60">MY (+60)</option><option value="+234">NG (+234)</option><option value="+31">NL (+31)</option><option value="+47">NO (+47)</option><option value="+64">NZ (+64)</option><option value="+51">PE (+51)</option><option value="+63">PH (+63)</option><option value="+92">PK (+92)</option><option value="+48">PL (+48)</option><option value="+351">PT (+351)</option><option value="+974">QA (+974)</option><option value="+40">RO (+40)</option><option value="+7">RU/KZ (+7)</option><option value="+966">SA (+966)</option><option value="+46">SE (+46)</option><option value="+65">SG (+65)</option><option value="+66">TH (+66)</option><option value="+216">TN (+216)</option><option value="+90">TR (+90)</option><option value="+255">TZ (+255)</option><option value="+380">UA (+380)</option><option value="+256">UG (+256)</option><option value="+44">UK (+44)</option><option value="+1">US/CA (+1)</option><option value="+58">VE (+58)</option><option value="+84">VN (+84)</option><option value="+27">ZA (+27)</option></select>
-    <div class="inner"><input id="m-phone" name="phone_number" type="tel" placeholder=" " required autocomplete="tel-national"><label for="m-phone">Phone number *</label></div>
-  </div>
-  <div class="field"><input id="m-email" name="email" type="email" placeholder=" " required autocomplete="email"><label for="m-email">Your email *</label></div>
-  <input type="hidden" name="destination" value="General Poland Inquiry" data-destination-input>
-  <div class="dest"><svg width="20" height="20"><use href="#i-cap"/></svg><div><small>Enquiry for</small><span data-destination-label>General Poland Inquiry</span></div></div>
-  <button class="btn" type="submit" data-submit-btn data-uni-modal-submit>Submit profile</button>
-</form>
-
-  </div>
+  <button type="button" class="btn sm" data-uni-proceed>Continue to free counselling <svg class="arrow" width="16" height="16"><use href="#i-arrow"/></svg></button>
 </div>
 
 <footer class="footer">
@@ -257,12 +246,12 @@
       <span>© 2026 Tutee Connect. All Rights Reserved.</span>
       <span class="credit" data-photo-credit>Photography: central Warsaw at sunrise © Quintin Soloviev (CC BY 4.0); Ostrów Tumski, Wrocław © Jg44.89 (CC BY 4.0); Łazienki Royal Park, Warsaw © Mister No (CC BY 3.0); Old Market Square, Poznań by Borzpoz (CC0). Cropped and resized. Via Wikimedia Commons.</span>
     </div>
-    <div class="big-word" aria-hidden="true">Do zobaczenia</div>
+    <div class="big-word" aria-hidden="true" data-glow-word data-text="Do zobaczenia">Do zobaczenia</div>
   </div>
 </footer>
 
 <div class="fab-wrap">
-  <a class="fab wa" href="https://wa.me/917010902329" target="_blank" rel="noopener noreferrer" aria-label="Chat with us on WhatsApp">
+  <a class="fab wa" href="https://wa.me/917358364959" target="_blank" rel="noopener noreferrer" aria-label="Chat with us on WhatsApp">
     <span class="ico"><svg width="22" height="22"><use href="#i-chat"/></svg></span>
     <span class="txt">Chat with us<small>WhatsApp</small></span>
   </a>
@@ -284,10 +273,11 @@
   <div class="chat-promo"><span>Free consultation available</span><button type="button" data-chat-contact>Book now</button></div>
   <div class="chat-msgs" data-chat-messages>
     <div class="chips" data-chat-chips>
-      <button type="button" data-chat-chip>How to get a Polish Student Visa?</button>
-      <button type="button" data-chat-chip>Tell me about Scholarships</button>
+      <button type="button" data-chat-chip>How do I get a Polish student visa?</button>
       <button type="button" data-chat-chip>Can I work while studying?</button>
-      <button type="button" data-chat-chip>Evaluate My Profile</button>
+      <button type="button" data-chat-chip>Top universities in Poland</button>
+      <button type="button" data-chat-chip>Scholarships and loans</button>
+      <button type="button" data-chat-chip>Can my family join me?</button>
     </div>
     <div class="typing hidden" data-chat-typing><i></i><i></i><i></i></div>
   </div>

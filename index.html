@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
   <meta name="color-scheme" content="light">
   <meta name="theme-color" content="#760d0d">
   <title>Tutee Connect — Study in Poland</title>
@@ -10,7 +10,8 @@
   <link rel="icon" href="./assets/img/logo/icon.png">
   <link rel="stylesheet" href="./assets/css/quicksand.css">
   <link rel="stylesheet" href="./assets/css/site.css">
-  <link rel="preload" as="image" href="./assets/img/photos/poland-city.jpg">
+  <link rel="preload" as="image" href="./assets/img/photos/hero/gdansk-crane.jpg" imagesrcset="./assets/img/photos/hero/gdansk-crane-1280.jpg 1280w, ./assets/img/photos/hero/gdansk-crane.jpg 2560w" imagesizes="100vw">
+  
 </head>
 <body class="home">
 <svg width="0" height="0" style="position:absolute" aria-hidden="true">
@@ -63,12 +64,12 @@
     <symbol id="i-ig" viewBox="0 0 24 24"><rect x="2" y="2" width="20" height="20" rx="5" fill="none" stroke="currentColor" stroke-width="2"/><path d="M16 11.4A4 4 0 1 1 12.6 8 4 4 0 0 1 16 11.4zM17.5 6.5h.01" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></symbol>
     <symbol id="i-xlogo" viewBox="0 0 24 24"><path d="M18.9 1.2h3.7l-8 9.2L24 22.8h-7.4l-5.8-7.6-6.6 7.6H.5l8.6-9.8L0 1.2h7.6l5.2 6.9zm-1.3 19.5h2L6.5 3.2H4.3z" fill="currentColor"/></symbol>
     <symbol id="i-in" viewBox="0 0 24 24"><path d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-4 0v7h-4v-7a6 6 0 0 1 6-6zM2 9h4v12H2z" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/><circle cx="4" cy="4" r="2" fill="none" stroke="currentColor" stroke-width="2"/></symbol>
+    <symbol id="i-person" viewBox="0 0 24 24"><circle cx="12" cy="8" r="4" fill="currentColor"/><path d="M4 21a8 8 0 0 1 16 0z" fill="currentColor"/></symbol>
+    <symbol id="i-globe" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" fill="none" stroke="currentColor" stroke-width="2"/><path d="M2 12h20M12 2a15 15 0 0 1 0 20M12 2a15 15 0 0 0 0 20" fill="none" stroke="currentColor" stroke-width="2"/></symbol>
     <symbol id="i-spark" viewBox="0 0 24 24"><path d="M12 2l1.8 6.2L20 10l-6.2 1.8L12 18l-1.8-6.2L4 10l6.2-1.8z" fill="currentColor"/></symbol>
   </defs>
 </svg>
 
-<div class="curtain" aria-hidden="true"><span></span><span></span><div class="curtain-logo"><img src="./assets/img/logo/icon.png" alt=""></div></div>
-<div class="progress" aria-hidden="true"></div>
 
 <header class="site-header" data-header>
   <div class="wrap">
@@ -106,62 +107,44 @@
 
 <main>
 <!-- =============================== HERO =============================== -->
-<section class="hero" id="home" data-rail-label="Welcome">
-  <div class="birds" aria-hidden="true">
-    <div class="bird" style="top:22%;animation-duration:26s;animation-delay:-4s"><svg viewBox="0 0 40 20"><path d="M2 12 Q11 2 20 11 Q29 2 38 12" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/></svg></div>
-    <div class="bird" style="top:34%;width:24px;animation-duration:32s;animation-delay:-14s"><svg viewBox="0 0 40 20"><path d="M2 12 Q11 2 20 11 Q29 2 38 12" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/></svg></div>
-    <div class="bird" style="top:14%;width:20px;animation-duration:38s;animation-delay:-22s"><svg viewBox="0 0 40 20"><path d="M2 12 Q11 2 20 11 Q29 2 38 12" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/></svg></div>
+<section class="hero im pl" id="home" data-rail-label="Welcome" data-dark>
+  <div class="im-frame" data-im-frame>
+    <div class="im-stage" data-im-stage aria-hidden="true">
+      <div class="im-photos" data-im-photos>
+        <figure class="on" data-city="Gdańsk" data-note="The medieval crane on the Motława"><img src="./assets/img/photos/hero/gdansk-crane.jpg" srcset="./assets/img/photos/hero/gdansk-crane-1280.jpg 1280w, ./assets/img/photos/hero/gdansk-crane.jpg 2560w" sizes="100vw" alt="The medieval crane and merchant houses on the Motława river in Gdańsk at golden hour" fetchpriority="high"></figure>
+        <figure data-city="Kraków" data-note="Wawel Castle above the Vistula"><img data-src="./assets/img/photos/hero/krakow-wawel.jpg" data-srcset="./assets/img/photos/hero/krakow-wawel-1280.jpg 1280w, ./assets/img/photos/hero/krakow-wawel.jpg 2560w" sizes="100vw" alt="Wawel Royal Castle above the Vistula river in Kraków"></figure>
+        <figure data-city="Malbork" data-note="The world's largest brick castle"><img data-src="./assets/img/photos/hero/malbork-castle.jpg" data-srcset="./assets/img/photos/hero/malbork-castle-1280.jpg 1280w, ./assets/img/photos/hero/malbork-castle.jpg 2560w" sizes="100vw" alt="Malbork Castle across the Nogat river"></figure>
+        <figure data-city="Tatra Mountains" data-short="Tatras" data-note="Morskie Oko at dawn"><img data-src="./assets/img/photos/hero/morskie-oko.jpg" data-srcset="./assets/img/photos/hero/morskie-oko-1280.jpg 1280w, ./assets/img/photos/hero/morskie-oko.jpg 2560w" sizes="100vw" alt="Morskie Oko lake reflecting the Tatra peaks at dawn"></figure>
+        <figure data-city="Warsaw" data-note="Castle Square and the Old Town by night"><img data-src="./assets/img/photos/hero/warsaw-old-town.jpg" data-srcset="./assets/img/photos/hero/warsaw-old-town-1280.jpg 1280w, ./assets/img/photos/hero/warsaw-old-town.jpg 2560w" sizes="100vw" alt="Castle Square in Warsaw at night, with Sigismund's Column and the Royal Castle"></figure>
+      </div>
+      <div class="im-grade"></div>
+    </div>
+    <div class="im-veil"></div>
+    <canvas class="im-dust" data-im-dust aria-hidden="true"></canvas>
   </div>
 
-  <div class="wrap hero-grid">
-    <div class="hero-copy">
-      <span class="eyebrow" data-hero style="--d:.1s">Poland education experts</span>
-      <h1 class="display" data-hero style="--d:.2s">Your route map to the <span class="accent">Polish dream.<svg class="swash" viewBox="0 0 300 30" preserveAspectRatio="none" aria-hidden="true"><path d="M4 22 C80 6 200 4 296 16" fill="none" stroke="currentColor" stroke-width="6" stroke-linecap="round"/></svg></span></h1>
-      <p class="lede" data-hero style="--d:.35s">We don't just facilitate Polish student visas; we transform lives. Join the preferred choice for those seeking excellence in Polish higher education.</p>
-      <div class="hero-actions" data-hero style="--d:.45s">
-        <a class="btn" href="#contact" data-scroll-to="contact">Check eligibility <svg class="arrow" width="18" height="18"><use href="#i-arrow"/></svg></a>
-        <a class="btn ghost" href="#services" data-scroll-to="services">What we do</a>
-      </div>
-      <div class="hero-stats" data-hero style="--d:.55s">
-        <div><div class="n"><span data-count="99">0</span>%</div><div class="l">Visa success rate</div></div>
-        <div><div class="n"><span data-count="200">0</span>+</div><div class="l">Poland tie-ups</div></div>
-        <div><div class="n"><span data-count="5">0</span>k+</div><div class="l">Students guided</div></div>
-      </div>
+  <div class="wrap pl-body">
+    <div class="pl-word" data-pl-word aria-hidden="true"></div>
+    <div class="pl-now" data-hero style="--d:1.9s">
+      <div class="im-index" data-im-cities role="group" aria-label="Choose a place to view"></div>
+      <p class="pl-note" data-im-note aria-live="polite"><span>The medieval crane on the Motława</span></p>
     </div>
-
-    <div class="hero-visual" data-hero style="--d:.3s" data-tilt-scope>
-      <svg class="hero-rosette" viewBox="0 0 200 200" aria-hidden="true"><use href="#rosette"/></svg>
-      <div class="arch" data-slideshow>
-        <figure class="slide on" data-city="Wrocław" data-note="Ostrów Tumski"><img src="./assets/img/photos/poland-city.jpg" alt="Ostrów Tumski in Wrocław lit up at night, reflected in the Oder"></figure>
-        <figure class="slide" data-city="Warsaw" data-note="The capital at sunrise"><img src="./assets/img/photos/students-campus.jpg" alt="Central Warsaw skyline at sunrise with the Palace of Culture and Science" loading="lazy"></figure>
-        <figure class="slide" data-city="Poznań" data-note="Old Market Square"><img src="./assets/img/photos/team-working.jpg" alt="Old Market Square in Poznań" loading="lazy"></figure>
-        <figure class="slide" data-city="Warsaw" data-note="Łazienki Royal Park"><img src="./assets/img/photos/family.jpg" alt="Łazienki Royal Park in Warsaw" loading="lazy"></figure>
-        <div class="arch-caption"><span class="city" data-slide-city><span>Wrocław</span></span><small data-slide-note>Ostrów Tumski</small></div>
-        <div class="arch-dots" data-slide-dots></div>
+    <div class="pl-copy">
+      <h1 class="im-title">
+        <span class="ln"><span data-hero style="--d:1.35s">Your route map</span></span>
+        <span class="ln"><span data-hero style="--d:1.5s">to the Polish dream.</span></span>
+      </h1>
+      <div class="pl-side">
+        <p class="im-lede" data-hero style="--d:1.65s">We plan every step of your move to Poland, from an approved university and your visa to your first job after graduation.</p>
+        <div class="im-cta" data-hero style="--d:1.8s">
+          <a class="btn im-gold" href="#contact" data-scroll-to="contact">Check my eligibility</a>
+          <a class="im-link" href="#services" data-scroll-to="services">See how we help</a>
+        </div>
       </div>
-
-      <svg class="flight" viewBox="0 0 240 170" aria-hidden="true">
-        <path class="route" d="M10,150 C60,40 160,20 230,40" fill="none" stroke="#760d0d" stroke-width="2" stroke-linecap="round"/>
-        <circle cx="10" cy="150" r="5" fill="#f4a13a"/><circle cx="230" cy="40" r="6" fill="#d4213d"/>
-        <circle cx="230" cy="40" r="6" fill="none" stroke="#d4213d" stroke-width="2"><animate attributeName="r" values="6;16" dur="1.8s" repeatCount="indefinite"/><animate attributeName="opacity" values=".7;0" dur="1.8s" repeatCount="indefinite"/></circle>
-        <text x="16" y="166">CHENNAI</text><text x="184" y="24">WARSZAWA</text>
-        <g>
-          <use href="#i-plane" x="-11" y="-11" width="22" height="22" fill="#d4213d" style="color:#d4213d" transform="rotate(45)"/>
-          <animateMotion dur="6s" repeatCount="indefinite" rotate="auto" keyPoints="0;1" keyTimes="0;1" calcMode="spline" keySplines=".6 0 .4 1" path="M10,150 C60,40 160,20 230,40"/>
-        </g>
-      </svg>
-
-      <div class="float-chip chip-a" data-float="1.2"><span class="ico"><svg width="20" height="20"><use href="#i-shield"/></svg></span><div><b><span data-count="227">0</span> institutions</b><span>approved to admit you</span></div></div>
-      <div class="float-chip chip-b" data-float="-1"><span class="ico"><svg width="20" height="20"><use href="#i-brief"/></svg></span><div><b>No weekly cap</b><span>on student part-time work</span></div></div>
-      <div class="float-chip chip-c" data-float=".8"><span class="ico"><svg width="20" height="20"><use href="#i-cap"/></svg></span><div><b>9-month</b><span>graduate permit</span></div></div>
     </div>
   </div>
 
-  <svg class="ribbon" viewBox="0 0 1440 120" preserveAspectRatio="none" aria-hidden="true">
-    <path d="M0 70 C240 20 480 120 720 70 C960 20 1200 120 1440 70 C1560 45 1680 95 1800 70 V120 H0Z" fill="#ffffff" opacity=".9"/>
-    <path d="M0 92 C240 50 480 130 720 92 C960 54 1200 130 1440 92 C1560 73 1680 110 1800 92 V120 H0Z" fill="#d4213d" opacity=".9"/>
-  </svg>
-  <a class="scroll-cue" href="#why" data-scroll-to="why" aria-label="Scroll to next section"><i></i>Scroll</a>
+  <div class="im-lid top" aria-hidden="true"></div><div class="im-lid bottom" aria-hidden="true"></div><i class="im-seam" aria-hidden="true"></i>
 </section>
 
 <!-- =============================== BANDS =============================== -->
@@ -194,7 +177,7 @@
           <span class="eyebrow">Why Poland?</span>
           <h2 class="h2 split" data-split>Europe's rising star for <em>ambitious</em> students.</h2>
           <p class="lede" data-reveal style="--d:.2s">Poland is one of the fastest-growing destinations for international students in the European Union. With part-time work that carries no weekly cap, a nine-month permit to find work after graduation and an EU-recognised qualification, it is the ideal place to study and build a career.</p>
-          <p class="lede" data-reveal style="--d:.3s;font-size:14px;font-weight:700;color:var(--red)">Keep scrolling →</p>
+          <p class="lede" data-reveal style="--d:.3s;font-size:14px;font-weight:700;color:var(--red)"><span class="only-desk">Keep scrolling →</span><span class="only-mob">Swipe to explore →</span></p>
         </div>
         <article class="why-card photo">
           <img src="./assets/img/photos/poland-city.jpg" alt="" loading="lazy">
@@ -203,9 +186,9 @@
           <h3>World-ranked universities</h3>
           <p>Twenty Polish institutions feature in the QS World University Rankings 2027 — from Warsaw and Kraków to Gdańsk and Wrocław.</p>
         </article>
-        <article class="why-card red">
+        <article class="why-card photo tint-red">
+          <img src="./assets/img/photos/why-degrees.jpg" alt="" loading="lazy">
           <span class="num">02</span>
-          <svg class="art" viewBox="0 0 200 200" style="color:#fff;opacity:.9" aria-hidden="true"><use href="#rosette"/></svg>
           <span class="tag">EU education</span>
           <h3>Affordable, EU-recognised degrees</h3>
           <p>Some of the most accessible public-university study in the European Union, with qualifications recognised right across it.</p>
@@ -217,9 +200,9 @@
           <h3>Nine months to launch your career</h3>
           <p>Stay on after graduation to find work or start a business — no sponsor required, and graduates of full-time Polish degrees need no work permit.</p>
         </article>
-        <article class="why-card teal">
+        <article class="why-card photo tint-teal">
+          <img src="./assets/img/photos/why-work.jpg" alt="" loading="lazy">
           <span class="num">04</span>
-          <svg class="art" viewBox="0 0 24 24" style="color:var(--gold);width:72px;height:72px" aria-hidden="true"><use href="#i-brief"/></svg>
           <span class="tag">Work rights</span>
           <h3>Work with no weekly cap</h3>
           <p>Full-time students at approved or exempt universities need no work permit and face no hour limit. Part-time, postgraduate and MBA study do not qualify.</p>
@@ -231,15 +214,23 @@
           <h3>Diverse curriculum, hands-on teaching</h3>
           <p>A distinctive, diverse curriculum with a high level of practical instruction — for students from every stream.</p>
         </article>
-        <article class="why-card">
+        <article class="why-card photo tint-wine">
+          <img src="./assets/img/photos/why-research.jpg" alt="" loading="lazy">
           <span class="num">06</span>
-          <svg class="art" viewBox="0 0 24 24" style="color:var(--red);width:72px;height:72px" aria-hidden="true"><use href="#i-cap"/></svg>
           <span class="tag">Research</span>
           <h3>Doctoral schools that fund you</h3>
           <p>Polish doctoral schools charge no tuition and award a scholarship to every full-time doctoral candidate.</p>
         </article>
       </div>
-      <div class="why-progress" aria-hidden="true"><span data-hscroll-index>01</span><div class="track"><div class="fill"></div></div><span>06</span></div>
+      <div class="why-nav" data-hscroll-nav>
+        <span class="why-count" data-hscroll-index>01</span>
+        <div class="why-scrub" data-hscroll-scrub role="slider" tabindex="0" aria-label="Why Poland cards — drag or use arrow keys" aria-valuemin="1" aria-valuemax="6" aria-valuenow="1">
+          <div class="fill"></div>
+          <span class="knob"></span>
+        </div>
+        <span class="why-count">06</span>
+        <button type="button" class="why-skip" data-hscroll-skip>Skip to services <svg width="15" height="15"><use href="#i-arrow"/></svg></button>
+      </div>
     </div>
   </div>
 </section>
@@ -253,26 +244,35 @@
       <h2 class="h2 split" data-split>Nine services. <em>One</em> seamless journey.</h2>
       <p class="lede" data-reveal style="--d:.2s">Since we scrutinise every profile from the view of Polish consular officers, we choose the right pathway to ensure a 99% success rate in Polish student visa clearances.</p>
     </div>
-    <div class="services-grid">
-      <ol class="svc-list" data-svc-list></ol>
-      <div class="svc-detail-wrap" data-reveal="right">
-        <div class="svc-detail" data-svc-detail aria-live="polite">
-          <svg class="folk" viewBox="0 0 200 200" aria-hidden="true"><use href="#rosette"/></svg>
-          <span class="count swap" data-svc-count>01</span>
-          <div class="swap">
-            <div class="ico" data-svc-icon></div>
-            <p class="tagline" data-svc-tagline></p>
-            <h3 data-svc-title></h3>
-            <div class="body" data-svc-body></div>
-          </div>
-          <div class="actions">
-            <a class="btn sm" href="#contact" data-scroll-to="contact">Request this service <svg class="arrow" width="16" height="16"><use href="#i-arrow"/></svg></a>
-            <div class="stepper">
-              <button type="button" data-svc-prev aria-label="Previous service"><svg width="18" height="18"><use href="#i-left"/></svg></button>
-              <button type="button" data-svc-next aria-label="Next service"><svg width="18" height="18"><use href="#i-right"/></svg></button>
-            </div>
+    <!-- Dial: nine services around a wycinanki rosette; the wheel turns the chosen one to the pointer -->
+    <div class="svc-dial" data-svc-dial>
+      <div class="dial" data-reveal="scale">
+        <svg class="dial-rosette" viewBox="0 0 200 200" aria-hidden="true"><use href="#rosette"/></svg>
+        <svg class="dial-ring" viewBox="0 0 400 400" aria-hidden="true"><circle class="ring-outer" cx="200" cy="200" r="198"/><circle class="ring-dash" cx="200" cy="200" r="170"/></svg>
+        <span class="dial-pointer" aria-hidden="true"></span>
+        <div class="dial-wheel" data-svc-wheel role="tablist" aria-label="Our services"></div>
+        <div class="dial-core" aria-hidden="true">
+          <span class="core-n" data-svc-count>01</span>
+          <span class="core-of">of 09</span>
+          <span class="core-t" data-svc-short></span>
+        </div>
+      </div>
+      <div class="dial-panel" data-svc-panel role="tabpanel" aria-live="polite">
+        <div class="swap">
+          <span class="dial-ico" data-svc-icon></span>
+          <p class="dial-tag" data-svc-tagline></p>
+          <h3 data-svc-title></h3>
+          <div class="dial-body" data-svc-body></div>
+          <button type="button" class="dial-more" data-svc-more aria-expanded="false">Read more</button>
+        </div>
+        <div class="dial-actions">
+          <a class="btn sm" href="#contact" data-scroll-to="contact">Request this service <svg class="arrow" width="16" height="16"><use href="#i-arrow"/></svg></a>
+          <div class="dial-nav">
+            <button type="button" data-svc-prev aria-label="Previous service"><svg width="18" height="18"><use href="#i-left"/></svg></button>
+            <button type="button" data-svc-next aria-label="Next service"><svg width="18" height="18"><use href="#i-right"/></svg></button>
           </div>
         </div>
+        <ol class="dial-index" data-svc-index></ol>
       </div>
     </div>
   </div>
@@ -290,8 +290,8 @@
       <div class="pl-wrap">
         <div class="pl-map" data-reveal="scale">
           <svg viewBox="-20 -20 640 610" role="img" aria-label="Map of Poland showing university cities">
-            <path class="land" d="M12.8,101.2 L35.0,96.5 L93.2,75.7 L139.8,47.3 L166.0,37.8 L206.8,21.8 L252.2,15.1 L279.6,36.0 L262.1,36.0 L265.0,50.1 L270.9,58.7 L291.3,61.5 L328.0,52.0 L378.6,56.8 L436.9,63.4 L489.3,60.6 L512.6,59.6 L553.4,80.4 L552.2,99.3 L577.9,170.3 L575.5,217.6 L535.9,257.4 L562.1,317.0 L559.2,340.6 L588.3,392.7 L579.6,433.3 L550.5,449.4 L503.9,496.7 L515.5,558.2 L498.6,560.1 L460.2,531.8 L413.6,529.9 L384.5,529.9 L358.3,539.3 L337.9,548.8 L317.5,510.9 L291.3,529.9 L282.5,518.5 L268.0,482.5 L233.0,473.1 L212.6,447.5 L168.9,430.5 L128.2,413.5 L139.8,458.9 L116.5,416.3 L81.6,397.4 L47.8,390.8 L58.3,354.8 L42.5,321.7 L35.0,283.9 L32.0,227.1 L8.7,203.4 L26.2,165.6 L12.8,101.2Z"/>
-            <path class="land-draw" d="M12.8,101.2 L35.0,96.5 L93.2,75.7 L139.8,47.3 L166.0,37.8 L206.8,21.8 L252.2,15.1 L279.6,36.0 L262.1,36.0 L265.0,50.1 L270.9,58.7 L291.3,61.5 L328.0,52.0 L378.6,56.8 L436.9,63.4 L489.3,60.6 L512.6,59.6 L553.4,80.4 L552.2,99.3 L577.9,170.3 L575.5,217.6 L535.9,257.4 L562.1,317.0 L559.2,340.6 L588.3,392.7 L579.6,433.3 L550.5,449.4 L503.9,496.7 L515.5,558.2 L498.6,560.1 L460.2,531.8 L413.6,529.9 L384.5,529.9 L358.3,539.3 L337.9,548.8 L317.5,510.9 L291.3,529.9 L282.5,518.5 L268.0,482.5 L233.0,473.1 L212.6,447.5 L168.9,430.5 L128.2,413.5 L139.8,458.9 L116.5,416.3 L81.6,397.4 L47.8,390.8 L58.3,354.8 L42.5,321.7 L35.0,283.9 L32.0,227.1 L8.7,203.4 L26.2,165.6 L12.8,101.2Z"/>
+            <path class="land" d="M559.4,329.6 L562.5,336.1 L563.8,341.2 L562.5,345.2 L562.9,349.2 L565.7,353.5 L574.5,366.6 L578.8,379.3 L581.6,384.2 L588.0,390.6 L588.6,393.3 L586.0,395.7 L583.9,396.0 L582.2,396.6 L581.2,398.9 L582.8,401.3 L585.1,404.8 L587.9,414.9 L587.7,423.0 L585.5,425.1 L582.7,430.0 L580.8,434.4 L565.6,437.5 L562.0,442.3 L553.7,451.5 L548.0,456.8 L539.6,466.4 L526.3,482.8 L521.4,489.7 L517.8,495.4 L507.1,510.5 L503.8,516.9 L504.4,522.1 L507.9,534.4 L508.6,540.0 L508.0,545.1 L506.8,549.7 L507.0,551.7 L510.2,555.0 L515.3,560.2 L515.6,562.0 L514.8,564.3 L513.1,566.0 L506.8,564.2 L499.7,560.6 L497.3,561.1 L493.5,560.2 L477.7,553.4 L467.1,548.1 L466.1,544.6 L464.1,539.6 L459.5,535.4 L449.2,531.8 L445.0,528.9 L428.1,527.3 L420.8,527.3 L415.6,528.5 L412.3,528.3 L407.8,535.8 L404.6,537.9 L400.0,538.1 L396.0,536.8 L391.9,532.9 L385.3,530.9 L380.6,531.8 L377.1,531.0 L374.1,530.8 L373.0,531.6 L370.6,531.5 L367.1,533.3 L363.2,536.0 L359.0,538.0 L355.7,542.3 L352.8,550.8 L344.6,547.0 L341.8,548.6 L337.9,549.7 L335.3,548.6 L335.9,545.7 L337.1,542.4 L337.1,537.8 L336.3,532.7 L333.7,531.1 L329.9,530.4 L327.9,529.4 L327.7,527.8 L325.8,525.6 L322.4,520.1 L319.2,513.4 L316.9,511.4 L313.7,514.6 L308.8,518.2 L305.8,519.5 L299.9,530.1 L289.4,530.4 L288.7,525.5 L287.6,520.8 L281.5,519.6 L281.3,516.8 L280.0,509.8 L267.6,496.2 L266.1,490.5 L266.6,488.3 L265.7,484.7 L263.1,482.5 L253.3,479.9 L250.8,481.4 L248.5,479.9 L244.9,476.6 L238.8,473.9 L238.1,472.6 L235.9,470.2 L234.6,469.9 L233.8,471.3 L232.0,473.4 L225.7,475.9 L223.2,474.8 L220.9,472.6 L218.2,467.9 L214.4,463.7 L211.3,462.2 L209.5,460.1 L209.1,458.4 L216.1,454.9 L217.6,451.4 L216.7,445.0 L215.6,444.2 L212.9,446.4 L207.0,448.3 L201.7,449.1 L198.9,449.1 L183.6,437.4 L173.6,433.9 L167.8,432.8 L167.1,434.0 L169.8,440.6 L174.4,448.7 L174.1,450.8 L168.7,454.1 L165.5,455.6 L161.9,458.4 L158.8,462.3 L156.1,464.0 L153.7,463.6 L151.3,461.7 L144.9,449.8 L136.9,440.6 L136.0,438.5 L133.5,438.1 L130.0,436.0 L128.8,433.2 L130.5,430.2 L133.0,427.5 L137.3,425.9 L138.6,424.3 L139.4,422.0 L141.0,419.0 L140.5,417.9 L137.5,414.4 L132.9,411.2 L120.4,413.6 L116.9,415.4 L115.0,413.1 L113.5,409.8 L110.3,409.2 L106.0,406.2 L100.8,403.2 L95.8,402.4 L85.3,398.1 L81.3,397.9 L78.9,396.4 L76.5,393.2 L74.4,389.7 L73.3,382.5 L65.6,379.3 L57.9,377.2 L57.4,378.3 L57.7,385.5 L57.3,389.3 L52.2,391.7 L47.2,391.9 L47.5,390.7 L53.5,377.8 L56.2,369.6 L59.2,354.7 L55.5,342.9 L54.5,337.4 L52.8,334.7 L42.2,329.0 L41.4,327.0 L43.1,319.2 L42.3,316.0 L39.7,312.5 L36.4,305.6 L35.1,299.8 L39.3,292.9 L40.4,287.9 L42.2,281.0 L43.6,277.2 L43.9,276.2 L41.1,273.5 L40.4,269.7 L41.1,264.3 L39.6,260.3 L35.9,257.6 L33.5,254.2 L32.3,249.9 L33.2,243.1 L36.1,233.9 L30.0,222.8 L14.8,209.8 L7.5,200.8 L8.1,195.6 L11.3,190.9 L17.1,186.7 L21.5,179.3 L24.0,170.4 L24.0,168.7 L24.2,162.4 L17.4,136.6 L16.3,130.1 L15.5,122.3 L15.1,120.2 L28.4,125.7 L34.0,128.7 L33.3,125.3 L32.2,122.3 L32.9,117.9 L32.6,111.3 L20.5,108.0 L12.5,106.8 L11.6,102.3 L12.3,99.3 L14.6,101.0 L22.4,101.7 L41.7,92.9 L75.1,81.3 L110.7,70.5 L119.0,69.4 L127.4,67.1 L130.5,63.1 L133.5,60.4 L138.4,53.2 L149.1,42.2 L168.1,38.1 L175.2,32.9 L190.0,25.5 L223.8,17.3 L238.0,15.5 L251.8,15.2 L264.2,21.7 L277.2,29.8 L279.6,34.6 L272.5,31.6 L262.2,24.4 L258.4,24.1 L267.2,46.0 L272.0,53.8 L281.7,59.6 L289.8,61.6 L314.9,58.0 L323.8,53.4 L326.4,51.1 L328.7,52.3 L345.1,53.5 L361.6,54.8 L388.2,56.1 L415.9,57.5 L444.6,58.9 L475.8,60.5 L508.6,61.4 L510.6,60.8 L513.9,57.1 L518.0,57.6 L522.8,59.9 L525.1,61.6 L526.0,63.5 L526.6,65.8 L529.3,66.2 L534.1,67.9 L540.6,71.8 L545.7,75.6 L550.6,81.0 L552.2,87.1 L552.3,94.0 L552.0,98.5 L552.4,100.3 L559.1,132.5 L570.1,163.6 L574.2,178.6 L575.8,186.6 L577.1,198.3 L577.5,206.4 L577.5,211.0 L576.7,217.3 L573.4,221.0 L552.1,231.7 L548.1,235.1 L541.8,243.4 L536.1,251.9 L534.7,254.9 L534.4,256.8 L535.6,259.6 L543.2,264.2 L550.9,267.9 L553.4,270.6 L559.0,274.2 L561.1,277.3 L562.2,280.1 L562.1,286.5 L559.6,295.3 L560.6,302.0 L558.0,306.4 L555.9,311.4 L555.6,320.0 L559.4,329.6Z"/>
+            <path class="land-draw" d="M559.4,329.6 L562.5,336.1 L563.8,341.2 L562.5,345.2 L562.9,349.2 L565.7,353.5 L574.5,366.6 L578.8,379.3 L581.6,384.2 L588.0,390.6 L588.6,393.3 L586.0,395.7 L583.9,396.0 L582.2,396.6 L581.2,398.9 L582.8,401.3 L585.1,404.8 L587.9,414.9 L587.7,423.0 L585.5,425.1 L582.7,430.0 L580.8,434.4 L565.6,437.5 L562.0,442.3 L553.7,451.5 L548.0,456.8 L539.6,466.4 L526.3,482.8 L521.4,489.7 L517.8,495.4 L507.1,510.5 L503.8,516.9 L504.4,522.1 L507.9,534.4 L508.6,540.0 L508.0,545.1 L506.8,549.7 L507.0,551.7 L510.2,555.0 L515.3,560.2 L515.6,562.0 L514.8,564.3 L513.1,566.0 L506.8,564.2 L499.7,560.6 L497.3,561.1 L493.5,560.2 L477.7,553.4 L467.1,548.1 L466.1,544.6 L464.1,539.6 L459.5,535.4 L449.2,531.8 L445.0,528.9 L428.1,527.3 L420.8,527.3 L415.6,528.5 L412.3,528.3 L407.8,535.8 L404.6,537.9 L400.0,538.1 L396.0,536.8 L391.9,532.9 L385.3,530.9 L380.6,531.8 L377.1,531.0 L374.1,530.8 L373.0,531.6 L370.6,531.5 L367.1,533.3 L363.2,536.0 L359.0,538.0 L355.7,542.3 L352.8,550.8 L344.6,547.0 L341.8,548.6 L337.9,549.7 L335.3,548.6 L335.9,545.7 L337.1,542.4 L337.1,537.8 L336.3,532.7 L333.7,531.1 L329.9,530.4 L327.9,529.4 L327.7,527.8 L325.8,525.6 L322.4,520.1 L319.2,513.4 L316.9,511.4 L313.7,514.6 L308.8,518.2 L305.8,519.5 L299.9,530.1 L289.4,530.4 L288.7,525.5 L287.6,520.8 L281.5,519.6 L281.3,516.8 L280.0,509.8 L267.6,496.2 L266.1,490.5 L266.6,488.3 L265.7,484.7 L263.1,482.5 L253.3,479.9 L250.8,481.4 L248.5,479.9 L244.9,476.6 L238.8,473.9 L238.1,472.6 L235.9,470.2 L234.6,469.9 L233.8,471.3 L232.0,473.4 L225.7,475.9 L223.2,474.8 L220.9,472.6 L218.2,467.9 L214.4,463.7 L211.3,462.2 L209.5,460.1 L209.1,458.4 L216.1,454.9 L217.6,451.4 L216.7,445.0 L215.6,444.2 L212.9,446.4 L207.0,448.3 L201.7,449.1 L198.9,449.1 L183.6,437.4 L173.6,433.9 L167.8,432.8 L167.1,434.0 L169.8,440.6 L174.4,448.7 L174.1,450.8 L168.7,454.1 L165.5,455.6 L161.9,458.4 L158.8,462.3 L156.1,464.0 L153.7,463.6 L151.3,461.7 L144.9,449.8 L136.9,440.6 L136.0,438.5 L133.5,438.1 L130.0,436.0 L128.8,433.2 L130.5,430.2 L133.0,427.5 L137.3,425.9 L138.6,424.3 L139.4,422.0 L141.0,419.0 L140.5,417.9 L137.5,414.4 L132.9,411.2 L120.4,413.6 L116.9,415.4 L115.0,413.1 L113.5,409.8 L110.3,409.2 L106.0,406.2 L100.8,403.2 L95.8,402.4 L85.3,398.1 L81.3,397.9 L78.9,396.4 L76.5,393.2 L74.4,389.7 L73.3,382.5 L65.6,379.3 L57.9,377.2 L57.4,378.3 L57.7,385.5 L57.3,389.3 L52.2,391.7 L47.2,391.9 L47.5,390.7 L53.5,377.8 L56.2,369.6 L59.2,354.7 L55.5,342.9 L54.5,337.4 L52.8,334.7 L42.2,329.0 L41.4,327.0 L43.1,319.2 L42.3,316.0 L39.7,312.5 L36.4,305.6 L35.1,299.8 L39.3,292.9 L40.4,287.9 L42.2,281.0 L43.6,277.2 L43.9,276.2 L41.1,273.5 L40.4,269.7 L41.1,264.3 L39.6,260.3 L35.9,257.6 L33.5,254.2 L32.3,249.9 L33.2,243.1 L36.1,233.9 L30.0,222.8 L14.8,209.8 L7.5,200.8 L8.1,195.6 L11.3,190.9 L17.1,186.7 L21.5,179.3 L24.0,170.4 L24.0,168.7 L24.2,162.4 L17.4,136.6 L16.3,130.1 L15.5,122.3 L15.1,120.2 L28.4,125.7 L34.0,128.7 L33.3,125.3 L32.2,122.3 L32.9,117.9 L32.6,111.3 L20.5,108.0 L12.5,106.8 L11.6,102.3 L12.3,99.3 L14.6,101.0 L22.4,101.7 L41.7,92.9 L75.1,81.3 L110.7,70.5 L119.0,69.4 L127.4,67.1 L130.5,63.1 L133.5,60.4 L138.4,53.2 L149.1,42.2 L168.1,38.1 L175.2,32.9 L190.0,25.5 L223.8,17.3 L238.0,15.5 L251.8,15.2 L264.2,21.7 L277.2,29.8 L279.6,34.6 L272.5,31.6 L262.2,24.4 L258.4,24.1 L267.2,46.0 L272.0,53.8 L281.7,59.6 L289.8,61.6 L314.9,58.0 L323.8,53.4 L326.4,51.1 L328.7,52.3 L345.1,53.5 L361.6,54.8 L388.2,56.1 L415.9,57.5 L444.6,58.9 L475.8,60.5 L508.6,61.4 L510.6,60.8 L513.9,57.1 L518.0,57.6 L522.8,59.9 L525.1,61.6 L526.0,63.5 L526.6,65.8 L529.3,66.2 L534.1,67.9 L540.6,71.8 L545.7,75.6 L550.6,81.0 L552.2,87.1 L552.3,94.0 L552.0,98.5 L552.4,100.3 L559.1,132.5 L570.1,163.6 L574.2,178.6 L575.8,186.6 L577.1,198.3 L577.5,206.4 L577.5,211.0 L576.7,217.3 L573.4,221.0 L552.1,231.7 L548.1,235.1 L541.8,243.4 L536.1,251.9 L534.7,254.9 L534.4,256.8 L535.6,259.6 L543.2,264.2 L550.9,267.9 L553.4,270.6 L559.0,274.2 L561.1,277.3 L562.2,280.1 L562.1,286.5 L559.6,295.3 L560.6,302.0 L558.0,306.4 L555.9,311.4 L555.6,320.0 L559.4,329.6Z"/>
             <g data-map-cities></g>
           </svg>
         </div>
@@ -301,13 +301,10 @@
           <div><b data-count="20">0</b>QS-ranked</div>
         </div>
       </div>
-      <div>
-        <div class="flow" data-flow aria-roledescription="carousel"></div>
-        <div class="flow-nav">
-          <button class="arrow" type="button" data-flow-prev aria-label="Previous university"><svg width="20" height="20"><use href="#i-left"/></svg></button>
-          <div class="count"><span data-flow-index>01</span> <i>/ 12</i></div>
-          <button class="arrow" type="button" data-flow-next aria-label="Next university"><svg width="20" height="20"><use href="#i-right"/></svg></button>
-        </div>
+      <div class="league" data-reveal style="--d:.1s">
+        <div class="league-head" aria-hidden="true"><span><span class="only-desk">Rank in Poland</span><span class="only-mob">PL #</span></span><span>University</span><span><span class="only-desk">Programmes</span><span class="only-mob">Progr.</span></span></div>
+        <ol class="league-list" data-league></ol>
+        <p class="league-note">Positions are each university's rank among Polish institutions in the QS World University Rankings 2027 (#1 = highest-placed in Poland), not its world rank. Hover a row to find it on the map; click it for full details.</p>
       </div>
     </div>
     <div class="unis-cta" data-reveal>
@@ -323,7 +320,7 @@
     <div class="section-head center">
       <span class="eyebrow">Fund your future</span>
       <h2 class="h2 split" data-split>Scholarships, loans &amp; <em>earning</em> — sorted.</h2>
-      <p class="lede" data-reveal style="--d:.2s">Three ways we make your Polish degree possible. Scroll through them.</p>
+      <p class="lede" data-reveal style="--d:.2s">Three ways we make your Polish degree possible. <span class="only-desk">Scroll</span><span class="only-mob">Swipe</span> through them.</p>
     </div>
     <div class="stack" data-stack>
       <article class="stack-card sc-1" style="--i:0" id="scholarships">
@@ -390,37 +387,100 @@
 <!-- =============================== PATHWAY =============================== -->
 <section class="section path" id="journey" data-rail-label="Pathway">
   <div class="wrap">
-    <div class="path-grid" id="relocate">
-      <div class="path-head">
+    <div class="path-head2">
+      <div>
         <span class="eyebrow">Settle in Poland</span>
         <h2 class="h2 split" data-split>Your journey doesn't end at <em>graduation.</em></h2>
-        <p class="lede" data-reveal style="--d:.2s">Poland offers structured pathways for international students to move into the workforce and eventually settle permanently. With our guidance, each step is straightforward.</p>
-        <div class="path-photo" data-reveal="clip">
-          <img src="./assets/img/photos/students-campus.jpg" alt="Central Warsaw at sunrise" loading="lazy" data-parallax=".12">
-          <div class="badge"><b><span data-count="99">0</span>%</b><span>Polish visa<br>success rate</span></div>
-        </div>
       </div>
-      <div class="steps" data-steps>
-        <div class="line"><i></i></div>
-        <div class="step"><span class="dot">1</span><span class="kicker">Study</span><h3>Polish student visa</h3><p>Complete your study programme. We help you choose full-time degrees that lead straight into the graduate permit.</p></div>
-        <div class="step"><span class="dot">2</span><span class="kicker">Graduate</span><h3>Nine-month graduate permit</h3><p>Stay for nine months after graduation to find work or start a business, with no sponsor required — and no work permit, because graduates of full-time Polish degrees are exempt. Apply in person while still legally resident.</p></div>
-        <div class="step"><span class="dot">3</span><span class="kicker">Work</span><h3>EU Blue Card</h3><p>Move smoothly to an EU Blue Card or a combined residence-and-work permit for long-term work.</p></div>
-        <div class="step"><span class="dot">4</span><span class="kicker">Settle</span><h3>EU long-term resident</h3><p>Take the final step — long-term resident status after five continuous years of residence, with study time counted at one half.</p></div>
-      </div>
+      <p class="lede" data-reveal style="--d:.2s">Poland offers a structured staircase for international students: study, stay on, work, settle. Each step builds on the last, and we plan the whole climb with you from day one.</p>
     </div>
 
-    <div class="family" data-reveal>
-      <div class="img"><img src="./assets/img/photos/family.jpg" alt="Łazienki Royal Park in Warsaw" loading="lazy"></div>
-      <div class="copy">
-        <span class="eyebrow on-dark">Family migration</span>
-        <h3>Relocating with your family?</h3>
-        <p>Poland lets students bring their partner and children under 18 once they have held residence permits for two years — and makes it straightforward from the EU Blue Card onwards.</p>
-        <div class="pts">
-          <div class="pt"><b>As a student</b><span>After two years on consecutive permits, the current one issued for at least a year.</span></div>
-          <div class="pt"><b>Blue Card families</b><span>Your partner may work with no separate work permit.</span></div>
-          <div class="pt"><b>Expert guidance</b><span>Applications, documents and voivodeship office appointments.</span></div>
+    <div class="stairs" id="relocate">
+      <article class="stair s1" data-reveal style="--d:.05s">
+        <span class="stair-n">01</span>
+        <span class="stair-ico"><svg width="22" height="22"><use href="#i-cap"/></svg></span>
+        <span class="stair-kick">Study</span>
+        <h3>Polish student visa</h3>
+        <p>Complete a full-time degree. We help you choose programmes that lead straight into the graduate permit.</p>
+        <span class="stair-chip">Bachelor's or master's</span>
+      </article>
+      <article class="stair s2" data-reveal style="--d:.15s">
+        <span class="stair-n">02</span>
+        <span class="stair-ico"><svg width="22" height="22"><use href="#i-spark"/></svg></span>
+        <span class="stair-kick">Graduate</span>
+        <h3>Nine-month graduate permit</h3>
+        <p>Stay on to find work or start a business, with no sponsor and no work permit. Apply in person while still legally resident.</p>
+        <span class="stair-chip">9 months</span>
+      </article>
+      <article class="stair s3" data-reveal style="--d:.25s">
+        <span class="stair-n">03</span>
+        <span class="stair-ico"><svg width="22" height="22"><use href="#i-brief"/></svg></span>
+        <span class="stair-kick">Work</span>
+        <h3>EU Blue Card</h3>
+        <p>Move to an EU Blue Card or a combined residence-and-work permit for long-term employment.</p>
+        <span class="stair-chip">Partner may work too</span>
+      </article>
+      <article class="stair s4" data-reveal style="--d:.35s">
+        <img src="./assets/img/photos/students-campus.jpg" alt="" loading="lazy">
+        <span class="stair-flag" aria-hidden="true"></span>
+        <span class="stair-n">04</span>
+        <span class="stair-ico"><svg width="22" height="22"><use href="#i-shield"/></svg></span>
+        <span class="stair-kick">Settle</span>
+        <h3>EU long-term resident</h3>
+        <p>The final step: long-term resident status after five continuous years, with study time counted at one half.</p>
+        <span class="stair-chip">5 years · study counts ½</span>
+      </article>
+      <div class="stair-ground" aria-hidden="true"><i></i></div>
+    </div>
+
+    <div class="path-facts" data-reveal>
+      <div class="fact"><b><span data-count="99">0</span>%</b><span>Polish visa success rate</span></div>
+      <div class="fact"><b>0</b><span>work permits needed by graduates of full-time Polish degrees</span></div>
+      <div class="fact"><b>½</b><span>of your study time counts towards long-term residence</span></div>
+      <a class="btn" href="#contact" data-scroll-to="contact">Plan my route <svg class="arrow" width="18" height="18"><use href="#i-arrow"/></svg></a>
+    </div>
+    <div class="fam" data-reveal>
+      <svg class="fam-rosette" viewBox="0 0 200 200" aria-hidden="true"><use href="#rosette"/></svg>
+      <div class="fam-photo">
+        <img src="./assets/img/photos/family.jpg" alt="Łazienki Royal Park in Warsaw" loading="lazy">
+        <div class="fam-badge">
+          <span class="fam-avatars" aria-hidden="true">
+            <i class="a1"><svg width="18" height="18"><use href="#i-person"/></svg></i>
+            <i class="a2"><svg width="18" height="18"><use href="#i-person"/></svg></i>
+            <i class="a3"><svg width="14" height="14"><use href="#i-person"/></svg></i>
+          </span>
+          <span><b>Your loved ones</b>Partner &amp; children under 18</span>
         </div>
-        <a class="btn light" href="#contact" data-scroll-to="contact">Get family visa help <svg class="arrow" width="18" height="18"><use href="#i-arrow"/></svg></a>
+      </div>
+      <div class="fam-copy">
+        <span class="eyebrow on-dark">Family migration</span>
+        <h3>Relocating with your <em>family?</em></h3>
+        <p>Poland lets students bring their partner and children under 18 once they have held residence permits for two years, and makes it straightforward from the EU Blue Card onwards. Here is when your family can join you.</p>
+        <ol class="fam-line">
+          <li>
+            <span class="fl-dot">1</span>
+            <small>Year 1 · First permit</small>
+            <b>Not yet</b>
+            <p>Your first permit runs 15 months, so reunification can't start from it. We plan the timing from day one.</p>
+          </li>
+          <li class="go">
+            <span class="fl-dot">2</span>
+            <small>Year 2 · As a student</small>
+            <b>Family can join</b>
+            <p>After two years on consecutive permits, with the current one issued for at least a year.</p>
+          </li>
+          <li class="best">
+            <span class="fl-dot">3</span>
+            <small>EU Blue Card</small>
+            <b>Simplest route</b>
+            <p>Your partner may work with no separate work permit.</p>
+          </li>
+        </ol>
+        <div class="fam-help">
+          <span class="fam-help-ico"><svg width="20" height="20"><use href="#i-shield"/></svg></span>
+          <p><b>We handle the paperwork:</b> applications, documents and voivodeship office appointments.</p>
+          <a class="btn light sm" href="#contact" data-scroll-to="contact">Get family visa help <svg class="arrow" width="16" height="16"><use href="#i-arrow"/></svg></a>
+        </div>
       </div>
     </div>
   </div>
@@ -499,24 +559,60 @@
 <!-- =============================== CONTACT =============================== -->
 <section class="contact" id="contact" data-rail-label="Contact" data-dark>
   <div class="contact-shell" data-clip-grow>
+    <div class="flag-sweep" aria-hidden="true"><i></i><i></i></div>
     <svg class="folk-bg" viewBox="0 0 200 200" aria-hidden="true"><use href="#rosette"/></svg>
-    <div class="wrap contact-grid">
-      <div class="on-dark">
+    <div class="wrap pass-grid">
+      <div class="pass-intro on-dark">
         <span class="eyebrow on-dark">Free profile evaluation</span>
-        <h2 class="h2 split" data-split>Evaluate your <em>Poland</em> profile.</h2>
-        <p class="lede" data-reveal style="--d:.2s">Now it's time to evaluate your profile and get a specific route map to study in Poland.</p>
-        <div class="offices">
-          <div class="office" data-reveal style="--d:.1s"><b><svg width="16" height="16"><use href="#i-pin"/></svg>India office</b><span>1st Floor, ALA Corner Complex, Virugambakkam, Chennai - 600092</span></div>
-          <div class="office" data-reveal style="--d:.15s"><b><svg width="16" height="16"><use href="#i-pin"/></svg>UAE office</b><span>Tutee Connect LLC FZ, Meydan Grandstand, Dubai, U.A.E.</span></div>
-          <div class="office" data-reveal style="--d:.2s"><b><svg width="16" height="16"><use href="#i-phone"/></svg>Call us</b><a href="tel:+917010902329">+91 701-090-2329</a><a href="tel:+971553799068">+971 55-3799068</a></div>
-          <div class="office" data-reveal style="--d:.25s"><b><svg width="16" height="16"><use href="#i-mail"/></svg>Email us</b><a href="mailto:info@tuteeconnect.com">info@tuteeconnect.com</a></div>
+        <h2 class="h2 split" data-split>Your boarding pass to <em>Poland</em> starts here.</h2>
+        <p class="lede" data-reveal style="--d:.2s">One free evaluation, three stamps in your passport. Share your details and a counsellor builds your specific route map to study in Poland.</p>
+        <ol class="stamps">
+          <li class="stamp" data-reveal style="--d:.25s;--r:-7deg"><span class="stamp-n">01</span><b>Profile review</b><small>Academics, gaps &amp; finances</small></li>
+          <li class="stamp" data-reveal style="--d:.35s;--r:4deg"><span class="stamp-n">02</span><b>University shortlist</b><small>MSWiA-approved only</small></li>
+          <li class="stamp" data-reveal style="--d:.45s;--r:-3deg"><span class="stamp-n">03</span><b>Visa route map</b><small>Visa D to residence permit</small></li>
+        </ol>
+        <div class="reach" data-reveal style="--d:.3s">
+          <a href="tel:+917358364959"><svg width="16" height="16"><use href="#i-phone"/></svg>+91 73583 64959</a>
+          <a href="mailto:info@tuteeconnect.com"><svg width="16" height="16"><use href="#i-mail"/></svg>info@tuteeconnect.com</a>
+          <a href="https://www.tuteeconnect.com" target="_blank" rel="noopener noreferrer"><svg width="16" height="16"><use href="#i-globe"/></svg>www.tuteeconnect.com</a>
         </div>
+        <ul class="office-line" data-reveal style="--d:.35s">
+          <li><svg width="14" height="14"><use href="#i-pin"/></svg><b>Chennai</b> 1st Floor, ALA Corner Complex, Virugambakkam - 600092</li>
+          <li><svg width="14" height="14"><use href="#i-pin"/></svg><b>Dubai</b> Tutee Connect LLC FZ, Meydan Grandstand, U.A.E.</li>
+        </ul>
       </div>
-      <div class="form-card" data-reveal="right">
-        <span class="free">🎓 Free consultation</span>
-        <h3>Get your route map</h3>
-        <p class="sub">Share your details and an expert counsellor will get in touch with you.</p>
-        <form data-lead-form novalidate>
+
+      <div class="ticket" data-reveal>
+        <div class="ticket-flag" aria-hidden="true"></div>
+        <div class="ticket-top">
+          <div class="ticket-brand"><img src="./assets/img/logo/icon.png" alt="" width="34" height="34"><span>Tutee Connect<small>Profile pass</small></span></div>
+          <span class="ticket-class">Class · Free</span>
+        </div>
+        <div class="ticket-route" aria-hidden="true">
+          <div><small>From</small><b>YOU</b><span>Your home city</span></div>
+          <div class="ticket-path"><i></i><svg width="22" height="22"><use href="#i-plane"/></svg></div>
+          <div class="to"><small>To</small><b>WAW</b><span>Warszawa, Polska</span></div>
+        </div>
+        <div class="ticket-pax" aria-hidden="true">
+          <small>Passenger</small>
+          <b class="pax-empty" data-pax>Your name appears here</b>
+        </div>
+        <div class="ticket-meta" aria-hidden="true">
+          <div><small>Fee</small><b>0 zł</b></div>
+          <div><small>Gate</small><b>Open</b></div>
+          <div><small>Seat</small><b>Yours</b></div>
+          <div class="stamp-free" aria-hidden="true">
+            <svg viewBox="0 0 120 120">
+              <defs><path id="stamp-arc" d="M60,60 m-41,0 a41,41 0 1,1 82,0 a41,41 0 1,1 -82,0"/></defs>
+              <circle cx="60" cy="60" r="56" fill="none" stroke="currentColor" stroke-width="3"/>
+              <circle cx="60" cy="60" r="50" fill="none" stroke="currentColor" stroke-width="1.2"/>
+              <circle cx="60" cy="60" r="31" fill="none" stroke="currentColor" stroke-width="1.2"/>
+              <text font-size="9" font-weight="700" letter-spacing="1.5" fill="currentColor"><textPath href="#stamp-arc" textLength="252" lengthAdjust="spacing">BEZPŁATNIE ★ OCENA PROFILU ★</textPath></text>
+              <text x="60" y="67" text-anchor="middle" fill="currentColor" font-family="Palatino Linotype, Book Antiqua, Georgia, serif" font-style="italic" font-size="21">Free</text>
+            </svg>
+          </div>
+        </div>
+        <form class="ticket-form" data-lead-form novalidate>
   <input type="hidden" name="access_key" value="">
   <input type="hidden" name="subject" value="New Lead from Tutee Connect Landing Page!">
   <input type="hidden" name="from_name" value="Tutee Connect Notification System">
@@ -530,10 +626,13 @@
   </div>
   <div class="field"><input id="c-email" name="email" type="email" placeholder=" " required autocomplete="email"><label for="c-email">Your email *</label></div>
   <input type="hidden" name="destination" value="General Poland Inquiry" data-destination-input>
-  <div class="dest"><svg width="20" height="20"><use href="#i-cap"/></svg><div><small>Enquiry for</small><span data-destination-label>General Poland Inquiry</span></div></div>
-  <button class="btn" type="submit" data-submit-btn>Submit profile</button>
+  <div class="ticket-tear" aria-hidden="true"></div>
+  <div class="ticket-stub">
+    <div class="dest"><svg width="20" height="20"><use href="#i-cap"/></svg><div><small>Enquiry for</small><span data-destination-label>General Poland Inquiry</span></div></div>
+    <div class="barcode" aria-hidden="true"></div>
+    <button class="btn" type="submit" data-submit-btn>Submit profile</button>
+  </div>
 </form>
-
       </div>
     </div>
   </div>
@@ -581,14 +680,14 @@
     </div>
     <div class="footer-bottom">
       <span>© 2026 Tutee Connect. All Rights Reserved.</span>
-      <span class="credit" data-photo-credit>Photography: central Warsaw at sunrise © Quintin Soloviev (CC BY 4.0); Ostrów Tumski, Wrocław © Jg44.89 (CC BY 4.0); Łazienki Royal Park, Warsaw © Mister No (CC BY 3.0); Old Market Square, Poznań by Borzpoz (CC0). Cropped and resized. Via Wikimedia Commons.</span>
+      <span class="credit" data-photo-credit>Photography: central Warsaw at sunrise © Quintin Soloviev (CC BY 4.0); Ostrów Tumski, Wrocław © Jg44.89 (CC BY 4.0); Łazienki Royal Park, Warsaw © Mister No (CC BY 3.0); Old Market Square, Poznań by Borzpoz (CC0); Collegium Novum, Kraków © Igor123121 (CC BY 4.0); Warsaw Spire © AGC Glass Europe (CC BY 2.0); laboratory still life © Shixart1985 (CC BY 2.0). Hero: Castle Square, Warsaw &copy; Radek Kucharski (CC BY 2.0); the Crane, Gda&#324;sk &copy; Sylwiadek (CC BY 3.0); Wawel from above by Galileo01 (CC0); Malbork Castle &copy; DerHexer, edit by Wladyslaw (CC BY 3.0); Morskie Oko &copy; Aneta Pawska (CC BY 3.0). Cropped and resized. Via Wikimedia Commons.</span>
     </div>
-    <div class="big-word" aria-hidden="true">Do zobaczenia</div>
+    <div class="big-word" aria-hidden="true" data-glow-word data-text="Do zobaczenia">Do zobaczenia</div>
   </div>
 </footer>
 
 <div class="fab-wrap">
-  <a class="fab wa" href="https://wa.me/917010902329" target="_blank" rel="noopener noreferrer" aria-label="Chat with us on WhatsApp">
+  <a class="fab wa" href="https://wa.me/917358364959" target="_blank" rel="noopener noreferrer" aria-label="Chat with us on WhatsApp">
     <span class="ico"><svg width="22" height="22"><use href="#i-chat"/></svg></span>
     <span class="txt">Chat with us<small>WhatsApp</small></span>
   </a>
@@ -610,10 +709,11 @@
   <div class="chat-promo"><span>Free consultation available</span><button type="button" data-chat-contact>Book now</button></div>
   <div class="chat-msgs" data-chat-messages>
     <div class="chips" data-chat-chips>
-      <button type="button" data-chat-chip>How to get a Polish Student Visa?</button>
-      <button type="button" data-chat-chip>Tell me about Scholarships</button>
+      <button type="button" data-chat-chip>How do I get a Polish student visa?</button>
       <button type="button" data-chat-chip>Can I work while studying?</button>
-      <button type="button" data-chat-chip>Evaluate My Profile</button>
+      <button type="button" data-chat-chip>Top universities in Poland</button>
+      <button type="button" data-chat-chip>Scholarships and loans</button>
+      <button type="button" data-chat-chip>Can my family join me?</button>
     </div>
     <div class="typing hidden" data-chat-typing><i></i><i></i><i></i></div>
   </div>
