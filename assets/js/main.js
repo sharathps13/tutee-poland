@@ -464,9 +464,13 @@
     run();
   }
 
-  /* Why Poland: vertical scroll drives a horizontal track. A scrubber and a skip
-     button let the reader jump through or past it instead of being held in it. */
-  var HSCROLL_SPEED = 1.6;   // horizontal px travelled per px of vertical scroll
+  /* Why Poland: vertical scroll drives a horizontal track, one card at a time.
+     The scroll is shared out as one stop per card; the track holds still on each
+     stop for part of its share and glides to the next, easing behind the scroll,
+     so a quick flick can't carry the reader past everything. A scrubber and a
+     skip button let the reader jump through or past it instead of being held in it. */
+  var HSCROLL_STEP = 0.6;    // viewport heights of scroll per card
+  var HSCROLL_HOLD = 0.24;   // share of each step spent standing still, at each end
   function initHScroll() {
     var pin = $('[data-hscroll]');
     var track = $('[data-hscroll-track]');
@@ -475,17 +479,58 @@
     var scrub = $('[data-hscroll-scrub]');
     var idxEl = $('[data-hscroll-index]');
     var cards = $$('.why-card', track);
-    var dist = 0, enabled = false, p = 0;
+    var stops = [0], owner = [-1], stopOf = [], ticks = [];
+    var enabled = false, p = 0, x = 0, tx = 0, gliding = false, on = -2;
     snapDots(track, Array.prototype.slice.call(track.children));
 
+    // a stop for the intro, then one that centres each card (the first and last cards can't
+    // centre, so their stops may barely move the track; the focus still steps card to card)
     function measure() {
       enabled = !REDUCED && !isMobile();
-      if (!enabled) { pin.style.height = ''; track.style.transform = ''; return; }
+      track.classList.toggle('hs-on', enabled);
+      if (!enabled) { pin.style.height = ''; track.style.transform = ''; track.classList.remove('has-on'); return; }
       track.style.transform = 'translate3d(0,0,0)';
-      var last = track.lastElementChild.getBoundingClientRect();
-      dist = Math.max(0, last.right - window.innerWidth + parseFloat(getComputedStyle(track).paddingLeft));
-      pin.style.height = (window.innerHeight + dist / HSCROLL_SPEED) + 'px';
+      var vw = window.innerWidth;
+      var dist = Math.max(0, track.lastElementChild.getBoundingClientRect().right - vw + parseFloat(getComputedStyle(track).paddingLeft));
+      stops = [0]; owner = [-1];
+      cards.forEach(function (c, i) {
+        var r = c.getBoundingClientRect();
+        stops.push(clamp(r.left + r.width / 2 - vw / 2, 0, dist)); owner.push(i);
+      });
+      stopOf = cards.map(function (c, i) { return i + 1; });
+      pin.style.height = (window.innerHeight * (1 + (stops.length - 1) * HSCROLL_STEP)) + 'px';
+      ticks.forEach(function (t, i) { t.style.left = (stopQ(stopOf[i]) * 100) + '%'; });
+      x = tx = target(); paint();
     }
+
+    var stopQ = function (j) { return stops.length > 1 ? j / (stops.length - 1) : 0; };
+    // progress → track offset: hold on a stop, ease across to the next, hold again
+    function target() {
+      var k = stops.length - 1;
+      if (k < 1) return stops[0];
+      var seg = p * k, i = Math.min(k - 1, Math.floor(seg));
+      var m = clamp((seg - i - HSCROLL_HOLD) / (1 - 2 * HSCROLL_HOLD), 0, 1);
+      m = m < 0.5 ? 2 * m * m : 1 - Math.pow(-2 * m + 2, 2) / 2;
+      return stops[i] + (stops[i + 1] - stops[i]) * m;
+    }
+
+    function paint() {
+      track.style.transform = 'translate3d(' + (-x).toFixed(1) + 'px,0,0)';
+      var o = owner[Math.round(p * (stops.length - 1))];
+      if (o === on) return;
+      on = o;
+      cards.forEach(function (c, i) { c.classList.toggle('on', i === on); });
+      track.classList.toggle('has-on', on >= 0);
+      var n = Math.max(0, on) + 1;
+      if (idxEl) idxEl.textContent = ('0' + n).slice(-2);
+      if (scrub) scrub.setAttribute('aria-valuenow', String(n));
+    }
+    function glide() {
+      x += (tx - x) * 0.14;
+      if (Math.abs(tx - x) < 0.5) { x = tx; gliding = false; } else frame(glide);
+      paint();
+    }
+
     measure();
     window.addEventListener('resize', measure);
     window.addEventListener('load', measure);
@@ -493,7 +538,7 @@
     // where on the page a given progress (0..1) sits
     function yFor(q) { return pin.getBoundingClientRect().top + window.pageYOffset + clamp(q, 0, 1) * (pin.offsetHeight - window.innerHeight); }
     function goTo(q, smooth) { window.scrollTo({ top: yFor(q), behavior: smooth && !REDUCED ? 'smooth' : 'auto' }); }
-    var cardQ = function (i) { return cards.length > 1 ? i / (cards.length - 1) : 0; };
+    var cardQ = function (i) { return stopQ(stopOf[i] || 0); };
 
     if (scrub) {
       // one tick per card, each a jump target
@@ -503,6 +548,7 @@
         t.setAttribute('aria-label', 'Card ' + (i + 1) + ': ' + ($('h3', c) || c).textContent);
         t.addEventListener('click', function (e) { e.stopPropagation(); goTo(cardQ(i), true); });
         scrub.appendChild(t);
+        ticks.push(t);
       });
       var dragging = false;
       var fromX = function (e) { var r = scrub.getBoundingClientRect(); return (e.clientX - r.left) / r.width; };
@@ -517,7 +563,7 @@
       scrub.addEventListener('pointerup', stop);
       scrub.addEventListener('pointercancel', stop);
       scrub.addEventListener('keydown', function (e) {
-        var n = Math.round(p * (cards.length - 1));
+        var n = Math.max(0, on);
         if (e.key === 'ArrowRight' || e.key === 'ArrowDown') n++;
         else if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') n--;
         else if (e.key === 'Home') n = 0;
@@ -534,11 +580,10 @@
       if (!enabled) return;
       var r = pin.getBoundingClientRect();
       p = clamp(-r.top / Math.max(1, pin.offsetHeight - window.innerHeight), 0, 1);
-      track.style.transform = 'translate3d(' + (-p * dist).toFixed(1) + 'px,0,0)';
       if (nav) nav.style.setProperty('--wp', p.toFixed(4));
-      var n = Math.min(cards.length, Math.round(p * (cards.length - 1)) + 1);
-      if (idxEl) idxEl.textContent = ('0' + n).slice(-2);
-      if (scrub) scrub.setAttribute('aria-valuenow', String(n));
+      tx = target();
+      if (gliding) return;
+      if (Math.abs(tx - x) >= 0.5) { gliding = true; frame(glide); } else paint();
     });
   }
 
@@ -613,6 +658,96 @@
       line.style.setProperty('--lp', clamp((mark - r.top) / r.height, 0, 1).toFixed(4));
       steps.forEach(function (s) { s.classList.toggle('lit', s.getBoundingClientRect().top < mark); });
     });
+  }
+
+  /* Settle in Poland: four steps to climb. Choosing one sends the climber up (or
+     down) to its tread and opens what happens there. */
+  function initClimb() {
+    var root = $('[data-climb]');
+    if (!root) return;
+    var stairs = $('.climb-stairs', root), steps = $$('[data-step]', root), panels = $$('[data-cp]', root);
+    var climber = $('[data-climber]', root), at = $('[data-climb-at]', root);
+    var prev = $('[data-climb-prev]', root), next = $('[data-climb-next]', root);
+    var cur = -1;
+
+    function place() {
+      var s = stairs.getBoundingClientRect(), r = steps[cur].getBoundingClientRect();
+      climber.style.setProperty('--x', (r.left - s.left + r.width / 2).toFixed(1) + 'px');
+      // the tread sits 8px up while the chosen step is lifted
+      climber.style.setProperty('--y', (steps[cur].offsetTop - 8).toFixed(1) + 'px');
+    }
+    function set(i, focus) {
+      i = clamp(i, 0, steps.length - 1);
+      if (i === cur) return;
+      var first = cur < 0;
+      cur = i;
+      steps.forEach(function (b, j) {
+        b.classList.toggle('on', j === cur);
+        b.classList.toggle('done', j < cur);
+        b.setAttribute('aria-selected', String(j === cur));
+        b.tabIndex = j === cur ? 0 : -1;
+      });
+      panels.forEach(function (p, j) { p.hidden = j !== cur; });
+      stairs.style.setProperty('--at', cur);
+      if (at) at.textContent = ('0' + (cur + 1)).slice(-2);
+      if (prev) prev.disabled = cur === 0;
+      if (next) next.disabled = cur === steps.length - 1;
+      if (!first && !REDUCED) { climber.classList.remove('hop'); void climber.offsetWidth; climber.classList.add('hop'); }
+      place();
+      if (focus) steps[cur].focus();
+    }
+    steps.forEach(function (b, i) { b.addEventListener('click', function () { set(i); }); });
+    stairs.addEventListener('keydown', function (e) {
+      var d = { ArrowRight: 1, ArrowDown: 1, ArrowLeft: -1, ArrowUp: -1 }[e.key];
+      if (!d) return;
+      e.preventDefault();
+      set(cur + d, true);
+    });
+    if (prev) prev.addEventListener('click', function () { set(cur - 1); });
+    if (next) next.addEventListener('click', function () { set(cur + 1); });
+    window.addEventListener('resize', place);
+    window.addEventListener('load', place);
+    set(0);
+  }
+
+  /* Family: three stages on a track. The family in the photo shows who is with you
+     at each one; until the reader picks, it plays through them by itself. */
+  function initFamily() {
+    var root = $('[data-fam]');
+    if (!root) return;
+    var stages = $$('[data-fam-stage]', root), details = $$('[data-fam-detail]', root), plane = $('.fam-plane', root);
+    var cur = -1, touched = false, hovering = false, inView = false;
+    function set(i) {
+      i = (i + stages.length) % stages.length;
+      if (i === cur) return;
+      var from = cur;
+      cur = i;
+      root.setAttribute('data-st', String(cur));
+      stages.forEach(function (b, j) {
+        b.classList.toggle('on', j === cur);
+        b.classList.toggle('past', j < cur);
+        b.setAttribute('aria-selected', String(j === cur));
+        b.tabIndex = j === cur ? 0 : -1;
+      });
+      details.forEach(function (d, j) { d.hidden = j !== cur; });
+      // the family flies in when they become able to join
+      if (plane && from === 0 && cur === 1 && !REDUCED) { plane.classList.remove('fly'); void plane.offsetWidth; plane.classList.add('fly'); }
+    }
+    stages.forEach(function (b, i) { b.addEventListener('click', function () { touched = true; set(i); }); });
+    $('.fam-stages', root).addEventListener('keydown', function (e) {
+      var d = { ArrowRight: 1, ArrowLeft: -1 }[e.key];
+      if (!d) return;
+      e.preventDefault(); touched = true;
+      set(clamp(cur + d, 0, stages.length - 1));
+      stages[cur].focus();
+    });
+    root.addEventListener('mouseenter', function () { hovering = true; });
+    root.addEventListener('mouseleave', function () { hovering = false; });
+    if ('IntersectionObserver' in window) {
+      new IntersectionObserver(function (es) { inView = es[0].isIntersecting; }, { threshold: 0.45 }).observe(root);
+    }
+    if (!REDUCED) setInterval(function () { if (!touched && inView && !hovering && !document.hidden) set(cur + 1); }, 4200);
+    set(0);
   }
 
   function initParallax() {
@@ -746,6 +881,23 @@
       lastHome = h; rot = null; still(turn);
     });
 
+    // Scrolling over the dial turns it one service per notch. Past the last service
+    // (or before the first) the scroll is let through, so the page never gets stuck.
+    var wheelSum = 0, wheelAt = 0, WHEEL_GAP = 420;
+    dial.addEventListener('wheel', function (e) {
+      if (e.ctrlKey || Math.abs(e.deltaY) < Math.abs(e.deltaX)) return;
+      var dir = e.deltaY > 0 ? 1 : -1;
+      if ((dir > 0 && cur === n - 1) || (dir < 0 && cur === 0)) { wheelSum = 0; return; }
+      e.preventDefault();
+      var now = performance.now();
+      if (now - wheelAt < WHEEL_GAP) return;             // one turn per gesture, even from a trackpad
+      if (wheelSum && (wheelSum > 0) !== (dir > 0)) wheelSum = 0;
+      wheelSum += e.deltaMode ? dir * 100 : e.deltaY;
+      if (Math.abs(wheelSum) < 40) return;
+      wheelSum = 0; wheelAt = now;
+      pick(cur + dir);
+    }, { passive: false });
+
     // The wheel turns itself until the reader takes over.
     root.addEventListener('mouseenter', function () { hovering = true; });
     root.addEventListener('mouseleave', function () { hovering = false; });
@@ -760,13 +912,14 @@
   }
 
   /* ------------------------------------------------------------------ *
-   * 7. Home universities: league table linked to the map
+   * 7. Home universities: the campus skyline
    * ------------------------------------------------------------------ */
   /* ------------------------------------------------------------------ *
-   * 7a. University details pop-up (home league table + directory cards)
+   * 7a. University details pop-up (home skyline + directory cards)
    * ------------------------------------------------------------------ */
   /* QS World University Rankings 2027 (published 18 June 2026): each ranked Polish
-     institution's WORLD position, by its Polish name. The ank field in the data is
+     institution's WORLD position, by its Polish name. The 
+ank field in the data is
      the position within Poland (1-20); this is the global one. Bands are as QS
      publishes them below #500. Source: QS 2027 table as reported by
      wszystkoconajwazniejsze.pl, cross-checked with the universities' own releases. */
@@ -827,7 +980,7 @@
         '</div>' +
       '</div>';
     document.body.appendChild(el);
-    var land = $('.pl-map .land');
+    var land = $('[data-pl-land]') || $('.pl-map .land');
     if (land) $('.ud-map .land', el).setAttribute('d', land.getAttribute('d'));
     else $('.ud-map', el).hidden = true;
 
@@ -914,71 +1067,151 @@
     return 'x="' + (x + g) + '" y="' + (y + 5) + '" text-anchor="start"';
   }
 
-  function mapCity(name, xy, extra) {
-    return '<g class="city" data-city="' + esc(name) + '"' + (extra || '') + '>' +
-      '<circle class="halo" cx="' + xy[0] + '" cy="' + xy[1] + '" r="7"/>' +
-      '<circle class="dot" cx="' + xy[0] + '" cy="' + xy[1] + '" r="6"/>' +
-      '<text ' + labelAt(name, xy, 6) + '>' + esc(name) + '</text></g>';
-  }
+  /* Campus skyline: the twelve highest-ranked universities stand as a city at dusk,
+     each building as tall as its programme list. Hovering (or tapping) a building
+     lights its windows and beams its card up above it; clicking a lit building
+     opens the full details. Field chips dim the buildings that don't teach it. */
+  var SKY_FIELDS = ['Engineering', 'ICT', 'Business & Law', 'Health & Welfare', 'Natural Sciences', 'Social Sciences', 'Arts & Humanities', 'Education'];
+  var SKY_ROOFS = ['spire', 'step', 'dome', 'gable', 'flat', 'step', 'gable', 'dome', 'spire', 'flat', 'gable', 'step'];
+  var SKY_TONES = ['#2b0b10', '#1d1013', '#33101a', '#0f2b2c', '#26090c', '#1a1d22'];
 
-  function initLeague() {
-    var list = $('[data-league]');
-    if (!list || !window.PL_UNIVERSITIES) return;
+  function initSkyline() {
+    var root = $('[data-sky]');
+    if (!root || !window.PL_UNIVERSITIES) return;
+    var scene = $('[data-sky-scene]', root), line = $('[data-sky-line]', root), card = $('[data-sky-card]', root);
+    var beam = $('[data-sky-beam]', root), tagRow = $('[data-sky-tags]', root), filters = $('[data-sky-filters]', root);
     var unis = window.PL_UNIVERSITIES.filter(function (u) { return u.ranked; })
       .sort(function (a, b) { return a.rank - b.rank; }).slice(0, 12);
-    var cityG = $('[data-map-cities]');
     var count = function (u) { return parseInt(u.programmes, 10) || 0; };
     var max = Math.max.apply(null, unis.map(count).concat(1));
-    var english = function (u) { var e = String(u.alt || '').split(',')[0].trim(); return e && e !== u.name ? e : ''; };
+    var fieldsOf = function (u) { return String(u.programs || '').split(',').map(function (s) { return s.trim(); }).filter(Boolean); };
 
-    list.innerHTML = unis.map(function (u, i) {
-      var en = english(u);
-      return '<li data-i="' + i + '"><button type="button" class="l-row" aria-label="' + esc(u.name) + ', ' + esc(u.location) + ', rank ' + u.rank + ' in Poland, ' + esc(u.programmes) + ' programmes">' +
-        '<span class="l-rank"><small>#</small>' + u.rank + '</span>' +
-        '<span class="l-name"><b>' + esc(u.name) + '</b><span><svg viewBox="0 0 24 24"><use href="#i-pin"/></svg>' + esc(cityOf(u.location)) + (en ? '<em class="l-en"> · ' + esc(en) + '</em>' : '') + '</span></span>' +
-        '<span class="l-prog"><b>' + esc(u.programmes) + '</b><span class="l-bar"><i style="--w:' + (count(u) / max * 100).toFixed(1) + '%"></i></span></span>' +
-      '</button></li>';
+    line.innerHTML = unis.map(function (u, i) {
+      var en = englishName(u);
+      return '<button type="button" class="bld r-' + SKY_ROOFS[i % SKY_ROOFS.length] + '" data-i="' + i + '"' +
+        ' style="--h:' + (30 + 70 * count(u) / max).toFixed(1) + '%;--i:' + i + ';--c:' + SKY_TONES[i % SKY_TONES.length] + ';--lit0:' + (12 + (i * 37) % 30) + '%"' +
+        ' aria-label="#' + u.rank + ' in Poland: ' + esc(en || u.name) + ', ' + esc(cityOf(u.location)) + ', ' + esc(u.programmes) + ' programmes">' +
+        '<span class="bld-shape"><span class="bld-roof"></span><span class="bld-body"><i class="bld-win"></i><i class="bld-lit"></i></span></span>' +
+      '</button>';
     }).join('');
-    var rows = $$('li', list);
+    tagRow.innerHTML = unis.map(function (u) { return '<span>' + u.rank + '</span>'; }).join('');
+    var blds = $$('.bld', line), tags = $$('span', tagRow);
 
-    var cities = [];
-    unis.forEach(function (u) { var c = cityOf(u.location); if (cities.indexOf(c) < 0 && CITY_XY[c]) cities.push(c); });
-    if (cityG) cityG.innerHTML = cities.map(function (c) { return mapCity(c, CITY_XY[c]); }).join('');
+    var fields = SKY_FIELDS.filter(function (f) { return unis.some(function (u) { return fieldsOf(u).indexOf(f) > -1; }); });
+    filters.innerHTML = ['All fields'].concat(fields).map(function (f, k) {
+      var n = k ? unis.filter(function (u) { return fieldsOf(u).indexOf(f) > -1; }).length : unis.length;
+      return '<button type="button" aria-pressed="' + (k ? 'false' : 'true') + '"' + (k ? ' data-field="' + esc(f) + '"' : ' class="on"') + '>' + esc(f) + ' <b>' + n + '</b></button>';
+    }).join('');
+    var chips = $$('button', filters);
 
-    var active = -1, hovering = false, inView = false;
-    function set(i) {
-      active = (i + unis.length) % unis.length;
-      rows.forEach(function (r, j) { r.classList.toggle('on', j === active); });
-      var city = cityOf(unis[active].location);
-      $$('.city', cityG || document.createElement('g')).forEach(function (g) { g.classList.toggle('on', g.getAttribute('data-city') === city); });
+    var active = -1, field = '', hovering = false, touched = false, inView = false, swapT = null;
+    var shown = function (i) { return !field || fieldsOf(unis[i]).indexOf(field) > -1; };
+
+    function fillCard() {
+      var u = unis[active], en = englishName(u), world = qsWorld(u);
+      card.innerHTML =
+        '<div class="sc-top"><span class="sc-rank"><small>#</small>' + u.rank + '</span>' +
+          '<span class="sc-badge">' + (world ? 'QS World #' + esc(world) : 'QS-ranked') + '</span>' +
+          '<span class="sc-badge soft">' + esc(u.type || 'University') + '</span></div>' +
+        '<h3 class="sc-name">' + esc(en || u.name) + '</h3>' +
+        (en ? '<p class="sc-pl">' + esc(u.name) + '</p>' : '') +
+        '<div class="sc-meta"><span><svg viewBox="0 0 24 24"><use href="#i-pin"/></svg>' + esc(cityOf(u.location)) + '</span>' +
+          '<span><b>' + esc(u.programmes) + '</b> programmes</span></div>' +
+        '<div class="sc-fields">' + fieldsOf(u).map(function (f) { return '<span' + (f === field ? ' class="hit"' : '') + '>' + esc(f) + '</span>'; }).join('') + '</div>' +
+        '<button type="button" class="sc-more" data-sky-open>Full details <svg width="16" height="16"><use href="#i-arrow"/></svg></button>';
     }
-    rows.forEach(function (r, i) {
-      var b = $('.l-row', r);
-      r.addEventListener('mouseenter', function () { hovering = true; set(i); });
-      r.addEventListener('mouseleave', function () { hovering = false; });
+
+    // the card slides over its building (clamped inside the scene); the beam joins roof and card
+    function aim() {
+      if (active < 0) return;
+      var s = scene.getBoundingClientRect(), b = $('.bld-shape', blds[active]).getBoundingClientRect();
+      var wrap = card.parentNode.getBoundingClientRect();
+      var cx = b.left + b.width / 2 - s.left;
+      if (getComputedStyle(card).position === 'absolute') {
+        var w = card.offsetWidth, pad = wrap.left - s.left;
+        card.style.setProperty('--cx', clamp(cx - pad - w / 2, 0, wrap.width - w).toFixed(1) + 'px');
+      }
+      var top = card.offsetTop + card.offsetHeight + (wrap.top - s.top) - 2;
+      var roof = b.top - s.top;
+      beam.style.setProperty('--bx', cx.toFixed(1) + 'px');
+      beam.style.setProperty('--by', top.toFixed(1) + 'px');
+      beam.style.setProperty('--bh', Math.max(0, roof - top).toFixed(1) + 'px');
+    }
+
+    function set(i, instant) {
+      i = (i + unis.length) % unis.length;
+      if (i === active) return;
+      active = i;
+      blds.forEach(function (b, j) { b.classList.toggle('on', j === active); });
+      tags.forEach(function (t, j) { t.classList.toggle('on', j === active); });
+      clearTimeout(swapT);
+      if (instant || !card.innerHTML) { fillCard(); aim(); return; }
+      card.classList.add('swap');
+      swapT = setTimeout(function () { fillCard(); card.classList.remove('swap'); aim(); }, 220);
+      aim();
+    }
+    function step(dir) {
+      for (var k = 1; k <= unis.length; k++) {
+        var j = (active + dir * k + unis.length * k) % unis.length;
+        if (shown(j)) { set(j); return j; }
+      }
+      return active;
+    }
+    function open(i) {
+      openUniDetail(unis[i], {
+        ctaLabel: 'Evaluate my profile for this university',
+        onCta: function () { closeUniDetail(); setDestination(unis[i].name); setTimeout(function () { smoothTo('contact'); }, 60); }
+      });
+    }
+
+    blds.forEach(function (b, i) {
+      b.addEventListener('mouseenter', function () { hovering = true; if (shown(i)) set(i); });
       b.addEventListener('focus', function () { set(i); });
       b.addEventListener('click', function () {
-        set(i);
-        openUniDetail(unis[i], {
-          ctaLabel: 'Evaluate my profile for this university',
-          onCta: function () { closeUniDetail(); setDestination(unis[i].name); setTimeout(function () { smoothTo('contact'); }, 60); }
-        });
+        touched = true;
+        if (active === i) open(i); else set(i);
+      });
+      b.addEventListener('keydown', function (e) {
+        if (e.key !== 'ArrowRight' && e.key !== 'ArrowLeft') return;
+        e.preventDefault(); touched = true;
+        blds[step(e.key === 'ArrowRight' ? 1 : -1)].focus();
       });
     });
-    if (cityG) cityG.addEventListener('click', function (e) {
-      var g = e.target.closest('.city'); if (!g) return;
-      var c = g.getAttribute('data-city');
-      for (var k = 1; k <= unis.length; k++) {
-        var j = (active + k) % unis.length;
-        if (cityOf(unis[j].location) === c) { set(j); break; }
-      }
+    line.addEventListener('mouseleave', function () { hovering = false; });
+    card.addEventListener('mouseenter', function () { hovering = true; });
+    card.addEventListener('mouseleave', function () { hovering = false; });
+    card.addEventListener('click', function (e) { if (e.target.closest('[data-sky-open]')) open(active); });
+
+    chips.forEach(function (c) {
+      c.addEventListener('click', function () {
+        touched = true;
+        field = c.getAttribute('data-field') || '';
+        chips.forEach(function (o) { o.classList.toggle('on', o === c); o.setAttribute('aria-pressed', String(o === c)); });
+        blds.forEach(function (b, j) { b.classList.toggle('off', !shown(j)); b.tabIndex = shown(j) ? 0 : -1; });
+        tags.forEach(function (t, j) { t.classList.toggle('off', !shown(j)); });
+        if (!shown(active)) step(1);
+        else { fillCard(); aim(); }
+      });
     });
 
-    if ('IntersectionObserver' in window) {
-      new IntersectionObserver(function (es) { inView = es[0].isIntersecting; }, { threshold: 0.3 }).observe(list);
-    } else inView = true;
-    if (!REDUCED) setInterval(function () { if (inView && !hovering && !document.hidden) set(active + 1); }, 3200);
-    set(0);
+    window.addEventListener('resize', aim);
+    // the buildings rise when the scene arrives; the beam follows the roof up
+    function rise() {
+      if (root.classList.contains('risen')) return;
+      root.classList.add('risen');
+      var t0 = performance.now();
+      (function follow() { aim(); if (performance.now() - t0 < 2200) frame(follow); })();
+    }
+    if ('IntersectionObserver' in window && !REDUCED) {
+      new IntersectionObserver(function (es) {
+        inView = es[0].isIntersecting;
+        if (inView) rise();
+      }, { threshold: 0.3 }).observe(scene);
+    } else { inView = true; rise(); }
+    setTimeout(function () { var r = scene.getBoundingClientRect(); if (r.top < window.innerHeight && r.bottom > 0) rise(); }, 2600);
+    // until the reader takes over, the lights move along the skyline by themselves
+    if (!REDUCED) setInterval(function () { if (!touched && inView && !hovering && !document.hidden) step(1); }, 3600);
+    set(0, true);
   }
 
   /* ------------------------------------------------------------------ *
@@ -2037,7 +2270,7 @@
   initScrollLinks();
   initMarquees();
   initServices(window.PL_SERVICES || []);
-  initLeague();
+  initSkyline();
   initDirectory();
   initReveal();
   initButtons();
@@ -2046,6 +2279,8 @@
   initHScroll();
   initStack();
   initSteps();
+  initClimb();
+  initFamily();
   initParallax();
   initClipGrow();
   initFaq();
