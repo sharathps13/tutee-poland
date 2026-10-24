@@ -1167,19 +1167,33 @@ ank field in the data is
     return 'x="' + (x + g) + '" y="' + (y + 5) + '" text-anchor="start"';
   }
 
-  /* Campus skyline: the twelve highest-ranked universities stand as a city at dusk,
-     each building as tall as its programme list. Hovering (or tapping) a building
-     lights its windows and beams its card up above it; clicking a lit building
-     opens the full details. Field chips dim the buildings that don't teach it. */
+  /* Campus skyline: the twelve highest-ranked universities stand side by side as real
+     campus photographs at dusk, each as tall as its programme list. Hovering (or
+     tapping) one opens it out in full colour with its card floating above it; clicking
+     it again opens the full details. Field chips dim the ones that don't teach it.
+     Photos are from Wikimedia Commons, credited in the card, the footer and CREDITS.md. */
   var SKY_FIELDS = ['Engineering', 'ICT', 'Business & Law', 'Health & Welfare', 'Natural Sciences', 'Social Sciences', 'Arts & Humanities', 'Education'];
-  var SKY_ROOFS = ['spire', 'step', 'dome', 'gable', 'flat', 'step', 'gable', 'dome', 'spire', 'flat', 'gable', 'step'];
-  var SKY_TONES = ['#2b0b10', '#1d1013', '#33101a', '#0f2b2c', '#26090c', '#1a1d22'];
+  // by Polish name: file in assets/img/photos/unis/, focal point, photographer, licence
+  var SKY_PHOTOS = {
+    'Uniwersytet Warszawski': ['uw', '45% 50%', 'Thomas Quine', 'CC BY 2.0'],
+    'Uniwersytet Jagielloński w Krakowie': ['uj', '30% 50%', 'Igor123121', 'CC BY 4.0'],
+    'Politechnika Warszawska': ['pw', '50% 40%', 'Cybularny', 'CC BY 4.0'],
+    'Uniwersytet im. Adama Mickiewicza w Poznaniu': ['amu', '50% 35%', 'Аимаина хикари', 'CC0'],
+    'Akademia Górniczo-Hutnicza im. Stanisława Staszica w Krakowie': ['agh', '48% 45%', 'Zyxist', 'CC0'],
+    'Politechnika Gdańska': ['pg', '50% 45%', 'Asik29', 'CC BY 4.0'],
+    'Uniwersytet Wrocławski': ['uwr', '40% 35%', 'Palickap', 'CC BY 4.0'],
+    'Uniwersytet Gdański': ['ug', '50% 45%', 'Artur Andrzej', 'CC0'],
+    'Politechnika Wrocławska': ['pwr', '35% 40%', 'Daniel.zolopa', 'CC BY 4.0'],
+    'Politechnika Krakowska im. Tadeusza Kościuszki': ['pk', '30% 50%', 'Politechnika Krakowska', 'CC0'],
+    'Politechnika Łódzka': ['pl', '45% 50%', 'Qasinka', 'CC0'],
+    'Uniwersytet Mikołaja Kopernika w Toruniu': ['umk', '50% 35%', 'Bydgoszczanin z miłości', 'CC BY 4.0']
+  };
 
   function initSkyline() {
     var root = $('[data-sky]');
     if (!root || !window.PL_UNIVERSITIES) return;
     var scene = $('[data-sky-scene]', root), line = $('[data-sky-line]', root), card = $('[data-sky-card]', root);
-    var beam = $('[data-sky-beam]', root), tagRow = $('[data-sky-tags]', root), filters = $('[data-sky-filters]', root);
+    var filters = $('[data-sky-filters]', root);
     var unis = window.PL_UNIVERSITIES.filter(function (u) { return u.ranked; })
       .sort(function (a, b) { return a.rank - b.rank; }).slice(0, 12);
     var count = function (u) { return parseInt(u.programmes, 10) || 0; };
@@ -1187,15 +1201,16 @@ ank field in the data is
     var fieldsOf = function (u) { return String(u.programs || '').split(',').map(function (s) { return s.trim(); }).filter(Boolean); };
 
     line.innerHTML = unis.map(function (u, i) {
-      var en = englishName(u);
-      return '<button type="button" class="bld r-' + SKY_ROOFS[i % SKY_ROOFS.length] + '" data-i="' + i + '"' +
-        ' style="--h:' + (30 + 70 * count(u) / max).toFixed(1) + '%;--i:' + i + ';--c:' + SKY_TONES[i % SKY_TONES.length] + ';--lit0:' + (12 + (i * 37) % 30) + '%"' +
+      var en = englishName(u), ph = SKY_PHOTOS[u.name];
+      return '<button type="button" class="bld" data-i="' + i + '"' +
+        ' style="--h:' + (34 + 66 * count(u) / max).toFixed(1) + '%;--i:' + i + (ph ? ';--fx:' + ph[1] : '') + '"' +
         ' aria-label="#' + u.rank + ' in Poland: ' + esc(en || u.name) + ', ' + esc(cityOf(u.location)) + ', ' + esc(u.programmes) + ' programmes">' +
-        '<span class="bld-shape"><span class="bld-roof"></span><span class="bld-body"><i class="bld-win"></i><i class="bld-lit"></i></span></span>' +
+        (ph ? '<img src="./assets/img/photos/unis/' + ph[0] + '.jpg" alt="" loading="lazy" decoding="async">' : '') +
+        '<span class="bld-city">' + esc(cityOf(u.location)) + '</span>' +
+        '<span class="bld-rank"><small>#</small>' + u.rank + '</span>' +
       '</button>';
     }).join('');
-    tagRow.innerHTML = unis.map(function (u) { return '<span>' + u.rank + '</span>'; }).join('');
-    var blds = $$('.bld', line), tags = $$('span', tagRow);
+    var blds = $$('.bld', line);
 
     var fields = SKY_FIELDS.filter(function (f) { return unis.some(function (u) { return fieldsOf(u).indexOf(f) > -1; }); });
     filters.innerHTML = ['All fields'].concat(fields).map(function (f, k) {
@@ -1204,11 +1219,11 @@ ank field in the data is
     }).join('');
     var chips = $$('button', filters);
 
-    var active = -1, field = '', hovering = false, touched = false, inView = false, swapT = null;
+    var active = -1, field = '', hovering = false, touched = false, inView = false, swapT = null, hoverT = null, followUntil = 0;
     var shown = function (i) { return !field || fieldsOf(unis[i]).indexOf(field) > -1; };
 
     function fillCard() {
-      var u = unis[active], en = englishName(u), world = qsWorld(u);
+      var u = unis[active], en = englishName(u), world = qsWorld(u), ph = SKY_PHOTOS[u.name];
       card.innerHTML =
         '<div class="sc-top"><span class="sc-rank"><small>#</small>' + u.rank + '</span>' +
           '<span class="sc-badge">' + (world ? 'QS World #' + esc(world) : 'QS-ranked') + '</span>' +
@@ -1218,24 +1233,29 @@ ank field in the data is
         '<div class="sc-meta"><span><svg viewBox="0 0 24 24"><use href="#i-pin"/></svg>' + esc(cityOf(u.location)) + '</span>' +
           '<span><b>' + esc(u.programmes) + '</b> programmes</span></div>' +
         '<div class="sc-fields">' + fieldsOf(u).map(function (f) { return '<span' + (f === field ? ' class="hit"' : '') + '>' + esc(f) + '</span>'; }).join('') + '</div>' +
-        '<button type="button" class="sc-more" data-sky-open>Full details <svg width="16" height="16"><use href="#i-arrow"/></svg></button>';
+        '<div class="sc-foot"><button type="button" class="sc-more" data-sky-open>Full details <svg width="16" height="16"><use href="#i-arrow"/></svg></button>' +
+          (ph ? '<p class="sc-credit">Photo: ' + esc(ph[2]) + ' (' + ph[3] + ')</p>' : '') + '</div>';
     }
 
-    // the card slides over its building (clamped inside the scene); the beam joins roof and card
+    // the card floats above its photo (clamped inside the scene) with the caret over it;
+    // on phones it sits in the flow above the skyline and only the caret moves
     function aim() {
       if (active < 0) return;
-      var s = scene.getBoundingClientRect(), b = $('.bld-shape', blds[active]).getBoundingClientRect();
-      var wrap = card.parentNode.getBoundingClientRect();
-      var cx = b.left + b.width / 2 - s.left;
+      var s = scene.getBoundingClientRect(), b = blds[active].getBoundingClientRect();
+      var cx = b.left + b.width / 2 - s.left, w = card.offsetWidth, left = card.offsetLeft;
       if (getComputedStyle(card).position === 'absolute') {
-        var w = card.offsetWidth, pad = wrap.left - s.left;
-        card.style.setProperty('--cx', clamp(cx - pad - w / 2, 0, wrap.width - w).toFixed(1) + 'px');
+        left = clamp(cx - w / 2, 16, s.width - w - 16);
+        card.style.setProperty('--cx', left.toFixed(1) + 'px');
+        card.style.setProperty('--cy', Math.max(16, b.top - s.top - card.offsetHeight - 18).toFixed(1) + 'px');
       }
-      var top = card.offsetTop + card.offsetHeight + (wrap.top - s.top) - 2;
-      var roof = b.top - s.top;
-      beam.style.setProperty('--bx', cx.toFixed(1) + 'px');
-      beam.style.setProperty('--by', top.toFixed(1) + 'px');
-      beam.style.setProperty('--bh', Math.max(0, roof - top).toFixed(1) + 'px');
+      card.style.setProperty('--caret', clamp(cx - left, 26, w - 26).toFixed(1) + 'px');
+    }
+    // keep aiming while the photos slide to their new widths
+    function follow(ms) {
+      var running = followUntil > performance.now();
+      followUntil = Math.max(followUntil, performance.now() + ms);
+      if (running) return;
+      (function tick() { aim(); if (performance.now() < followUntil) frame(tick); })();
     }
 
     function set(i, instant) {
@@ -1243,12 +1263,11 @@ ank field in the data is
       if (i === active) return;
       active = i;
       blds.forEach(function (b, j) { b.classList.toggle('on', j === active); });
-      tags.forEach(function (t, j) { t.classList.toggle('on', j === active); });
       clearTimeout(swapT);
-      if (instant || !card.innerHTML) { fillCard(); aim(); return; }
+      if (instant || !card.innerHTML) { fillCard(); follow(900); return; }
       card.classList.add('swap');
       swapT = setTimeout(function () { fillCard(); card.classList.remove('swap'); aim(); }, 220);
-      aim();
+      follow(900);
     }
     function step(dir) {
       for (var k = 1; k <= unis.length; k++) {
@@ -1264,12 +1283,28 @@ ank field in the data is
       });
     }
 
+    // Hover opens a photo only when the mouse really moves onto it (after a short dwell):
+    // opening one reshuffles the widths under a still cursor, which must not chain on.
+    line.addEventListener('pointermove', function (e) {
+      if (e.pointerType !== 'mouse') return;
+      var b = e.target.closest('.bld');
+      if (!b) return;
+      var i = +b.getAttribute('data-i');
+      hovering = true;
+      clearTimeout(hoverT);
+      if (i !== active && shown(i)) hoverT = setTimeout(function () { set(i); }, 110);
+    });
+    line.addEventListener('pointerleave', function () { hovering = false; clearTimeout(hoverT); });
+    // a first tap opens a photo out, a second opens the details; keyboard focus opens it out
+    var pressing = false, wasOpen = false;
     blds.forEach(function (b, i) {
-      b.addEventListener('mouseenter', function () { hovering = true; if (shown(i)) set(i); });
-      b.addEventListener('focus', function () { set(i); });
+      b.addEventListener('pointerdown', function () { pressing = true; wasOpen = active === i; });
+      b.addEventListener('focus', function () { if (!pressing) set(i); });
       b.addEventListener('click', function () {
-        touched = true;
-        if (active === i) open(i); else set(i);
+        var again = pressing ? wasOpen : active === i;
+        pressing = false; touched = true;
+        clearTimeout(hoverT);
+        if (again) open(i); else set(i);
       });
       b.addEventListener('keydown', function (e) {
         if (e.key !== 'ArrowRight' && e.key !== 'ArrowLeft') return;
@@ -1277,7 +1312,6 @@ ank field in the data is
         blds[step(e.key === 'ArrowRight' ? 1 : -1)].focus();
       });
     });
-    line.addEventListener('mouseleave', function () { hovering = false; });
     card.addEventListener('mouseenter', function () { hovering = true; });
     card.addEventListener('mouseleave', function () { hovering = false; });
     card.addEventListener('click', function (e) { if (e.target.closest('[data-sky-open]')) open(active); });
@@ -1288,19 +1322,17 @@ ank field in the data is
         field = c.getAttribute('data-field') || '';
         chips.forEach(function (o) { o.classList.toggle('on', o === c); o.setAttribute('aria-pressed', String(o === c)); });
         blds.forEach(function (b, j) { b.classList.toggle('off', !shown(j)); b.tabIndex = shown(j) ? 0 : -1; });
-        tags.forEach(function (t, j) { t.classList.toggle('off', !shown(j)); });
         if (!shown(active)) step(1);
         else { fillCard(); aim(); }
       });
     });
 
     window.addEventListener('resize', aim);
-    // the buildings rise when the scene arrives; the beam follows the roof up
+    // the photos rise out of the water when the scene arrives
     function rise() {
       if (root.classList.contains('risen')) return;
       root.classList.add('risen');
-      var t0 = performance.now();
-      (function follow() { aim(); if (performance.now() - t0 < 2200) frame(follow); })();
+      follow(400);
     }
     if ('IntersectionObserver' in window && !REDUCED) {
       new IntersectionObserver(function (es) {
@@ -1309,8 +1341,8 @@ ank field in the data is
       }, { threshold: 0.3 }).observe(scene);
     } else { inView = true; rise(); }
     setTimeout(function () { var r = scene.getBoundingClientRect(); if (r.top < window.innerHeight && r.bottom > 0) rise(); }, 2600);
-    // until the reader takes over, the lights move along the skyline by themselves
-    if (!REDUCED) setInterval(function () { if (!touched && inView && !hovering && !document.hidden) step(1); }, 3600);
+    // until the reader takes over, the skyline walks through the universities by itself
+    if (!REDUCED) setInterval(function () { if (!touched && inView && !hovering && !document.hidden) step(1); }, 4200);
     set(0, true);
   }
 

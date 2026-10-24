@@ -197,3 +197,39 @@ only, and no identifiable person as the subject.
 | `morskie-oko.jpg` | Morskie Oko, Tatra Mountains, at dawn | [Morskie Oko o poranku](https://commons.wikimedia.org/wiki/File:Morskie_Oko_o_poranku.jpg) | Aneta Pawska | CC BY 3.0 |
 
 The footer credit line in `index.html` names all five.
+
+## University skyline photographs (added 2026-10-24)
+
+Twelve campus photographs for the "Top ranked universities" skyline on the home page, one
+per QS-ranked university, in `assets/img/photos/unis/`. Same rules as above: CC0 / CC BY
+only (no SA, NC or ND), and no identifiable person as the subject. Each was taken from
+Commons' 1600px render and resized to fit within 960×1200 at quality 76. They are shown
+with `object-fit: cover`, so their shape does not affect layout; the focal point for each
+narrow panel is set in `SKY_PHOTOS` in `assets/js/main.js`, which also holds the credit
+shown in the card. The footer credit line names all twelve.
+
+| File | University | Subject | Source | Author | Licence |
+| --- | --- | --- | --- | --- | --- |
+| `uw.jpg` | #1 University of Warsaw | Main gates on Krakowskie Przedmieście, by night | [University gates (22022358368).jpg](https://commons.wikimedia.org/wiki/File:University_gates_%2822022358368%29.jpg) | Thomas Quine | CC BY 2.0 |
+| `uj.jpg` | #2 Jagiellonian University | Collegium Maius facade, Jagiellońska Street, Kraków | [Jagiellonian University, Collegium Maius facade, 15 Jagiellońska Street, Old Town, Kraków, Poland.jpg](https://commons.wikimedia.org/wiki/File:Jagiellonian_University%2C_Collegium_Maius_facade%2C_15_Jagiello%C5%84ska_Street%2C_Old_Town%2C_Krak%C3%B3w%2C_Poland.jpg) | Igor123121 | CC BY 4.0 |
+| `pw.jpg` | #3 Warsaw University of Technology | Main Building atrium and glass roof | [2025 Warszawa Gmach Główny Politechniki Warszawskiej, wnętrze, 1.jpg](https://commons.wikimedia.org/wiki/File:2025_Warszawa_Gmach_G%C5%82%C3%B3wny_Politechniki_Warszawskiej%2C_wn%C4%99trze%2C_1.jpg) | Cybularny | CC BY 4.0 |
+| `amu.jpg` | #4 Adam Mickiewicz University | Collegium Minus, Poznań | [Collegium Minus w Poznaniu 03.jpg](https://commons.wikimedia.org/wiki/File:Collegium_Minus_w_Poznaniu_03.jpg) | Аимаина хикари | CC0 |
+| `agh.jpg` | #5 AGH University of Krakow | Main building A0, al. Mickiewicza | [Agh cracow a0 building.JPG](https://commons.wikimedia.org/wiki/File:Agh_cracow_a0_building.JPG) | Zyxist | CC0 |
+| `pg.jpg` | #6 Gdańsk University of Technology | Main Building at night | [Gdańsk University of Technology.jpg](https://commons.wikimedia.org/wiki/File:Gda%C5%84sk_University_of_Technology.jpg) | Asik29 | CC BY 4.0 |
+| `uwr.jpg` | #7 University of Wrocław | Collegium Maximum (main building) | [Wrocław, Collegium Maximum (4).jpg](https://commons.wikimedia.org/wiki/File:Wroc%C5%82aw%2C_Collegium_Maximum_%284%29.jpg) | Palickap | CC BY 4.0 |
+| `ug.jpg` | #8 University of Gdańsk | Faculty of Social Sciences, Oliwa campus | [Gdańsk Oliwa - Uniwersytet Gdański Wydział Nauk Społecznych.JPG](https://commons.wikimedia.org/wiki/File:Gda%C5%84sk_Oliwa_-_Uniwersytet_Gda%C5%84ski_Wydzia%C5%82_Nauk_Spo%C5%82ecznych.JPG) | Artur Andrzej | CC0 |
+| `pwr.jpg` | #9 Wrocław University of Science and Technology | Main building entrance | [Wrocław, Budynek główny Politechniki Wrocławskiej 00565.jpg](https://commons.wikimedia.org/wiki/File:Wroc%C5%82aw%2C_Budynek_g%C5%82%C3%B3wny_Politechniki_Wroc%C5%82awskiej_00565.jpg) | Daniel.zolopa | CC BY 4.0 |
+| `pk.jpg` | #10 Cracow University of Technology | Environmental Aerodynamics Laboratory at dusk | [Laboratorium Aerodynamiki Środowiskowej PK.jpg](https://commons.wikimedia.org/wiki/File:Laboratorium_Aerodynamiki_%C5%9Arodowiskowej_PK.jpg) | Politechnika Krakowska | CC0 |
+| `pl.jpg` | #11 Lodz University of Technology | Institute building (IFE) | [2023 Lodz IFE.jpg](https://commons.wikimedia.org/wiki/File:2023_Lodz_IFE.jpg) | Qasinka | CC0 |
+| `umk.jpg` | #12 Nicolaus Copernicus University | Collegium Maximum, Toruń | [Collegium Maximum Uniwersytetu Mikołaja Kopernika w Toruniu.jpg](https://commons.wikimedia.org/wiki/File:Collegium_Maximum_Uniwersytetu_Miko%C5%82aja_Kopernika_w_Toruniu.jpg) | Bydgoszczanin z miłości | CC BY 4.0 |
+
+People checks, each made at full resolution:
+
+* `agh.jpg` — a pedestrian walks along the left edge of the original. The left 22% of
+  the frame was cropped away, which removes him.
+* `uwr.jpg` — a group of visitors stands at the entrance along the bottom of the
+  original, several facing the camera. The bottom 18% was cropped away.
+* `amu.jpg` — one tiny figure at the entrance at distance; no face resolves. Uncropped.
+* Rejected: `File:Budynek Wydziału Architektury PK.jpg` (CC0) was the first choice for
+  Cracow University of Technology. Students sit on benches along the path in the middle
+  distance and several faces resolve clearly, so it was replaced by the laboratory frame.
