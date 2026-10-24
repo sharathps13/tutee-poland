@@ -466,9 +466,9 @@
 
   /* Why Poland: vertical scroll drives a horizontal track, one card at a time.
      The scroll is shared out as one stop per card and the track glides between
-     them, easing behind the scroll. Every card is a stop a single scroll can't
-     run through (see below). A scrubber and a skip button let the reader jump
-     through or past it instead of being held in it. */
+     them, easing behind the scroll. Each scroll moves exactly one card (see
+     below). A scrubber and a skip button let the reader jump through or past it
+     instead of being held in it. */
   var HSCROLL_STEP = 0.36;   // viewport heights of scroll per card…
   var HSCROLL_STEP_MIN = 260, HSCROLL_STEP_MAX = 380;   // …kept within these, in px
   var HSCROLL_HOLD = 0.08;   // share of each step spent standing still, at each end
@@ -539,7 +539,7 @@
 
     // where on the page a given progress (0..1) sits
     function yFor(q) { return pin.getBoundingClientRect().top + window.pageYOffset + clamp(q, 0, 1) * (pin.offsetHeight - window.innerHeight); }
-    function goTo(q, smooth) { driving = false; held = -1; window.scrollTo({ top: yFor(q), behavior: smooth && !REDUCED ? 'smooth' : 'auto' }); }
+    function goTo(q, smooth) { driving = false; pending = 0; window.scrollTo({ top: yFor(q), behavior: smooth && !REDUCED ? 'smooth' : 'auto' }); }
     var cardQ = function (i) { return stopQ(stopOf[i] || 0); };
 
     if (scrub) {
@@ -578,85 +578,102 @@
     var skip = $('[data-hscroll-skip]');
     if (skip) skip.addEventListener('click', function () { if (!smoothTo('services')) goTo(1, true); });
 
-    // Scrolling here moves the cards in step with the wheel or finger, so a small scroll
-    // stays small. But every card is a stop that one scroll can't run through: a move that
-    // reaches a card ends on it, and the card holds until the reader starts a new scroll
-    // (a short pause) or keeps pushing for a moment. A hard flick therefore lands on the
-    // next card rather than past it. At either end the page scrolls on as usual.
-    var HOLD_NEW = 220, HOLD_PUSH = 650;   // ms a card holds against a new / an ongoing scroll
-    var held = -1, heldAt = 0, lastInput = 0, vy = 0, driving = false, lastKey = 0, touchY = null;
+    // One card per scroll. While the cards are on screen, any scroll (the lightest touch
+    // of a trackpad, a hard flick, a long spin of the wheel) slides exactly one card in and
+    // the rest of that scroll is absorbed. The next scroll, after a short pause or a fresh
+    // push rising out of the last one's glide, moves the next card; one that comes while a
+    // card is still sliding in is kept and played when it lands, so no scroll is lost.
+    // Arriving from above or below lands on the first or last stop, and at either end a
+    // new scroll lets the page carry on.
+    var OUT = -1, END = -2;   // stopFor: not near the section / at its edge, heading out
+    var vy = 0, driving = false, pending = 0, used = false, touchY = null, touchUsed = false;
+    var lastWheel = 0, lastDelta = 0, lastDir = 0, gestureAt = 0;
     function pinned() {
       if (!enabled) return false;
       var r = pin.getBoundingClientRect();
       return r.top <= 1 && r.bottom >= window.innerHeight - 1;
     }
     var stopY = function (j) { return yFor(stopQ(j)); };
-    // ease the page toward vy; the track already glides behind the scroll
-    function drive() {
-      if (!driving) return;                                                // a key or the scrubber took over
-      var cur = window.pageYOffset, d = vy - cur;
-      if (Math.abs(d) < 1) { window.scrollTo({ top: vy, behavior: 'auto' }); driving = false; return; }
-      window.scrollTo({ top: cur + (d > 0 ? 1 : -1) * Math.max(1, Math.abs(d) * 0.3), behavior: 'auto' });
-      frame(drive);
+    // the stop a scroll this way leads to; from outside, only if this scroll (d px) reaches the section
+    function stopFor(dir, d) {
+      if (!enabled) return OUT;
+      var y = driving ? vy : window.pageYOffset, k = stops.length - 1, j;
+      if (dir > 0) {
+        if (y < stopY(0) - 1) return d && y + d >= stopY(0) ? 0 : OUT;
+        for (j = 0; j <= k; j++) if (stopY(j) > y + 1) return j;
+      } else {
+        if (y > stopY(k) + 1) return d && y + d <= stopY(k) ? k : OUT;
+        for (j = k; j >= 0; j--) if (stopY(j) < y - 1) return j;
+      }
+      return END;
     }
-    // apply a scroll of d px; false when it isn't ours and the page should scroll natively
-    function move(d, now) {
-      var gap = now - lastInput;
-      lastInput = now;
-      var y = driving ? vy : window.pageYOffset, k = stops.length - 1, dir = d > 0 ? 1 : -1;
-      if (held >= 0) {
-        if (Math.abs(y - stopY(held)) > 2) held = -1;                        // left it some other way
-        else if (now - heldAt < (gap > 150 ? HOLD_NEW : HOLD_PUSH)) return true;
-        else held = -1;
-      }
-      var first = stopY(0), last = stopY(k);
-      if (!enabled || (dir > 0 ? (y >= last - 1 || y + d <= first) : (y <= first + 1 || y + d >= last))) return false;
-      var ny = y + d;
-      for (var j = 0; j <= k; j++) {
-        var jj = dir > 0 ? j : k - j, s = stopY(jj);
-        if (dir > 0 ? (s > y + 1 && s <= ny) : (s < y - 1 && s >= ny)) { ny = s; held = jj; heldAt = now; break; }
-      }
-      vy = ny;
+    // slide the page to a stop (the track glides behind it), then play a kept scroll
+    function slideTo(j) {
+      vy = stopY(j);
       if (!driving) { driving = true; frame(drive); }
-      return true;
     }
+    function drive() {
+      if (!driving) return;                                                // the scrubber took over
+      var cur = window.pageYOffset, d = vy - cur;
+      if (Math.abs(d) >= 1) {
+        window.scrollTo({ top: cur + (d > 0 ? 1 : -1) * Math.max(1, Math.abs(d) * 0.24), behavior: 'auto' });
+        frame(drive);
+        return;
+      }
+      window.scrollTo({ top: vy, behavior: 'auto' });
+      driving = false;
+      var dir = pending, t;
+      pending = 0;
+      if (dir && (t = stopFor(dir)) >= 0) slideTo(t);
+    }
+    // a scroll that wants to move a card: now, or as soon as the current one lands
+    function want(dir, t) {
+      if (driving) pending = dir; else slideTo(t);
+    }
+
     window.addEventListener('wheel', function (e) {
-      if (e.ctrlKey || Math.abs(e.deltaY) < Math.abs(e.deltaX)) return;
-      var d = e.deltaY * (e.deltaMode === 1 ? 40 : e.deltaMode === 2 ? window.innerHeight : 1);
-      if (move(d, performance.now())) e.preventDefault();
+      if (e.ctrlKey || !e.deltaY || Math.abs(e.deltaY) < Math.abs(e.deltaX)) return;
+      var now = performance.now(), ad = Math.abs(e.deltaY), dir = e.deltaY > 0 ? 1 : -1;
+      // a new scroll: after a pause, the other way, or a push clearly rising out of a dying glide
+      if (now - lastWheel > 150 || dir !== lastDir || (now - gestureAt > 350 && ad > lastDelta * 1.6 + 4)) { used = false; gestureAt = now; }
+      lastWheel = now; lastDelta = ad; lastDir = dir;
+      var t = stopFor(dir, e.deltaY * (e.deltaMode === 1 ? 40 : e.deltaMode === 2 ? window.innerHeight : 1));
+      if (t === OUT) return;
+      if (t === END) { if (used || driving) e.preventDefault(); return; }   // only a new scroll leaves
+      e.preventDefault();
+      if (used) return;
+      used = true;
+      want(dir, t);
     }, { passive: false });
-    // touch screens wide enough to pin (tablets) follow the finger the same way
+
+    // touch screens wide enough to pin (tablets): one swipe, one card
     window.addEventListener('touchstart', function (e) {
       touchY = enabled && e.touches.length === 1 && !e.target.closest('[data-hscroll-nav]') ? e.touches[0].clientY : null;
-      lastInput = 0;                                                       // a new touch is a new scroll
+      touchUsed = false;
     }, { passive: true });
     window.addEventListener('touchmove', function (e) {
       if (touchY === null) return;
-      var y = e.touches[0].clientY, d = (touchY - y) * 1.4;
-      touchY = y;
-      if (Math.abs(d) >= 0.5 && move(d, performance.now())) e.preventDefault();
+      var dy = touchY - e.touches[0].clientY, dir = dy > 0 ? 1 : -1;
+      if (Math.abs(dy) < 6) return;
+      var t = stopFor(dir, dy);
+      if (t === OUT || (t === END && !touchUsed && !driving)) { touchY = null; return; }   // the page scrolls on
+      e.preventDefault();
+      if (touchUsed || t === END) return;
+      touchUsed = true;
+      want(dir, t);
     }, { passive: false });
     window.addEventListener('touchend', function () { touchY = null; });
 
-    // the stop a key press leads to, or -1 when it should leave the section
-    function nextStop(dir) {
-      var k = stops.length - 1, at = p * k, c = Math.round(at);
-      var t = Math.abs(at - c) > 0.12 ? (dir > 0 ? Math.ceil(at) : Math.floor(at)) : c + dir;
-      return t < 0 || t > k ? -1 : t;
-    }
     window.addEventListener('keydown', function (e) {
       if (e.altKey || e.ctrlKey || e.metaKey || !pinned()) return;
       if (e.target.closest && e.target.closest('a, button, input, textarea, select, [contenteditable], [role="slider"]')) return;
       var dir = { ArrowDown: 1, PageDown: 1, ' ': 1, ArrowUp: -1, PageUp: -1 }[e.key];
       if (!dir) return;
       if (e.key === ' ' && e.shiftKey) dir = -1;
-      var now = performance.now();
-      if (now - lastKey < 350) { e.preventDefault(); return; }
-      var t = nextStop(dir);
+      var t = stopFor(dir);
       if (t < 0) return;
       e.preventDefault();
-      lastKey = now; held = -1; driving = false;
-      goTo(stopQ(t), true);
+      want(dir, t);
     });
 
     addScene(function () {
