@@ -768,13 +768,34 @@
     var stairs = $('.climb-stairs', root), steps = $$('[data-step]', root), panels = $$('[data-cp]', root);
     var climber = $('[data-climber]', root), at = $('[data-climb-at]', root);
     var prev = $('[data-climb-prev]', root), next = $('[data-climb-next]', root);
-    var cur = -1;
+    var cur = -1, pos = null, hopId = 0;   // pos: where the climber is drawn right now
 
-    function place() {
+    // where the climber stands on the chosen step (its tread sits 8px up while the step is lifted)
+    function spot() {
       var s = stairs.getBoundingClientRect(), r = steps[cur].getBoundingClientRect();
-      climber.style.setProperty('--x', (r.left - s.left + r.width / 2).toFixed(1) + 'px');
-      // the tread sits 8px up while the chosen step is lifted
-      climber.style.setProperty('--y', (steps[cur].offsetTop - 8).toFixed(1) + 'px');
+      return { x: r.left - s.left + r.width / 2, y: steps[cur].offsetTop - 8 };
+    }
+    function draw(p) {
+      pos = p;
+      climber.style.transform = 'translate(' + p.x.toFixed(1) + 'px,' + p.y.toFixed(1) + 'px) translate(-50%, calc(-100% - 14px))';
+    }
+    // Hop in an arc from wherever the climber is drawn right now. A new choice made
+    // mid-hop carries on from that point instead of restarting from the ground, so
+    // quick clicks give one smooth path, never a stutter.
+    function place(hop) {
+      var to = spot(), id = ++hopId;
+      if (!hop || !pos || REDUCED) { draw(to); return; }
+      var from = pos, t0 = performance.now(), dur = 620;
+      var lift = 26 + Math.min(34, Math.abs(to.x - from.x) * 0.12);
+      climber.classList.remove('land');
+      (function tick() {
+        if (id !== hopId) return;                                          // a newer hop took over from here
+        var k = clamp((performance.now() - t0) / dur, 0, 1);
+        var e = k < 0.5 ? 4 * k * k * k : 1 - Math.pow(-2 * k + 2, 3) / 2;
+        draw({ x: from.x + (to.x - from.x) * e, y: from.y + (to.y - from.y) * e - Math.sin(Math.PI * k) * lift });
+        if (k < 1) frame(tick);
+        else { void climber.offsetWidth; climber.classList.add('land'); }
+      })();
     }
     function set(i, focus) {
       i = clamp(i, 0, steps.length - 1);
@@ -792,8 +813,7 @@
       if (at) at.textContent = ('0' + (cur + 1)).slice(-2);
       if (prev) prev.disabled = cur === 0;
       if (next) next.disabled = cur === steps.length - 1;
-      if (!first && !REDUCED) { climber.classList.remove('hop'); void climber.offsetWidth; climber.classList.add('hop'); }
-      place();
+      place(!first);
       if (focus) steps[cur].focus();
     }
     steps.forEach(function (b, i) { b.addEventListener('click', function () { set(i); }); });
@@ -805,8 +825,9 @@
     });
     if (prev) prev.addEventListener('click', function () { set(cur - 1); });
     if (next) next.addEventListener('click', function () { set(cur + 1); });
-    window.addEventListener('resize', place);
-    window.addEventListener('load', place);
+    var replace = function () { place(false); };
+    window.addEventListener('resize', replace);
+    window.addEventListener('load', replace);
     set(0);
   }
 
