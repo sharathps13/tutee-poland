@@ -576,11 +576,83 @@
     var skip = $('[data-hscroll-skip]');
     if (skip) skip.addEventListener('click', function () { if (!smoothTo('services')) goTo(1, true); });
 
+    // One card per gesture. Holds on each stop still let a hard flick fly past several
+    // cards, so while the section is pinned the wheel, a swipe or a key moves exactly
+    // one stop; the rest of that gesture is absorbed. At either end the next gesture is
+    // let through and the page scrolls on. The scrubber and skip button still jump freely.
+    var lastStep = -1e4, lastWheel = 0, touchY = null, touchOwn = false, wasPinned = false, fresh = false;
+    function pinned() {
+      if (!enabled) return false;
+      var r = pin.getBoundingClientRect();
+      return r.top <= 1 && r.bottom >= window.innerHeight - 1;
+    }
+    // the stop a gesture in this direction leads to, or -1 when it should leave the section
+    function nextStop(dir) {
+      var k = stops.length - 1, at = p * k, c = Math.round(at);
+      var t = Math.abs(at - c) > 0.12 ? (dir > 0 ? Math.ceil(at) : Math.floor(at)) : c + dir;
+      return t < 0 || t > k ? -1 : t;
+    }
+    function stepTo(dir) {
+      var k = stops.length - 1, at = p * k;
+      // the first gesture after arriving settles on the card it reached (the first card
+      // going down, the last going up) instead of moving straight on past it
+      var t = fresh ? (dir > 0 ? Math.floor(at + 0.05) : Math.ceil(at - 0.05)) : -1;
+      fresh = false;
+      if (t < 0 || Math.abs(at - t) <= 0.05) t = nextStop(dir);
+      if (t < 0) return false;
+      lastStep = performance.now();
+      goTo(t / (stops.length - 1), true);
+      return true;
+    }
+    window.addEventListener('wheel', function (e) {
+      if (e.ctrlKey || Math.abs(e.deltaY) < Math.abs(e.deltaX) || !pinned()) return;
+      var now = performance.now(), gap = now - lastWheel;
+      lastWheel = now;
+      // still travelling, or the same flick's momentum (events keep coming without a pause,
+      // however long a trackpad glides): swallow it
+      if (now - lastStep < 700 || gap < 180) { e.preventDefault(); return; }
+      if (stepTo(e.deltaY > 0 ? 1 : -1)) e.preventDefault();
+    }, { passive: false });
+    window.addEventListener('keydown', function (e) {
+      if (e.altKey || e.ctrlKey || e.metaKey || !pinned()) return;
+      if (e.target.closest && e.target.closest('a, button, input, textarea, select, [contenteditable], [role="slider"]')) return;
+      var dir = { ArrowDown: 1, PageDown: 1, ' ': 1, ArrowUp: -1, PageUp: -1 }[e.key];
+      if (!dir) return;
+      if (e.key === ' ' && e.shiftKey) dir = -1;
+      if (performance.now() - lastStep < 500) { e.preventDefault(); return; }
+      if (stepTo(dir)) e.preventDefault();
+    });
+    // touch screens wide enough to pin (tablets): a swipe is one step too
+    pin.addEventListener('touchstart', function (e) {
+      touchOwn = false;
+      touchY = pinned() && e.touches.length === 1 && !e.target.closest('[data-hscroll-nav]') ? e.touches[0].clientY : null;
+    }, { passive: true });
+    pin.addEventListener('touchmove', function (e) {
+      if (touchY === null) return;
+      var dy = touchY - e.touches[0].clientY;
+      if (!touchOwn) {
+        if (Math.abs(dy) < 10) return;
+        if (nextStop(dy > 0 ? 1 : -1) < 0) { touchY = null; return; }   // at an end: scroll on natively
+        touchOwn = true;
+      }
+      e.preventDefault();
+    }, { passive: false });
+    pin.addEventListener('touchend', function (e) {
+      if (touchOwn) {
+        var dy = touchY - e.changedTouches[0].clientY;
+        if (Math.abs(dy) > 30 && performance.now() - lastStep > 400) stepTo(dy > 0 ? 1 : -1);
+      }
+      touchY = null; touchOwn = false;
+    });
+
     addScene(function () {
       if (!enabled) return;
       var r = pin.getBoundingClientRect();
       p = clamp(-r.top / Math.max(1, pin.offsetHeight - window.innerHeight), 0, 1);
       if (nav) nav.style.setProperty('--wp', p.toFixed(4));
+      var nowPinned = r.top <= 1 && r.bottom >= window.innerHeight - 1;
+      if (nowPinned && !wasPinned) fresh = true;
+      wasPinned = nowPinned;
       tx = target();
       if (gliding) return;
       if (Math.abs(tx - x) >= 0.5) { gliding = true; frame(glide); } else paint();
