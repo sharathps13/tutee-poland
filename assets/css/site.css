@@ -1911,6 +1911,24 @@ html { -webkit-tap-highlight-color: transparent; }
   .btn.im-gold { min-height: 50px; padding: 0 22px; font-size: 15px; }
   .im-link { font-size: 14px; white-space: nowrap; }
 }
+/* phones and upright tablets: the screen is taller than the word and copy, so instead of a
+   dark band above and below them, the landmark shows clearly at the top and the word,
+   places and copy sit together in the lower part, over a veil that darkens only there */
+@media (max-width: 860px) and (orientation: portrait) {
+  .im { justify-content: flex-end; }
+  .im-veil { background: linear-gradient(180deg, rgba(18, 1, 2, .22), rgba(18, 1, 2, .3)); }
+  .pl-body { padding-top: 0; padding-bottom: calc(26px + env(safe-area-inset-bottom)); }
+  /* the dark backdrop follows the text block, so the word always reads, however tall the phone */
+  .pl-body::before {
+    content: ""; position: absolute; z-index: -1; left: 50%; width: 100vw; margin-left: -50vw; top: -110px; bottom: 0; pointer-events: none;
+    background: linear-gradient(180deg, rgba(18, 1, 2, 0), rgba(18, 1, 2, .86) 110px, rgba(18, 1, 2, .95));
+  }
+  .btn.im-gold { white-space: nowrap; }
+}
+@media (max-width: 360px) {
+  .btn.im-gold { padding: 0 18px; font-size: 14.5px; }
+  .im-cta { gap: 12px; }
+}
 /* the floating chat buttons wait until the hero scrolls away, where they'd cover its controls */
 @media (max-width: 1180px) {
   .fab-wrap { transition: opacity .4s var(--ease), transform .4s var(--ease); }
@@ -1941,7 +1959,7 @@ html { -webkit-tap-highlight-color: transparent; }
   .dial { --D: clamp(340px, calc(100vh - 340px), 460px); --R: calc(var(--D) * .426); }
   /* universities: the skyline takes the height that's left once the card and filters are in */
   .sky-scene { padding-top: 262px; }
-  .sky-line { height: clamp(170px, calc(100vh - 520px), 400px); }
+  .sky-line { height: clamp(170px, calc(100vh - 545px), 400px); }
   .sky-water { height: clamp(44px, 8vh, 84px); }
   /* family */
   .fam-scene { min-height: clamp(380px, calc(100vh - 260px), 500px); }
@@ -1950,7 +1968,7 @@ html { -webkit-tap-highlight-color: transparent; }
   .fam-details { margin: clamp(12px, 2vh, 18px) 0 clamp(14px, 2.4vh, 22px); }
 }
 /* short laptop screens: the dial's text drops its repeat index; the pass tightens */
-@media (min-width: 961px) and (max-height: 860px) {
+@media (min-width: 961px) and (max-height: 900px) {
   .dial-index { display: none; }
   .dial-ico { width: 46px; height: 46px; border-radius: 15px; }
   .dial-ico svg { width: 22px; height: 22px; }
@@ -1974,6 +1992,8 @@ html { -webkit-tap-highlight-color: transparent; }
   .ticket-stub { padding: 12px 0 18px; }
 }
 @media (min-width: 961px) and (max-height: 800px) {
+  .fam-copy > p { font-size: 14.5px; line-height: 1.5; }
+  .fam-stages { margin-top: 14px; }
   .fam-details { padding: 14px 18px; }
   .fam-help { padding: 10px 10px 10px 12px; }
   .fam-copy h3 { font-size: 34px; }
@@ -2186,7 +2206,7 @@ html { -webkit-tap-highlight-color: transparent; }
    Rank, name, city and programmes sit on the photo; the card below holds the subjects,
    the details link and the photo credit. Nothing resizes, so it stays light to scroll. */
 .sky-dots { display: none; }
-@media (max-width: 760px) {
+@media (max-width: 760px), (max-height: 500px) and (orientation: landscape) {
   .sky-scene { display: flex; flex-direction: column; padding: 0; background: none; box-shadow: none; border-radius: 0; overflow: visible; isolation: auto; }
   .sky-water { display: none; }
   .sky-line {
@@ -2214,4 +2234,130 @@ html { -webkit-tap-highlight-color: transparent; }
   .sky-card::after { display: none; }
   .sc-top, .sc-name, .sc-pl, .sc-meta { display: none; }
   .sc-fields { margin-top: 0; }
+}
+
+/* phones: the staircase becomes a compact stepper (low steps, the climber still hops along
+   them) so the step's full text and both lists fit under it on one screen */
+@media (max-width: 760px) {
+  .climb-stairs { padding: 40px 0 10px; gap: 5px; }
+  .cs { min-height: calc(44px + var(--step) * 8px); padding: 7px 4px; flex-direction: row; justify-content: center; gap: 6px; }
+  .cs-ico { width: 24px; height: 24px; border-radius: 7px; flex: none; }
+  .cs-ico svg { width: 13px; height: 13px; }
+  .cs-kick { margin-top: 0; font-size: 9.5px; letter-spacing: .06em; }
+  .climber i { width: 30px; height: 30px; }
+  .climber i svg { width: 14px; height: 14px; }
+  .climber b { font-size: 10px; padding: 1px 7px; }
+  .climb-panel { padding: 16px 16px 14px; }
+  .cp h3 { font-size: 22px; margin: 4px 0 6px; }
+  .cp-lede { font-size: 13.5px; line-height: 1.45; margin-top: 6px; }
+  .cp-cols { margin-top: 10px; gap: 6px; }
+  .cp-cols > div { padding: 10px 12px; }
+  .cp h4 { margin-bottom: 6px; }
+  .cp ul { font-size: 12.8px; line-height: 1.4; gap: 5px; }
+  .cp-foot { margin-top: 12px; }
+}
+@media (max-width: 760px) and (max-height: 760px) {
+  .climb-stairs { padding-top: 34px; }
+  .cs { min-height: calc(40px + var(--step) * 6px); }
+  .cs-kick { display: none; }
+  .climber b { display: none; }
+}
+@media (max-width: 760px) and (max-height: 700px) {
+  .stack-card .visual { height: 52px; }
+  .stack-card h3 { font-size: 19px; margin: 4px 0 6px; }
+  .stack-card ul { margin: 10px 0 12px; gap: 5px; font-size: 13px; }
+  .fam-scene { min-height: 150px; }
+  .fam-stages { margin-top: 12px; }
+  .fam-details { margin: 10px 0; }
+}
+
+/* the shortest phones: flatter list cards in the steps panel */
+@media (max-width: 760px) and (max-height: 700px) {
+  .climb-stairs { padding-top: 32px; }
+  .climb-panel { padding: 14px 14px 12px; }
+  .cp-lede { font-size: 13px; }
+  .cp-cols { gap: 2px; margin-top: 8px; }
+  .cp-cols > div { padding: 6px 0; background: none; }
+  .cp ul { font-size: 12.5px; gap: 4px; }
+  .cp-foot { margin-top: 8px; }
+  .cp-nav button { width: 34px; height: 34px; }
+  .cp-foot .btn { min-height: 40px; }
+}
+/* iPhone 5-sized screens */
+@media (max-width: 340px) {
+  .dial { --D: clamp(180px, 28vh, 240px); }
+  .dial-body p:first-child { -webkit-line-clamp: 4; }
+  .stack-card p { font-size: 13px; }
+  .stack-card ul { font-size: 12.5px; }
+  .fam-copy { padding: 18px 14px; }
+  .fd p { font-size: 13px; }
+}
+
+/* phones held sideways: under 400px of height nothing stacked can fit, so blocks go
+   side by side, the university photos become the swipe carousel (two in view), and
+   the two text-heavy panels scroll inside their own box rather than off the screen */
+@media (max-height: 500px) and (orientation: landscape) {
+  .sky .bld, .sky .bld.on, .sky .bld:not(.on):hover { flex-basis: 44%; height: clamp(150px, calc(100vh - 230px), 300px); }
+  .sky-filters { margin-bottom: 10px; }
+  .sky-dots { margin-top: 8px; }
+  .why-card { height: calc(100vh - 120px); }
+  .sky-card { display: none; }
+  .stack-card .visual { display: none; }
+  .stack-card { grid-template-columns: 1fr; min-height: 0; }
+  .stack-card .copy { padding: 16px 22px; }
+  .stack-card h3 { font-size: 22px; margin: 4px 0 6px; }
+  .stack-card p { font-size: 13.5px; line-height: 1.45; }
+  .stack-card ul { grid-template-columns: 1fr 1fr; gap: 6px 18px; margin: 10px 0 12px; font-size: 13px; line-height: 1.4; }
+  .stack-card .btn { min-height: 40px; }
+  .stack-card { max-height: calc(100vh - 110px); }
+  .stack-card .copy { overflow-y: auto; overscroll-behavior: contain; }
+  .climb-panel { max-height: calc(100vh - 110px); overflow-y: auto; overscroll-behavior: contain; }
+  .climb-stairs { padding-top: 44px; }
+  .fam { max-height: calc(100vh - 110px); }
+  .fam-copy { max-height: calc(100vh - 110px); overflow-y: auto; overscroll-behavior: contain; align-self: stretch; }
+  .pass-grid { grid-template-columns: .75fr 1.25fr; gap: 22px; align-items: start; }
+  .pass-intro .lede { font-size: 13.5px; }
+  .stamps, .reach, .office-line { display: none; }
+  .ticket-top, .ticket-meta, .ticket-pax, .ticket-route { display: none; }
+  .ticket-route span { display: none; }
+  .ticket-form { padding: 8px 18px 0; }
+  .field { margin-bottom: 8px; }
+  .field input, .field select, .cc-btn { height: 42px; }
+  .field label { top: 11px; font-size: 14px; }
+  .ticket-tear { margin: 2px -18px 0; }
+  .ticket-stub { padding: 8px 0 12px; grid-template-columns: 1fr auto; }
+  .ticket-stub .dest { grid-column: 1; min-width: 0; padding: 8px 10px; }
+  .ticket-stub .dest > div { min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .ticket-stub .dest small { display: none; }
+  .ticket-stub .btn { white-space: nowrap; padding: 0 18px; }
+  .ticket-stub .barcode { display: none; }
+  .ticket-stub .btn { min-height: 42px; }
+  /* name and email share a row, the phone number gets its own */
+  .ticket-form { display: grid; grid-template-columns: 1fr 1fr; column-gap: 10px; }
+  .ticket-form > .field:has(#c-name) { grid-row: 1; grid-column: 1; }
+  .ticket-form > .field:has(#c-email) { grid-row: 1; grid-column: 2; }
+  .ticket-form > .field.phone { grid-row: 2; grid-column: 1 / -1; }
+  .ticket-form > .ticket-tear { grid-row: 3; grid-column: 1 / -1; }
+  .ticket-form > .ticket-stub { grid-row: 4; grid-column: 1 / -1; }
+  .ticket-form > .alert { grid-column: 1 / -1; }
+}
+@media (max-width: 760px) and (max-height: 700px) {
+  .climb-stairs { padding-top: 22px; }
+  .cp h4 { margin-bottom: 3px; }
+  .cp-foot { margin-top: 6px; }
+  .cp-kick { font-size: 10px; }
+  .cp h3 { font-size: 20px; }
+  .cp-lede { font-size: 12.8px; line-height: 1.4; }
+}
+/* very small screens (iPhone 5 size): long text panels scroll inside a box that fits */
+@media (max-width: 760px) and (max-height: 600px) {
+  .dial { --D: clamp(150px, 26vh, 220px); }
+  .dial-actions { flex-wrap: nowrap; gap: 8px; margin-top: 14px; }
+  .dial-actions .btn { padding: 0 14px; font-size: 13.5px; min-height: 40px; }
+  .dial-nav button { width: 38px; height: 38px; }
+  .dial-body p:first-child { -webkit-line-clamp: 3; }
+  .stack-card { max-height: calc(100vh - 110px); }
+  .stack-card .copy { overflow-y: auto; overscroll-behavior: contain; }
+  .climb-panel { max-height: calc(100vh - 210px); overflow-y: auto; overscroll-behavior: contain; }
+  .fam-copy { max-height: calc(100vh - 250px); overflow-y: auto; overscroll-behavior: contain; }
 }

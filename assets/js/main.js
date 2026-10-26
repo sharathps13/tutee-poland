@@ -1266,7 +1266,7 @@ ank field in the data is
     }).join('');
     var blds = $$('.bld', line);
     // phones swipe through the photos as a carousel, with a dot per photo underneath
-    var phone = function () { return window.matchMedia('(max-width: 760px)').matches; };
+    var phone = function () { return window.matchMedia('(max-width: 760px), (max-height: 500px) and (orientation: landscape)').matches; };
     var dotRow = document.createElement('div');
     dotRow.className = 'sky-dots';
     dotRow.setAttribute('aria-hidden', 'true');
