@@ -238,8 +238,8 @@
     }, 2600);
   }
 
-  /* A click sends out a small ring of thin lines in the colours of the Polish flag,
-     alternating white and red, that shoot a short way out from the pointer and fade.
+  /* A click sends out a tight ring of short, thin lines in the colours of the Polish flag,
+     alternating white and red, that flick out just around the point of the click and fade.
      One canvas over the page, drawn only while lines are alive. Mouse and trackpad
      only, off for reduced motion. */
   function initFlagCursor() {
@@ -247,7 +247,7 @@
     var cv = document.createElement('canvas'), cx = cv.getContext('2d');
     cv.className = 'pl-sparks'; cv.setAttribute('aria-hidden', 'true');
     document.body.appendChild(cv);
-    var dpr = 1, bursts = [], running = false, RAYS = 8, DUR = 460;
+    var dpr = 1, bursts = [], running = false, RAYS = 14, DUR = 420;
     function size() {
       dpr = Math.min(2, window.devicePixelRatio || 1);
       cv.width = innerWidth * dpr; cv.height = innerHeight * dpr;
@@ -259,8 +259,8 @@
       bursts = bursts.filter(function (b) { return t - b.t0 < DUR; });
       bursts.forEach(function (b) {
         var k = (t - b.t0) / DUR, e = 1 - Math.pow(1 - k, 3);   // ease out
-        var inner = 6 + 12 * e, outer = 10 + 20 * Math.min(1, e * 1.25);
-        cx.globalAlpha = 1 - k; cx.lineWidth = 1.5; cx.lineCap = 'round';
+        var inner = 3 + 5 * e, outer = 6 + 8 * Math.min(1, e * 1.25);   // a tight ring of short lines
+        cx.globalAlpha = 1 - k; cx.lineWidth = 1.2; cx.lineCap = 'round';
         for (var i = 0; i < RAYS; i++) {
           var a = b.a0 + i * Math.PI * 2 / RAYS, c = Math.cos(a), s = Math.sin(a);
           cx.strokeStyle = i % 2 ? '#d4213d' : '#ffffff';
