@@ -238,25 +238,25 @@
     }, 2600);
   }
 
-  /* Confetti in the colours of the Polish flag: tiny white and red sparks drift off the
-     pointer as it moves and burst out on a click. One canvas over the page, drawn only
-     while sparks are alive. Mouse and trackpad only, and off for reduced motion. */
+  /* A small pop of confetti in the colours of the Polish flag on each click: a handful of
+     tiny white and red sparks that drift out a short way and fade. One canvas over the
+     page, drawn only while sparks are alive. Mouse and trackpad only, off for reduced motion. */
   function initFlagCursor() {
     if (!FINE || REDUCED) return;
     var cv = document.createElement('canvas'), cx = cv.getContext('2d');
     cv.className = 'pl-sparks'; cv.setAttribute('aria-hidden', 'true');
     document.body.appendChild(cv);
-    var dpr = 1, sparks = [], running = false, lx = null, ly = null, MAX = 140;
+    var dpr = 1, sparks = [], running = false, MAX = 60;
     function size() {
       dpr = Math.min(2, window.devicePixelRatio || 1);
       cv.width = innerWidth * dpr; cv.height = innerHeight * dpr;
     }
     size(); window.addEventListener('resize', size);
-    function add(x, y, n, burst) {
+    function add(x, y, n) {
       for (var i = 0; i < n && sparks.length < MAX; i++) {
-        var a = Math.random() * Math.PI * 2, v = burst ? 1.6 + Math.random() * 3.2 : .3 + Math.random() * .9;
-        sparks.push({ x: x, y: y, vx: Math.cos(a) * v, vy: Math.sin(a) * v - (burst ? 1 : .2), r: 1.4 + Math.random() * 2.2,
-          red: Math.random() < .5, sq: Math.random() < .5, rot: Math.random() * 3, life: 0, max: 520 + Math.random() * 420 });
+        var a = Math.random() * Math.PI * 2, v = .9 + Math.random() * 1.4;
+        sparks.push({ x: x, y: y, vx: Math.cos(a) * v, vy: Math.sin(a) * v - .4, r: 1.1 + Math.random() * 1.4,
+          red: i % 2 === 0, sq: Math.random() < .5, rot: Math.random() * 3, life: 0, max: 380 + Math.random() * 220 });
       }
       if (!running) { running = true; last = performance.now(); requestAnimationFrame(draw); }
     }
@@ -277,16 +277,7 @@
       });
       if (sparks.length) requestAnimationFrame(draw); else { running = false; cx.clearRect(0, 0, innerWidth, innerHeight); }
     }
-    // a spark for every few pixels travelled, so slow moves leave a light trail and fast ones a fuller one
-    document.addEventListener('pointermove', function (e) {
-      if (e.pointerType !== 'mouse') return;
-      if (lx === null) { lx = e.clientX; ly = e.clientY; return; }
-      var d = Math.hypot(e.clientX - lx, e.clientY - ly);
-      if (d < 9) return;
-      lx = e.clientX; ly = e.clientY;
-      add(lx, ly, Math.min(3, 1 + (d / 40 | 0)), false);
-    }, { passive: true });
-    document.addEventListener('pointerdown', function (e) { if (e.pointerType === 'mouse') add(e.clientX, e.clientY, 18, true); });
+    document.addEventListener('pointerdown', function (e) { if (e.pointerType === 'mouse') add(e.clientX, e.clientY, 8); });
   }
 
   /* Magnetic buttons + the cursor-following fill. */
