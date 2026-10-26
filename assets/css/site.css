@@ -595,38 +595,47 @@ input, select, textarea { font: inherit; color: inherit; }
 .sc-more:hover svg { transform: translateX(4px); }
 .sc-credit { margin: 0; font-size: 10.5px; color: var(--muted); text-align: right; }
 
-/* the skyline: one photograph per university, reflected in the water below */
-.sky-line {
-  position: relative; z-index: 2; display: flex; align-items: flex-end; gap: 6px; height: clamp(280px, 30vw, 400px);
-  -webkit-box-reflect: below 0 linear-gradient(transparent 58%, rgba(255, 255, 255, .2));
-}
+/* the skyline: one photograph per university, standing in the water below. Everything that
+   moves here is cheap to draw: panels dim with an overlay's opacity (not a filter on the
+   photo), rise in with a fade and a slide (not a clip), and the rank grows by transform. */
+.sky-line { position: relative; z-index: 2; display: flex; align-items: flex-end; gap: 6px; height: clamp(280px, 30vw, 400px); }
 .bld {
-  --round: 14px 14px 3px 3px;
-  position: relative; flex: 1 1 0; min-width: 0; height: var(--h); overflow: hidden; border-radius: var(--round); background: #1d0a0d;
-  clip-path: inset(100% 0 0 0 round var(--round));
-  transition: flex-grow .8s var(--ease), opacity .5s, filter .5s, clip-path 1.2s var(--ease) calc(var(--i) * 70ms);
+  position: relative; flex: 1 1 0; min-width: 0; height: var(--h); overflow: hidden; border-radius: 14px 14px 3px 3px; background: #1d0a0d;
+  contain: paint; opacity: 0; transform: translateY(40px);
+  transition: flex-grow .65s var(--ease), opacity .8s var(--ease) calc(var(--i) * 60ms), transform 1s var(--ease) calc(var(--i) * 60ms);
 }
-.sky.risen .bld { clip-path: inset(0 0 0 0 round var(--round)); }
+.sky.risen .bld { opacity: 1; transform: none; }
 .bld img {
   position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; object-position: var(--fx, 50% 50%);
-  filter: grayscale(.45) sepia(.25) brightness(.64); transform: scale(1.1); transition: filter .8s, transform 1.6s var(--ease);
+  transform: scale(1.08); transition: transform 1.4s var(--ease);
 }
-.bld::after { content: ""; position: absolute; inset: 0; background: linear-gradient(180deg, rgba(10, 3, 5, 0) 40%, rgba(10, 3, 5, .82)); pointer-events: none; }
-.bld-rank, .bld-city { position: absolute; z-index: 1; left: 50%; color: #fff; pointer-events: none; transition: opacity .4s, transform .6s var(--ease), font-size .6s var(--ease), left .6s var(--ease); }
-.bld-rank { bottom: 12px; transform: translateX(-50%); font-family: var(--serif); font-style: italic; font-size: 21px; line-height: 1; color: #f7efe4; }
+/* dusk tint over the waiting photos; it lifts off the open one, which gets a gold edge */
+.bld::before {
+  content: ""; position: absolute; inset: 0; z-index: 1; pointer-events: none; border-radius: inherit;
+  background: linear-gradient(180deg, rgba(26, 8, 10, .62), rgba(40, 14, 10, .42)); transition: opacity .6s, box-shadow .6s;
+}
+.bld::after { content: ""; position: absolute; inset: 0; z-index: 1; background: linear-gradient(180deg, rgba(10, 3, 5, 0) 40%, rgba(10, 3, 5, .82)); pointer-events: none; }
+.bld-rank, .bld-city { position: absolute; z-index: 2; color: #fff; pointer-events: none; }
+.bld-rank {
+  left: 12px; bottom: 12px; transform-origin: 0 100%; font-family: var(--serif); font-style: italic; font-size: 21px; line-height: 1; color: #f7efe4;
+  transition: transform .6s var(--ease), color .4s;
+}
 .bld-rank small { font-size: .6em; opacity: .6; }
 .bld-city {
-  bottom: 44px; writing-mode: vertical-rl; transform: translateX(-50%) rotate(180deg); white-space: nowrap;
-  font-size: 11px; font-weight: 700; letter-spacing: .22em; text-transform: uppercase; color: rgba(255, 255, 255, .62);
+  left: 50%; bottom: 44px; writing-mode: vertical-rl; transform: translateX(-50%) rotate(180deg); white-space: nowrap;
+  font-size: 11px; font-weight: 700; letter-spacing: .22em; text-transform: uppercase; color: rgba(255, 255, 255, .62); transition: opacity .4s;
 }
+.bld-info { display: none; }
 .bld:not(.on):hover { flex-grow: 1.35; }
-.bld:not(.on):hover img { filter: grayscale(.15) sepia(.1) brightness(.85); }
-.bld.on { flex-grow: 5.4; box-shadow: inset 0 0 0 2px rgba(244, 161, 58, .9); }
-.bld.on img { filter: none; transform: scale(1); }
+.bld:not(.on):hover::before { opacity: .5; }
+.bld.on { flex-grow: 5.4; }
+.bld.on::before { opacity: 1; background: none; box-shadow: inset 0 0 0 2px rgba(244, 161, 58, .9); }
+.bld.on img { transform: scale(1); }
 .bld.on::after { background: linear-gradient(180deg, rgba(10, 3, 5, 0) 62%, rgba(10, 3, 5, .7)); }
-.bld.on .bld-rank { left: 18px; bottom: 14px; transform: none; font-size: 34px; color: var(--gold); }
+.bld.on .bld-rank { transform: translate(6px, -2px) scale(1.6); color: var(--gold); }
 .bld.on .bld-city { opacity: 0; }
-.bld.off { opacity: .2; filter: saturate(0); }
+.sky.risen .bld.off { opacity: .22; }
+.bld.off::before { background: rgba(14, 6, 8, .78); }
 .bld:focus-visible { outline-offset: 4px; }
 
 .sky-water {
@@ -1618,7 +1627,6 @@ html { -webkit-tap-highlight-color: transparent; }
   .bld.on { flex-grow: 7; }
   .bld-city { display: none; }
   .bld-rank { bottom: 7px; font-size: 13px; }
-  .bld.on .bld-rank { left: 10px; bottom: 8px; font-size: 24px; }
   .sky-water { height: 64px; margin: 0 -10px; }
   .sky-foot { align-items: stretch; text-align: center; margin-top: 18px; }
   .sky-stats { justify-content: center; }
@@ -1893,12 +1901,9 @@ html { -webkit-tap-highlight-color: transparent; }
   .pl-note { text-align: left; font-size: 15px; }
   .pl-copy { grid-template-columns: 1fr; gap: 16px; }
 }
-/* phones: the word breaks into POL / SKA so the letters stay big */
+/* phones: the word stays whole on one line, sized to the screen width */
 @media (max-width: 560px) {
   .pl-body { padding-top: 96px; padding-bottom: 28px; }
-  .pl-word { line-height: .82; }
-  .pl-word .pl-l1 { display: none; }
-  .pl-word .pl-l2 { display: block; }
   .im-index button { font-size: 12px; }
   .im .im-title { font-size: clamp(32px, 9.6vw, 42px); }
   .im-lede { font-size: 15px; line-height: 1.55; }
@@ -1964,7 +1969,7 @@ html { -webkit-tap-highlight-color: transparent; }
   .ticket-stub .dest { grid-column: 1; padding: 10px 14px; }
   .ticket-stub .barcode { display: none; }
   .field { margin-bottom: 12px; }
-  .field input, .field select { height: 52px; }
+  .field input, .field select, .cc-btn { height: 52px; }
   .field label { top: 15px; }
   .ticket-stub { padding: 12px 0 18px; }
 }
@@ -2025,8 +2030,8 @@ html { -webkit-tap-highlight-color: transparent; }
   .stack-card p { font-size: 14px; line-height: 1.5; }
   .stack-card ul { margin: 12px 0 16px; gap: 7px; font-size: 13.5px; line-height: 1.45; }
 
-  /* settle in Poland: lower stairs, the step tag beside the label, and the two lists
-     swipe side by side instead of stacking */
+  /* settle in Poland: lower stairs, the step tag beside the label, and both lists
+     shown in full, one under the other, as soon as a step is tapped */
   .climb-stairs { padding: 46px 0 12px; gap: 5px; }
   .cs { min-height: calc(56px + var(--step) * 16px); padding: 8px 6px; }
   .cp:not([hidden]) { display: grid; grid-template-columns: 1fr auto; align-items: center; column-gap: 10px; }
@@ -2040,12 +2045,8 @@ html { -webkit-tap-highlight-color: transparent; }
   .climb-panel { padding: 20px 18px; }
   .cp h3 { font-size: 24px; margin: 6px 0 8px; }
   .cp-lede { font-size: 14px; line-height: 1.5; margin-top: 10px; }
-  .cp-cols {
-    display: flex; gap: 10px; overflow-x: auto; scroll-snap-type: x mandatory; scrollbar-width: none; overscroll-behavior-x: contain;
-    margin: 16px -18px 0; padding: 0 18px 2px; scroll-padding: 0 18px; border-top: 0;
-  }
-  .cp-cols::-webkit-scrollbar { display: none; }
-  .cp-cols > div { flex: 0 0 88%; scroll-snap-align: start; padding: 12px 14px; border-radius: 16px; background: var(--paper); }
+  .cp-cols { grid-template-columns: 1fr; gap: 8px; margin-top: 14px; padding-top: 0; border-top: 0; }
+  .cp-cols > div { padding: 12px 14px; border-radius: 16px; background: var(--paper); }
   .cp ul { font-size: 13px; gap: 6px; }
   /* the arrows and the button share one row: the step count is already on the stairs */
   .cp-foot { margin-top: 16px; flex-wrap: nowrap; }
@@ -2152,4 +2153,65 @@ html { -webkit-tap-highlight-color: transparent; }
   /* the chat buttons shrink to their icons so they don't cover a short screen */
   .fab .txt { display: none; }
   .fab { padding: 0 8px; }
+}
+
+/* phones: a compact boarding pass. It keeps its look (the red and white flag, YOU to
+   WAW, the torn stub) but drops the decorative fee / gate / seat row and the city
+   lines, so the three fields and the button sit together on about half a screen */
+@media (max-width: 760px) {
+  .pass-intro .lede { font-size: 14.5px; }
+  .ticket { border-radius: 22px; }
+  .ticket-top { padding: 12px 18px 0; }
+  .ticket-brand { font-size: 13.5px; gap: 8px; }
+  .ticket-brand img { width: 26px; height: 26px; }
+  .ticket-class { padding: 4px 10px; font-size: 10px; }
+  .ticket-route { padding: 8px 18px 10px; gap: 10px; }
+  .ticket-route b { font-size: 26px; }
+  .ticket-route span { display: none; }
+  .ticket-meta { display: none; }
+  .ticket-form { padding: 14px 18px 0; border-top: 1px solid var(--line); }
+  .field { margin-bottom: 10px; }
+  .field input, .field select, .cc-btn { height: 48px; border-radius: 14px; }
+  .field label { top: 13px; }
+  .ticket-tear { margin: 4px -18px 0; }
+  .ticket-stub { padding: 12px 0 16px; gap: 10px; }
+  .ticket-stub .dest { padding: 8px 12px; font-size: 13px; border-radius: 12px; }
+  .ticket-stub .dest small { font-size: 10px; }
+  .ticket-stub .btn { min-height: 48px; }
+  .reach { margin-top: 18px; gap: 6px; }
+  .reach a { font-size: 12.5px; padding: 8px 12px; }
+}
+
+/* phones: the skyline becomes a carousel of whole photo cards, one university at a time.
+   Rank, name, city and programmes sit on the photo; the card below holds the subjects,
+   the details link and the photo credit. Nothing resizes, so it stays light to scroll. */
+.sky-dots { display: none; }
+@media (max-width: 760px) {
+  .sky-scene { display: flex; flex-direction: column; padding: 0; background: none; box-shadow: none; border-radius: 0; overflow: visible; isolation: auto; }
+  .sky-water { display: none; }
+  .sky-line {
+    order: 1; height: auto; gap: 12px; align-items: stretch; overflow-x: auto; overscroll-behavior-x: contain;
+    scroll-snap-type: x mandatory; scrollbar-width: none; margin: 0 calc(var(--gutter) * -1); padding: 2px var(--gutter) 6px; scroll-padding: 0 var(--gutter);
+  }
+  .sky-line::-webkit-scrollbar { display: none; }
+  .sky .bld, .sky .bld.on, .sky .bld:not(.on):hover { flex: 0 0 84%; height: clamp(250px, 40vh, 340px); border-radius: 22px; scroll-snap-align: start; opacity: 1; transform: none; }
+  .bld.off { display: none; }
+  .bld::before, .bld.on::before { opacity: 0; box-shadow: none; }
+  .bld img, .bld.on img { transform: none; }
+  .bld::after, .bld.on::after { background: linear-gradient(180deg, rgba(10, 3, 5, 0) 35%, rgba(10, 3, 5, .9)); }
+  .bld-rank, .bld-city { display: none; }
+  .bld-info { display: block; position: absolute; z-index: 2; left: 16px; right: 16px; bottom: 14px; color: #fff; text-align: left; }
+  .bi-top { display: flex; align-items: center; gap: 8px; }
+  .bi-rank { font-family: var(--serif); font-style: italic; font-weight: 400; font-size: 34px; line-height: .9; color: var(--gold); }
+  .bi-rank small { font-size: .5em; opacity: .7; }
+  .bi-qs { padding: 4px 9px; border-radius: 99px; font-size: 11px; font-weight: 700; background: rgba(36, 4, 5, .72); color: var(--gold); }
+  .bi-name { display: block; margin-top: 8px; font-family: var(--serif); font-weight: 400; font-size: 22px; line-height: 1.15; }
+  .bi-meta { display: block; margin-top: 4px; font-size: 13px; font-weight: 600; color: rgba(255, 255, 255, .8); }
+  .sky-dots { order: 2; display: flex; justify-content: center; gap: 6px; margin: 10px 0 2px; }
+  .sky-dots i { width: 7px; height: 7px; border-radius: 99px; background: rgba(29, 14, 15, .2); transition: width .3s var(--ease), background .3s; }
+  .sky-dots i.on { width: 20px; background: var(--red); }
+  .sky-card { order: 3; margin: 10px 0 0; padding: 12px 14px; box-shadow: var(--shadow); }
+  .sky-card::after { display: none; }
+  .sc-top, .sc-name, .sc-pl, .sc-meta { display: none; }
+  .sc-fields { margin-top: 0; }
 }

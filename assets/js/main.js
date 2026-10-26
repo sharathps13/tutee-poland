@@ -561,7 +561,7 @@
         goTo(fromX(e), false);
       });
       scrub.addEventListener('pointermove', function (e) { if (dragging) goTo(fromX(e), false); });
-      var stop = function () { dragging = false; scrub.classList.remove('drag'); };
+      var stop = function () { dragging = false; scrub.classList.remove('drag'); setTimeout(settle, 120); };
       scrub.addEventListener('pointerup', stop);
       scrub.addEventListener('pointercancel', stop);
       scrub.addEventListener('keydown', function (e) {
@@ -584,10 +584,12 @@
     // push rising out of the last one's glide, moves the next card; one that comes while a
     // card is still sliding in is kept and played when it lands, so no scroll is lost.
     // Arriving from above or below lands on the first or last stop, and at either end a
-    // new scroll lets the page carry on.
+    // new scroll lets the page carry on. A scroll that keeps going after its card has
+    // been on screen for a moment moves on to the next one, still one at a time.
     var OUT = -1, END = -2;   // stopFor: not near the section / at its edge, heading out
-    var vy = 0, driving = false, pending = 0, used = false, touchY = null, touchUsed = false;
-    var lastWheel = 0, lastDelta = 0, lastDir = 0, gestureAt = 0;
+    var HOLD = 700;           // ms a card stays put against a scroll that keeps going
+    var vy = 0, lastSet = 0, driving = false, pending = 0, used = false, touchY = null, touchUsed = false;
+    var lastWheel = 0, lastDelta = 0, lastDir = 0, gestureAt = 0, landedAt = 0, settleT = null;
     function pinned() {
       if (!enabled) return false;
       var r = pin.getBoundingClientRect();
@@ -610,18 +612,38 @@
     // slide the page to a stop (the track glides behind it), then play a kept scroll
     function slideTo(j) {
       vy = stopY(j);
-      if (!driving) { driving = true; frame(drive); }
+      if (!driving) { driving = true; lastSet = 0; frame(drive); }
     }
+    // A scroll the page made on its own (the scrollbar, a momentum flick that slipped in
+    // before the section caught it) can come to rest between two cards. When it does,
+    // glide on to the nearest one so the section never sits half way.
+    function settle() {
+      if (!enabled || driving || scrubbing()) return;
+      var y = window.pageYOffset, k = stops.length - 1;
+      if (y < stopY(0) - 1 || y > stopY(k) + 1) return;
+      var best = 0;
+      for (var j = 1; j <= k; j++) if (Math.abs(stopY(j) - y) < Math.abs(stopY(best) - y)) best = j;
+      if (Math.abs(stopY(best) - y) > 2) slideTo(best);
+    }
+    var scrubbing = function () { return !!(scrub && scrub.classList.contains('drag')); };
+    // a nav link, the rail or the logo takes the page elsewhere: stop sliding first, so
+    // the slide can't cancel the page's own smooth scroll
+    document.addEventListener('click', function (e) {
+      if (e.target.closest && e.target.closest('[data-scroll-to], [data-scroll-top], [data-rail] a, a[href^="#"]')) { driving = false; pending = 0; }
+    }, true);
     function drive() {
       if (!driving) return;                                                // the scrubber took over
       var cur = window.pageYOffset, d = vy - cur;
+      // something else moved the page mid-slide (a nav link, the rail): let it have the page
+      if (lastSet && Math.abs(cur - lastSet) > 3) { driving = false; pending = 0; lastSet = 0; return; }
       if (Math.abs(d) >= 1) {
         window.scrollTo({ top: cur + (d > 0 ? 1 : -1) * Math.max(1, Math.abs(d) * 0.24), behavior: 'auto' });
+        lastSet = window.pageYOffset;
         frame(drive);
         return;
       }
       window.scrollTo({ top: vy, behavior: 'auto' });
-      driving = false;
+      driving = false; lastSet = 0; landedAt = performance.now();
       var dir = pending, t;
       pending = 0;
       if (dir && (t = stopFor(dir)) >= 0) slideTo(t);
@@ -639,9 +661,12 @@
       lastWheel = now; lastDelta = ad; lastDir = dir;
       var t = stopFor(dir, e.deltaY * (e.deltaMode === 1 ? 40 : e.deltaMode === 2 ? window.innerHeight : 1));
       if (t === OUT) return;
-      if (t === END) { if (used || driving) e.preventDefault(); return; }   // only a new scroll leaves
+      // the same scroll still going: absorbed while its card slides in and for a moment
+      // after, then it may move on (to the next card, or out of the section)
+      var held = used && (driving || now - landedAt < HOLD);
+      if (t === END) { if (held || driving) e.preventDefault(); return; }
       e.preventDefault();
-      if (used) return;
+      if (held) return;
       used = true;
       want(dir, t);
     }, { passive: false });
@@ -681,6 +706,7 @@
       var r = pin.getBoundingClientRect();
       p = clamp(-r.top / Math.max(1, pin.offsetHeight - window.innerHeight), 0, 1);
       if (nav) nav.style.setProperty('--wp', p.toFixed(4));
+      if (!driving) { clearTimeout(settleT); settleT = setTimeout(settle, 180); }
       tx = target();
       if (gliding) return;
       if (Math.abs(tx - x) >= 0.5) { gliding = true; frame(glide); } else paint();
@@ -1231,9 +1257,22 @@ ank field in the data is
         (ph ? '<img src="./assets/img/photos/unis/' + ph[0] + '.jpg" alt="" loading="lazy" decoding="async">' : '') +
         '<span class="bld-city">' + esc(cityOf(u.location)) + '</span>' +
         '<span class="bld-rank"><small>#</small>' + u.rank + '</span>' +
+        // shown on the photo itself in the phone carousel
+        '<span class="bld-info"><span class="bi-top"><b class="bi-rank"><small>#</small>' + u.rank + '</b>' +
+          (qsWorld(u) ? '<span class="bi-qs">QS World #' + esc(qsWorld(u)) + '</span>' : '') + '</span>' +
+          '<b class="bi-name">' + esc(en || u.name) + '</b>' +
+          '<span class="bi-meta">' + esc(cityOf(u.location)) + ' · ' + esc(u.programmes) + ' programmes</span></span>' +
       '</button>';
     }).join('');
     var blds = $$('.bld', line);
+    // phones swipe through the photos as a carousel, with a dot per photo underneath
+    var phone = function () { return window.matchMedia('(max-width: 760px)').matches; };
+    var dotRow = document.createElement('div');
+    dotRow.className = 'sky-dots';
+    dotRow.setAttribute('aria-hidden', 'true');
+    dotRow.innerHTML = unis.map(function () { return '<i></i>'; }).join('');
+    line.parentNode.insertBefore(dotRow, line.nextSibling);
+    var dots = $$('i', dotRow);
 
     var fields = SKY_FIELDS.filter(function (f) { return unis.some(function (u) { return fieldsOf(u).indexOf(f) > -1; }); });
     filters.innerHTML = ['All fields'].concat(fields).map(function (f, k) {
@@ -1281,11 +1320,18 @@ ank field in the data is
       (function tick() { aim(); if (performance.now() < followUntil) frame(tick); })();
     }
 
-    function set(i, instant) {
+    // on phones, bring a chosen photo to the front of the carousel (unless the swipe already did)
+    function reveal(i) {
+      var pad = parseFloat(getComputedStyle(line).paddingLeft) || 0;
+      line.scrollTo({ left: blds[i].offsetLeft - pad, behavior: REDUCED ? 'auto' : 'smooth' });
+    }
+    function set(i, instant, fromSwipe) {
       i = (i + unis.length) % unis.length;
       if (i === active) return;
       active = i;
       blds.forEach(function (b, j) { b.classList.toggle('on', j === active); });
+      dots.forEach(function (d, j) { d.classList.toggle('on', j === active); });
+      if (phone() && !fromSwipe && !instant) reveal(i);
       clearTimeout(swapT);
       if (instant || !card.innerHTML) { fillCard(); follow(900); return; }
       card.classList.add('swap');
@@ -1335,6 +1381,21 @@ ank field in the data is
         blds[step(e.key === 'ArrowRight' ? 1 : -1)].focus();
       });
     });
+    // a swipe makes the photo it settles on the chosen one
+    var swipeT = null;
+    line.addEventListener('scroll', function () {
+      if (!phone()) return;
+      clearTimeout(swipeT);
+      swipeT = setTimeout(function () {
+        var pad = parseFloat(getComputedStyle(line).paddingLeft) || 0, best = -1, bd = Infinity;
+        blds.forEach(function (b, j) {
+          if (!shown(j)) return;
+          var d = Math.abs(b.offsetLeft - pad - line.scrollLeft);
+          if (d < bd) { bd = d; best = j; }
+        });
+        if (best > -1) { touched = true; set(best, false, true); }
+      }, 90);
+    }, { passive: true });
     card.addEventListener('mouseenter', function () { hovering = true; });
     card.addEventListener('mouseleave', function () { hovering = false; });
     card.addEventListener('click', function (e) { if (e.target.closest('[data-sky-open]')) open(active); });
@@ -1345,8 +1406,9 @@ ank field in the data is
         field = c.getAttribute('data-field') || '';
         chips.forEach(function (o) { o.classList.toggle('on', o === c); o.setAttribute('aria-pressed', String(o === c)); });
         blds.forEach(function (b, j) { b.classList.toggle('off', !shown(j)); b.tabIndex = shown(j) ? 0 : -1; });
+        dots.forEach(function (d, j) { d.hidden = !shown(j); });
         if (!shown(active)) step(1);
-        else { fillCard(); aim(); }
+        else { fillCard(); aim(); if (phone()) reveal(active); }
       });
     });
 
@@ -1365,7 +1427,7 @@ ank field in the data is
     } else { inView = true; rise(); }
     setTimeout(function () { var r = scene.getBoundingClientRect(); if (r.top < window.innerHeight && r.bottom > 0) rise(); }, 2600);
     // until the reader takes over, the skyline walks through the universities by itself
-    if (!REDUCED) setInterval(function () { if (!touched && inView && !hovering && !document.hidden) step(1); }, 4200);
+    if (!REDUCED) setInterval(function () { if (!touched && inView && !hovering && !document.hidden && !phone()) step(1); }, 4200);
     set(0, true);
   }
 
