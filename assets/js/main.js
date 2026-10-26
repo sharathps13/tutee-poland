@@ -951,7 +951,9 @@
       $('[data-svc-body]', panel).innerHTML = paragraphs(s.desc);
       panel.classList.remove('more');
       if (moreBtn) {
-        moreBtn.hidden = String(s.desc || '').split(/\n{2,}/).length < 2;
+        // there's more to read when the text has a second paragraph, or when phones cut the first one short
+        var first = $('[data-svc-body] p', panel);
+        moreBtn.hidden = String(s.desc || '').split(/\n{2,}/).length < 2 && !(first && first.scrollHeight > first.clientHeight + 2);
         moreBtn.setAttribute('aria-expanded', 'false');
         moreBtn.textContent = 'Read more';
       }
