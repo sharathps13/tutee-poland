@@ -238,46 +238,44 @@
     }, 2600);
   }
 
-  /* A small pop of confetti in the colours of the Polish flag on each click: a handful of
-     tiny white and red sparks that drift out a short way and fade. One canvas over the
-     page, drawn only while sparks are alive. Mouse and trackpad only, off for reduced motion. */
+  /* A click sends out a small ring of thin lines in the colours of the Polish flag,
+     alternating white and red, that shoot a short way out from the pointer and fade.
+     One canvas over the page, drawn only while lines are alive. Mouse and trackpad
+     only, off for reduced motion. */
   function initFlagCursor() {
     if (!FINE || REDUCED) return;
     var cv = document.createElement('canvas'), cx = cv.getContext('2d');
     cv.className = 'pl-sparks'; cv.setAttribute('aria-hidden', 'true');
     document.body.appendChild(cv);
-    var dpr = 1, sparks = [], running = false, MAX = 60;
+    var dpr = 1, bursts = [], running = false, RAYS = 8, DUR = 460;
     function size() {
       dpr = Math.min(2, window.devicePixelRatio || 1);
       cv.width = innerWidth * dpr; cv.height = innerHeight * dpr;
     }
     size(); window.addEventListener('resize', size);
-    function add(x, y, n) {
-      for (var i = 0; i < n && sparks.length < MAX; i++) {
-        var a = Math.random() * Math.PI * 2, v = .9 + Math.random() * 1.4;
-        sparks.push({ x: x, y: y, vx: Math.cos(a) * v, vy: Math.sin(a) * v - .4, r: 1.1 + Math.random() * 1.4,
-          red: i % 2 === 0, sq: Math.random() < .5, rot: Math.random() * 3, life: 0, max: 380 + Math.random() * 220 });
-      }
-      if (!running) { running = true; last = performance.now(); requestAnimationFrame(draw); }
-    }
-    var last = 0;
     function draw(t) {
-      var dt = Math.min(48, t - last); last = t;
       cx.setTransform(dpr, 0, 0, dpr, 0, 0);
       cx.clearRect(0, 0, innerWidth, innerHeight);
-      sparks = sparks.filter(function (p) { return (p.life += dt) < p.max; });
-      sparks.forEach(function (p) {
-        var k = dt / 16; p.x += p.vx * k; p.y += p.vy * k; p.vy += .06 * k; p.vx *= .985; p.rot += .08 * k;
-        cx.globalAlpha = 1 - p.life / p.max;
-        cx.fillStyle = p.red ? '#d4213d' : '#ffffff';
-        cx.strokeStyle = p.red ? 'rgba(118,13,13,.5)' : 'rgba(29,14,15,.35)'; cx.lineWidth = .8;
-        cx.save(); cx.translate(p.x, p.y); cx.rotate(p.rot); cx.beginPath();
-        if (p.sq) cx.rect(-p.r, -p.r, p.r * 2, p.r * 2); else cx.arc(0, 0, p.r, 0, Math.PI * 2);
-        cx.fill(); cx.stroke(); cx.restore();
+      bursts = bursts.filter(function (b) { return t - b.t0 < DUR; });
+      bursts.forEach(function (b) {
+        var k = (t - b.t0) / DUR, e = 1 - Math.pow(1 - k, 3);   // ease out
+        var inner = 6 + 12 * e, outer = 10 + 20 * Math.min(1, e * 1.25);
+        cx.globalAlpha = 1 - k; cx.lineWidth = 1.5; cx.lineCap = 'round';
+        for (var i = 0; i < RAYS; i++) {
+          var a = b.a0 + i * Math.PI * 2 / RAYS, c = Math.cos(a), s = Math.sin(a);
+          cx.strokeStyle = i % 2 ? '#d4213d' : '#ffffff';
+          cx.shadowColor = i % 2 ? 'transparent' : 'rgba(29, 14, 15, .55)'; cx.shadowBlur = i % 2 ? 0 : 1.5;
+          cx.beginPath(); cx.moveTo(b.x + c * inner, b.y + s * inner); cx.lineTo(b.x + c * outer, b.y + s * outer); cx.stroke();
+        }
+        cx.shadowBlur = 0;
       });
-      if (sparks.length) requestAnimationFrame(draw); else { running = false; cx.clearRect(0, 0, innerWidth, innerHeight); }
+      if (bursts.length) requestAnimationFrame(draw); else { running = false; cx.clearRect(0, 0, innerWidth, innerHeight); }
     }
-    document.addEventListener('pointerdown', function (e) { if (e.pointerType === 'mouse') add(e.clientX, e.clientY, 8); });
+    document.addEventListener('pointerdown', function (e) {
+      if (e.pointerType !== 'mouse') return;
+      bursts.push({ x: e.clientX, y: e.clientY, t0: performance.now(), a0: Math.random() * Math.PI });
+      if (!running) { running = true; requestAnimationFrame(draw); }
+    });
   }
 
   /* Magnetic buttons + the cursor-following fill. */
