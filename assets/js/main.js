@@ -238,33 +238,55 @@
     }, 2600);
   }
 
-  /* A cursor in the colours of the Polish flag: a red dot on the pointer and a white-over-
-     red ring that trails it, opens up over anything clickable and pulses on click. Mouse
-     and trackpad only (touch screens have no cursor), and off for reduced motion. */
+  /* Confetti in the colours of the Polish flag: tiny white and red sparks drift off the
+     pointer as it moves and burst out on a click. One canvas over the page, drawn only
+     while sparks are alive. Mouse and trackpad only, and off for reduced motion. */
   function initFlagCursor() {
     if (!FINE || REDUCED) return;
-    var ring = document.createElement('div'), dot = document.createElement('div');
-    ring.className = 'pl-cursor'; dot.className = 'pl-cursor-dot';
-    ring.setAttribute('aria-hidden', 'true'); dot.setAttribute('aria-hidden', 'true');
-    document.body.appendChild(ring); document.body.appendChild(dot);
-    var x = -100, y = -100, rx = -100, ry = -100, running = false;
-    function tick() {
-      rx += (x - rx) * 0.2; ry += (y - ry) * 0.2;
-      ring.style.transform = 'translate(' + rx.toFixed(1) + 'px,' + ry.toFixed(1) + 'px)';
-      if (Math.abs(x - rx) + Math.abs(y - ry) > 0.3) requestAnimationFrame(tick); else running = false;
+    var cv = document.createElement('canvas'), cx = cv.getContext('2d');
+    cv.className = 'pl-sparks'; cv.setAttribute('aria-hidden', 'true');
+    document.body.appendChild(cv);
+    var dpr = 1, sparks = [], running = false, lx = null, ly = null, MAX = 140;
+    function size() {
+      dpr = Math.min(2, window.devicePixelRatio || 1);
+      cv.width = innerWidth * dpr; cv.height = innerHeight * dpr;
     }
+    size(); window.addEventListener('resize', size);
+    function add(x, y, n, burst) {
+      for (var i = 0; i < n && sparks.length < MAX; i++) {
+        var a = Math.random() * Math.PI * 2, v = burst ? 1.6 + Math.random() * 3.2 : .3 + Math.random() * .9;
+        sparks.push({ x: x, y: y, vx: Math.cos(a) * v, vy: Math.sin(a) * v - (burst ? 1 : .2), r: 1.4 + Math.random() * 2.2,
+          red: Math.random() < .5, sq: Math.random() < .5, rot: Math.random() * 3, life: 0, max: 520 + Math.random() * 420 });
+      }
+      if (!running) { running = true; last = performance.now(); requestAnimationFrame(draw); }
+    }
+    var last = 0;
+    function draw(t) {
+      var dt = Math.min(48, t - last); last = t;
+      cx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      cx.clearRect(0, 0, innerWidth, innerHeight);
+      sparks = sparks.filter(function (p) { return (p.life += dt) < p.max; });
+      sparks.forEach(function (p) {
+        var k = dt / 16; p.x += p.vx * k; p.y += p.vy * k; p.vy += .06 * k; p.vx *= .985; p.rot += .08 * k;
+        cx.globalAlpha = 1 - p.life / p.max;
+        cx.fillStyle = p.red ? '#d4213d' : '#ffffff';
+        cx.strokeStyle = p.red ? 'rgba(118,13,13,.5)' : 'rgba(29,14,15,.35)'; cx.lineWidth = .8;
+        cx.save(); cx.translate(p.x, p.y); cx.rotate(p.rot); cx.beginPath();
+        if (p.sq) cx.rect(-p.r, -p.r, p.r * 2, p.r * 2); else cx.arc(0, 0, p.r, 0, Math.PI * 2);
+        cx.fill(); cx.stroke(); cx.restore();
+      });
+      if (sparks.length) requestAnimationFrame(draw); else { running = false; cx.clearRect(0, 0, innerWidth, innerHeight); }
+    }
+    // a spark for every few pixels travelled, so slow moves leave a light trail and fast ones a fuller one
     document.addEventListener('pointermove', function (e) {
       if (e.pointerType !== 'mouse') return;
-      x = e.clientX; y = e.clientY;
-      dot.style.transform = 'translate(' + x + 'px,' + y + 'px)';
-      document.body.classList.add('cursor-on');
-      var t = e.target.closest && e.target.closest('a, button, input, select, textarea, label, [role="tab"], [role="slider"], .bld, .dial-node, .why-card');
-      ring.classList.toggle('big', !!t);
-      if (!running) { running = true; requestAnimationFrame(tick); }
+      if (lx === null) { lx = e.clientX; ly = e.clientY; return; }
+      var d = Math.hypot(e.clientX - lx, e.clientY - ly);
+      if (d < 9) return;
+      lx = e.clientX; ly = e.clientY;
+      add(lx, ly, Math.min(3, 1 + (d / 40 | 0)), false);
     }, { passive: true });
-    document.addEventListener('pointerdown', function () { ring.classList.remove('press'); void ring.offsetWidth; ring.classList.add('press'); });
-    // hide it only when the mouse really leaves the window (no element to go to)
-    document.addEventListener('mouseout', function (e) { if (!e.relatedTarget) document.body.classList.remove('cursor-on'); });
+    document.addEventListener('pointerdown', function (e) { if (e.pointerType === 'mouse') add(e.clientX, e.clientY, 18, true); });
   }
 
   /* Magnetic buttons + the cursor-following fill. */

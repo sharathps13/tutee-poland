@@ -2362,18 +2362,5 @@ html { -webkit-tap-highlight-color: transparent; }
   .fam-copy { max-height: calc(100vh - 250px); overflow-y: auto; overscroll-behavior: contain; }
 }
 
-/* flag cursor: white over red, like the flag, with a thin dark edge so the white half
-   still shows on the light sections */
-.pl-cursor, .pl-cursor-dot { position: fixed; left: 0; top: 0; z-index: 9999; pointer-events: none; opacity: 0; transition: opacity .3s; }
-.cursor-on .pl-cursor, .cursor-on .pl-cursor-dot { opacity: 1; }
-.pl-cursor { width: 0; height: 0; will-change: transform; }
-.pl-cursor::before {
-  content: ""; position: absolute; left: -17px; top: -17px; width: 34px; height: 34px; border-radius: 50%;
-  border: 3px solid transparent; background: linear-gradient(#fff 50%, var(--red) 50%) border-box;
-  -webkit-mask: linear-gradient(#000 0 0) padding-box exclude, linear-gradient(#000 0 0); mask: linear-gradient(#000 0 0) padding-box exclude, linear-gradient(#000 0 0);
-  filter: drop-shadow(0 0 1px rgba(29, 14, 15, .9)) drop-shadow(0 0 3px rgba(29, 14, 15, .25)); transition: transform .35s var(--ease);
-}
-.pl-cursor.big::before { transform: scale(1.6); }
-.pl-cursor.press::before { animation: cursor-press .4s var(--ease); }
-@keyframes cursor-press { 40% { transform: scale(.75); } }
-.pl-cursor-dot::before { content: ""; position: absolute; left: -3px; top: -3px; width: 6px; height: 6px; border-radius: 50%; background: var(--red); box-shadow: 0 0 0 1.5px #fff; }
+/* flag confetti following the mouse (drawn by main.js) */
+.pl-sparks { position: fixed; inset: 0; width: 100%; height: 100%; z-index: 9999; pointer-events: none; }
