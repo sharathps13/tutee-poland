@@ -238,6 +238,35 @@
     }, 2600);
   }
 
+  /* A cursor in the colours of the Polish flag: a red dot on the pointer and a white-over-
+     red ring that trails it, opens up over anything clickable and pulses on click. Mouse
+     and trackpad only (touch screens have no cursor), and off for reduced motion. */
+  function initFlagCursor() {
+    if (!FINE || REDUCED) return;
+    var ring = document.createElement('div'), dot = document.createElement('div');
+    ring.className = 'pl-cursor'; dot.className = 'pl-cursor-dot';
+    ring.setAttribute('aria-hidden', 'true'); dot.setAttribute('aria-hidden', 'true');
+    document.body.appendChild(ring); document.body.appendChild(dot);
+    var x = -100, y = -100, rx = -100, ry = -100, running = false;
+    function tick() {
+      rx += (x - rx) * 0.2; ry += (y - ry) * 0.2;
+      ring.style.transform = 'translate(' + rx.toFixed(1) + 'px,' + ry.toFixed(1) + 'px)';
+      if (Math.abs(x - rx) + Math.abs(y - ry) > 0.3) requestAnimationFrame(tick); else running = false;
+    }
+    document.addEventListener('pointermove', function (e) {
+      if (e.pointerType !== 'mouse') return;
+      x = e.clientX; y = e.clientY;
+      dot.style.transform = 'translate(' + x + 'px,' + y + 'px)';
+      document.body.classList.add('cursor-on');
+      var t = e.target.closest && e.target.closest('a, button, input, select, textarea, label, [role="tab"], [role="slider"], .bld, .dial-node, .why-card');
+      ring.classList.toggle('big', !!t);
+      if (!running) { running = true; requestAnimationFrame(tick); }
+    }, { passive: true });
+    document.addEventListener('pointerdown', function () { ring.classList.remove('press'); void ring.offsetWidth; ring.classList.add('press'); });
+    // hide it only when the mouse really leaves the window (no element to go to)
+    document.addEventListener('mouseout', function (e) { if (!e.relatedTarget) document.body.classList.remove('cursor-on'); });
+  }
+
   /* Magnetic buttons + the cursor-following fill. */
   function initButtons() {
     if (!FINE || REDUCED) return;
@@ -2491,6 +2520,7 @@ ank field in the data is
   initDirectory();
   initReveal();
   initButtons();
+  initFlagCursor();
   initHero();
   initRail();
   initHScroll();
