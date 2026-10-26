@@ -100,7 +100,6 @@ input, select, textarea { font: inherit; color: inherit; }
   overflow: hidden; isolation: isolate;
   transition: transform .5s var(--ease), box-shadow .5s var(--ease), background .3s;
   box-shadow: 0 10px 30px -10px rgba(212, 33, 61, .65);
-  will-change: transform;
 }
 .btn::before {
   content: ""; position: absolute; inset: 0; z-index: -1;
@@ -759,7 +758,7 @@ input, select, textarea { font: inherit; color: inherit; }
 .cs.s4 img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; transform: scale(1.08); transition: transform 1.2s var(--ease); }
 .cs.s4:hover img { transform: scale(1.02); }
 .cs.s4::after { content: ""; position: absolute; inset: 0; background: linear-gradient(180deg, rgba(36, 4, 5, .45), rgba(36, 4, 5, .92)); }
-.cs > *:not(img) { position: relative; z-index: 1; }
+.cs > *:not(img):not(picture) { position: relative; z-index: 1; }
 .cs-n { position: absolute !important; right: 12px; top: 6px; font-family: var(--serif); font-style: italic; font-size: 46px; line-height: 1; color: rgba(29, 14, 15, .08); }
 .s3 .cs-n, .s4 .cs-n { color: rgba(255, 255, 255, .16); }
 .cs-ico { width: 40px; height: 40px; border-radius: 13px; display: grid; place-items: center; background: var(--red-soft); color: var(--red); }
@@ -1084,10 +1083,11 @@ input, select, textarea { font: inherit; color: inherit; }
 .ticket-route span { font-size: 12.5px; font-weight: 600; color: var(--muted); }
 .ticket-route .to { text-align: right; }
 .ticket-route .to b { color: var(--red); }
-.ticket-path { position: relative; height: 22px; color: var(--red); }
+.ticket-path { position: relative; height: 22px; color: var(--red); container-type: inline-size; }
 .ticket-path i { position: absolute; left: 0; right: 0; top: 50%; border-top: 2px dashed rgba(29, 14, 15, .2); }
-.ticket-path svg { position: absolute; top: 0; left: 0; transform: rotate(45deg); animation: ticket-fly 5s var(--ease-in-out) infinite; }
-@keyframes ticket-fly { 0% { left: 0; opacity: 0; } 12% { opacity: 1; } 80% { opacity: 1; } 100% { left: calc(100% - 22px); opacity: 0; } }
+.ticket-path svg { position: absolute; top: 0; left: 0; transform: rotate(45deg); animation: ticket-fly 5s var(--ease-in-out) infinite; will-change: transform; }
+/* moved by transform, not left: no layout on every frame (the path's width comes from cqw) */
+@keyframes ticket-fly { 0% { transform: translateX(0) rotate(45deg); opacity: 0; } 12% { opacity: 1; } 80% { opacity: 1; } 100% { transform: translateX(calc(100cqw - 22px)) rotate(45deg); opacity: 0; } }
 .ticket-pax { margin: 10px 30px 0; padding: 12px 0 10px; border-top: 1px dashed rgba(29, 14, 15, .16); border-bottom: 1px dashed rgba(29, 14, 15, .16); }
 .ticket-pax small { display: block; font-size: 10.5px; font-weight: 700; letter-spacing: .16em; text-transform: uppercase; color: var(--muted); }
 .ticket-pax b {
@@ -2364,3 +2364,33 @@ html { -webkit-tap-highlight-color: transparent; }
 
 /* flag confetti following the mouse (drawn by main.js) */
 .pl-sparks { position: fixed; inset: 0; width: 100%; height: 100%; z-index: 9999; pointer-events: none; }
+
+/* ==========================================================================
+   Performance
+   ========================================================================== */
+/* <picture> wrappers (WebP with a JPEG fallback) don't take part in layout */
+picture { display: contents; }
+/* sections off screen keep their looping animations still */
+.idle *, .idle *::before, .idle *::after { animation-play-state: paused !important; }
+/* POLSKA starts at the size main.js will give it, so nothing shifts when it does:
+   4.09em wide and .8em tall, fitted to the column and to 36% of the screen height */
+.pl-body { container-type: inline-size; }
+.pl-word { font-size: min(calc(100cqw / 4.0877), calc(36vh / .8)); }
+/* the header's frosted glass is recomputed on every scroll frame; touch screens and
+   smaller screens get a solid bar instead */
+@media (hover: none), (max-width: 1080px) {
+  .site-header.scrolled .bar, .home .site-header .bar { backdrop-filter: none; -webkit-backdrop-filter: none; background: rgba(255, 255, 255, .97); }
+  .u-tools.stuck { backdrop-filter: none; -webkit-backdrop-filter: none; background: rgba(251, 246, 239, .98); }
+}
+/* the word and the place tabs are filled in by main.js: hold their room from the start */
+.pl-word { min-height: .8em; }
+.im-index { min-height: 33px; }
+@media (max-width: 860px) { .im-index { min-height: 30px; } }
+/* touch devices: the faint spinning rosettes (decoration at a few percent opacity) hold
+   still, since rotating them repaints every frame; the family photo changes its colour
+   at once instead of animating a filter, keeping only its slow zoom */
+@media (hover: none) {
+  .folk-corner, .dial-rosette, .fam-rosette, .medal .rosette, .climb-hint svg, .contact-shell .folk-bg, .mobile-menu .folk-bg { animation: none !important; }
+  .fam-scene img { transition: transform 1.4s var(--ease); }
+}
+@media (hover: none) { .ticket { box-shadow: 0 30px 50px -24px rgba(0, 0, 0, .6); } }

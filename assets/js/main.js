@@ -278,6 +278,16 @@
     });
   }
 
+  /* Sections off screen get .idle, which pauses their looping CSS animations (spinning
+     rosettes, logo and story marquees, the waving flag) so they cost nothing there. */
+  function initIdleSections() {
+    if (!('IntersectionObserver' in window)) return;
+    var io = new IntersectionObserver(function (es) {
+      es.forEach(function (e) { e.target.classList.toggle('idle', !e.isIntersecting); });
+    }, { rootMargin: '200px 0px' });
+    $$('main > section, .contact, .footer').forEach(function (s) { io.observe(s); });
+  }
+
   /* Magnetic buttons + the cursor-following fill. */
   function initButtons() {
     if (!FINE || REDUCED) return;
@@ -347,6 +357,7 @@
     function ensure(fig) {
       var img = fig && $('img', fig);
       if (!img || !img.getAttribute('data-src')) return;
+      $$('source[data-srcset]', fig).forEach(function (so) { so.setAttribute('srcset', so.getAttribute('data-srcset')); so.removeAttribute('data-srcset'); });
       img.setAttribute('srcset', img.getAttribute('data-srcset'));
       img.setAttribute('src', img.getAttribute('data-src'));
       img.removeAttribute('data-src'); img.removeAttribute('data-srcset');
@@ -447,6 +458,13 @@
     var canvas = $('[data-im-dust]', hero);
     if (!canvas || REDUCED || !canvas.getContext) return;
     var ctx = canvas.getContext('2d'), dpr = Math.min(window.devicePixelRatio || 1, 1.5);
+    // the glow, drawn once: a soft gold dot with a warm halo, stamped at each particle's size and strength
+    var glowImg = document.createElement('canvas'); glowImg.width = glowImg.height = 64;
+    (function () {
+      var g2 = glowImg.getContext('2d'), gr = g2.createRadialGradient(32, 32, 0, 32, 32, 32);
+      gr.addColorStop(0, 'rgba(255, 220, 150, 1)'); gr.addColorStop(.4, 'rgba(244, 161, 58, .45)'); gr.addColorStop(1, 'rgba(244, 161, 58, 0)');
+      g2.fillStyle = gr; g2.fillRect(0, 0, 64, 64);
+    })();
     var W = 0, H = 0, parts = [], visible = true;
     function size() {
       var r = frameEl.getBoundingClientRect();
@@ -475,13 +493,10 @@
         p.vx *= .985; p.x += p.vx; p.y -= p.vy; p.tw += .04;
         if (p.y < -10 || p.x < -20 || p.x > W + 20) parts[k] = spawn(false);
         var glow = (near ? 1.6 : 1) * p.a * (.65 + .35 * Math.sin(p.tw)), rad = p.r * (near ? 4.5 : 3.2);
-        var g = ctx.createRadialGradient(p.x, p.y, 0, p.x, p.y, rad);
-        g.addColorStop(0, 'rgba(255, 220, 150,' + Math.min(1, glow) + ')');
-        g.addColorStop(.4, 'rgba(244, 161, 58,' + (glow * .45) + ')');
-        g.addColorStop(1, 'rgba(244, 161, 58, 0)');
-        ctx.fillStyle = g;
-        ctx.beginPath(); ctx.arc(p.x, p.y, rad, 0, Math.PI * 2); ctx.fill();
+        ctx.globalAlpha = Math.min(1, glow);
+        ctx.drawImage(glowImg, p.x - rad, p.y - rad, rad * 2, rad * 2);
       }
+      ctx.globalAlpha = 1;
       requestAnimationFrame(draw);
     }
     size();
@@ -956,7 +971,7 @@
   /* Contact: the dark panel grows to full width as it arrives. */
   function initClipGrow() {
     var el = $('[data-clip-grow]');
-    if (!el || REDUCED) return;
+    if (!el || REDUCED || !FINE) return;
     addScene(function () {
       var vh = window.innerHeight, r = el.getBoundingClientRect();
       var p = clamp((vh - r.top) / (vh * 0.7), 0, 1);
@@ -1294,7 +1309,7 @@ ank field in the data is
       return '<button type="button" class="bld" data-i="' + i + '"' +
         ' style="--h:' + (34 + 66 * count(u) / max).toFixed(1) + '%;--i:' + i + (ph ? ';--fx:' + ph[1] : '') + '"' +
         ' aria-label="#' + u.rank + ' in Poland: ' + esc(en || u.name) + ', ' + esc(cityOf(u.location)) + ', ' + esc(u.programmes) + ' programmes">' +
-        (ph ? '<img src="./assets/img/photos/unis/' + ph[0] + '.jpg" alt="" loading="lazy" decoding="async">' : '') +
+        (ph ? '<picture><source type="image/webp" srcset="./assets/img/photos/unis/' + ph[0] + '.webp"><img src="./assets/img/photos/unis/' + ph[0] + '.jpg" alt="" loading="lazy" decoding="async"></picture>' : '') +
         '<span class="bld-city">' + esc(cityOf(u.location)) + '</span>' +
         '<span class="bld-rank"><small>#</small>' + u.rank + '</span>' +
         // shown on the photo itself in the phone carousel
@@ -1354,6 +1369,7 @@ ank field in the data is
     }
     // keep aiming while the photos slide to their new widths
     function follow(ms) {
+      if (phone()) return;                                  // the phone card sits in the flow: nothing to chase
       var running = followUntil > performance.now();
       followUntil = Math.max(followUntil, performance.now() + ms);
       if (running) return;
@@ -1373,7 +1389,7 @@ ank field in the data is
       dots.forEach(function (d, j) { d.classList.toggle('on', j === active); });
       if (phone() && !fromSwipe && !instant) reveal(i);
       clearTimeout(swapT);
-      if (instant || !card.innerHTML) { fillCard(); follow(900); return; }
+      if (instant || !card.innerHTML) { fillCard(); if (!phone()) aim(); return; }
       card.classList.add('swap');
       swapT = setTimeout(function () { fillCard(); card.classList.remove('swap'); aim(); }, 220);
       follow(900);
@@ -2161,7 +2177,8 @@ ank field in the data is
     var sendBtn = $('[data-chat-send]');
     var waHref = ($('.fab.wa') || {}).href || 'https://wa.me/917358364959';
 
-    function clockNow() { return new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }); }
+    var clockFmt = null;   // one formatter, made on first use (making one per message was slow)
+    function clockNow() { return (clockFmt || (clockFmt = new Intl.DateTimeFormat([], { hour: '2-digit', minute: '2-digit' }))).format(new Date()); }
     function push(role, content, acts, atTop) {
       var m = document.createElement('div');
       m.className = 'msg ' + (role === 'assistant' ? 'ai' : 'me');
@@ -2521,31 +2538,34 @@ ank field in the data is
   /* ------------------------------------------------------------------ *
    * Boot
    * ------------------------------------------------------------------ */
+  // The first screen sets up at once; everything below it sets up one piece at a time just
+  // after, each in its own short task, so the first paint and the first tap never wait for
+  // the whole page (and one failing piece can't stop the rest).
   initCurtain();
   initHeader();
   initMobileMenu();
   initScrollLinks();
-  initMarquees();
-  initServices(window.PL_SERVICES || []);
-  initSkyline();
-  initDirectory();
-  initReveal();
-  initButtons();
-  initFlagCursor();
   initHero();
-  initRail();
-  initHScroll();
-  initStack();
-  initSteps();
-  initClimb();
-  initFamily();
-  initParallax();
-  initClipGrow();
-  initFaq();
-  initForms();
-  initGlowWord();
-  initChat();
-  initSceneLoop();
+  // the chat builds its answer index on start-up, which could land in the middle of someone's
+  // scrolling: it sets up only when someone reaches for it (a press, hover or focus on a chat button)
+  function startChatLater() {
+    var started = false, start = function (e) {
+      if (started || !(e.target.closest && e.target.closest('[data-chat-open], [data-chat-open-alt]'))) return;
+      started = true; initChat();
+    };
+    ['pointerover', 'pointerdown', 'focusin', 'click'].forEach(function (t) { document.addEventListener(t, start, true); });
+  }
+  var queue = [
+    initReveal, initHScroll, initRail, initMarquees, function () { initServices(window.PL_SERVICES || []); }, initSkyline, initDirectory,
+    initStack, initSteps, initClimb, initFamily, initParallax, initClipGrow, initFaq, initForms, initGlowWord,
+    initButtons, initFlagCursor, initIdleSections, startChatLater, initSceneLoop
+  ];
+  (function next() {
+    var fn = queue.shift();
+    if (!fn) return;
+    try { fn(); } catch (err) { setTimeout(function () { throw err; }); }
+    if (queue.length) setTimeout(next, 0);
+  })();
 
   // Deep links such as /index.html#contact
   if (location.hash.length > 1) {

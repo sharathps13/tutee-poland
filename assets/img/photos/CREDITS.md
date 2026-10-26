@@ -233,3 +233,12 @@ People checks, each made at full resolution:
 * Rejected: `File:Budynek Wydziału Architektury PK.jpg` (CC0) was the first choice for
   Cracow University of Technology. Students sit on benches along the path in the middle
   distance and several faces resolve clearly, so it was replaced by the laboratory frame.
+
+## Image formats (added 2026-10-26)
+
+For page speed, every photo above also ships as WebP beside its JPEG (same name, `.webp`),
+served through `<picture>` with the JPEG as the fallback; the hero photos also have a
+1920px size (`-1920.jpg` / `-1920.webp`) between the 1280 and 2560 ones. The section and
+hero JPEGs were re-saved as progressive JPEGs at a lower quality. These are further
+resizes and re-encodes of the same files: the credits and licences above apply unchanged,
+and the footer's "Cropped and resized" still covers them.
