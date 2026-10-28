@@ -453,6 +453,41 @@ export async function handle(rawBody, headers = {}) {
   return { status: 200, payload: { success: true, message: OK_MESSAGE } };
 }
 
+/** GET /api/enquiry?check=sheet: does the Apps Script accept this site's token?
+ * The probe carries the token and the country but no name or email, so the
+ * script stops straight after its token check and saves and sends nothing:
+ * "Missing name or email" means the token was accepted, "Unauthorised" means
+ * it was not. Only a plain status comes back, never the URL or the token. */
+export async function sheetCheck(country) {
+  const url = (process.env.APPS_SCRIPT_URL || '').trim();
+  const token = (process.env.APPS_SCRIPT_TOKEN || '').trim();
+  const c = country || 'Poland';
+  if (!url || !token) {
+    return `not configured: ${!url ? 'APPS_SCRIPT_URL' : 'APPS_SCRIPT_TOKEN'} is not set for this deploy `
+      + '(add it in Netlify, check its deploy contexts include this one, then redeploy)';
+  }
+  let res;
+  try {
+    res = await postJson(url, {}, { token, country: c }, SEND_TIMEOUT_MS);
+  } catch (exc) {
+    return `not reachable: ${exc?.name === 'AbortError' ? 'the script did not answer in time' : 'the request to APPS_SCRIPT_URL failed'}`;
+  }
+  let parsed = null;
+  try { parsed = await res.json(); } catch { /* not JSON */ }
+  if (!parsed) {
+    return `wrong URL or access: APPS_SCRIPT_URL answered HTTP ${res.status} without JSON. `
+      + 'Use the deployment\'s /exec URL (Deploy > Manage deployments), with access set to "Anyone"';
+  }
+  const msg = String(parsed.message || '');
+  if (/missing name or email/i.test(msg)) return `ok: the script accepts this token for ${c}`;
+  if (/unauthori/i.test(msg)) {
+    return `token rejected: APPS_SCRIPT_TOKEN does not match what the script expects for ${c} `
+      + `(LEADS_TOKEN_${c.toUpperCase().replace(/[^A-Z0-9]+/g, '_')} if setPolandToken was run, `
+      + 'otherwise the shared LEADS_TOKEN). Run checkTokens in the editor';
+  }
+  return `unexpected reply from the script: ${msg.slice(0, 120) || `HTTP ${res.status}`}`;
+}
+
 /** What the GET probe reports: whether config is present, never what it is. */
 export function health() {
   return {
@@ -483,7 +518,12 @@ function json(status, payload) {
 
 /** Netlify Functions v2 entry point. */
 export default async function (req) {
-  if (req.method === 'GET') return json(200, health());
+  if (req.method === 'GET') {
+    const wantsCheck = new URL(req.url).searchParams.get('check') === 'sheet';
+    if (!wantsCheck) return json(200, health());
+    const host = req.headers.get('x-forwarded-host') || req.headers.get('host') || '';
+    return json(200, { ...health(), sheet_check: await sheetCheck(resolveCountry('', host)) });
+  }
 
   if (req.method !== 'POST') {
     return json(405, { success: false, message: 'Method not allowed.' });
