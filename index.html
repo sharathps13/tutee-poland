@@ -556,10 +556,6 @@
         <figure class="voice"><div class="stars">★★★★★</div><q>They didn't just help with the admission. The post-landing support for getting my accommodation in Kraków was a lifesaver.</q><figcaption class="who"><span class="av">VM</span><div><b>Vishal M.</b><span>Undergrad, Kraków</span></div></figcaption></figure>
         <figure class="voice"><div class="stars">★★★★★</div><q>I had a previous visa refusal and was losing hope. My coordinator completely turned it around and guided me through the entire documentation process.</q><figcaption class="who"><span class="av">SR</span><div><b>Sneha R.</b><span>Graduate student, Wrocław</span></div></figcaption></figure>
         <figure class="voice"><div class="stars">★★★★★</div><q>The non-collateral education loan assistance is genuine. They connected me directly with their banking partners and got my financials sorted in record time.</q><figcaption class="who"><span class="av">RV</span><div><b>Rahul V.</b><span>Engineering major, Gdańsk</span></div></figcaption></figure>
-      </div>
-    </div>
-    <div class="voice-row rev" data-marquee>
-      <div class="marquee-group" style="gap:22px">
         <figure class="voice"><div class="stars">★★★★★</div><q>Their career consultation for the nine-month graduate permit and the EU Blue Card gave me the exact clarity I needed before flying out.</q><figcaption class="who"><span class="av">AD</span><div><b>Anita D.</b><span>MBA candidate, Poznań</span></div></figcaption></figure>
         <figure class="voice"><div class="stars">★★★★★</div><q>The counselling at Tutee Connect opened my eyes to universities I hadn't even considered. Now I'm loving my semester in Toruń!</q><figcaption class="who"><span class="av">KN</span><div><b>Karthik N.</b><span>CS major, Toruń</span></div></figcaption></figure>
         <figure class="voice"><div class="stars">★★★★★</div><q>From application essays to final visa prep, the entire journey felt so personalised. Highly recommended for anyone aiming for Poland.</q><figcaption class="who"><span class="av">DP</span><div><b>Divya P.</b><span>Data Science, Łódź</span></div></figcaption></figure>
@@ -669,18 +665,29 @@
           </div>
         </div>
         <form class="ticket-form" data-lead-form novalidate>
-  <input type="hidden" name="access_key" value="">
   <input type="hidden" name="subject" value="New Lead from Tutee Connect Landing Page!">
   <input type="hidden" name="from_name" value="Tutee Connect Notification System">
-  <input type="checkbox" name="botcheck" class="hidden" tabindex="-1" autocomplete="off">
-  <div class="alert ok hidden" data-form-success role="status"><svg width="20" height="20"><use href="#i-check"/></svg>Profile submitted successfully! We will contact you soon.</div>
+  <input type="hidden" name="form_location" value="Contact section">
+  <input type="checkbox" name="botcheck" class="honey" tabindex="-1" autocomplete="off" aria-hidden="true">
   <div class="alert err hidden" data-form-error role="alert"><span data-form-error-text>Submission failed. Please try again.</span></div>
-  <div class="field"><input id="c-name" name="name" type="text" placeholder=" " required autocomplete="name"><label for="c-name">Your name *</label></div>
+  <div class="field-row pair">
+    <div class="field"><input id="c-name" name="name" type="text" placeholder=" " required autocomplete="name" maxlength="120"><label for="c-name">Your name *</label></div>
+    <div class="field"><input id="c-email" name="email" type="email" placeholder=" " required autocomplete="email" maxlength="200"><label for="c-email">Your email *</label></div>
+  </div>
   <div class="field phone">
     <select name="country_code" aria-label="Country code"><option value="+971">AE (+971)</option><option value="+93">AF (+93)</option><option value="+54">AR (+54)</option><option value="+43">AT (+43)</option><option value="+61">AU (+61)</option><option value="+32">BE (+32)</option><option value="+55">BR (+55)</option><option value="+41">CH (+41)</option><option value="+56">CL (+56)</option><option value="+86">CN (+86)</option><option value="+57">CO (+57)</option><option value="+49">DE (+49)</option><option value="+45">DK (+45)</option><option value="+213">DZ (+213)</option><option value="+20">EG (+20)</option><option value="+34">ES (+34)</option><option value="+358">FI (+358)</option><option value="+33">FR (+33)</option><option value="+30">GR (+30)</option><option value="+36">HU (+36)</option><option value="+62">ID (+62)</option><option value="+353">IE (+353)</option><option value="+91" selected>IN (+91)</option><option value="+98">IR (+98)</option><option value="+39">IT (+39)</option><option value="+81">JP (+81)</option><option value="+254">KE (+254)</option><option value="+82">KR (+82)</option><option value="+94">LK (+94)</option><option value="+212">MA (+212)</option><option value="+95">MM (+95)</option><option value="+52">MX (+52)</option><option value="+60">MY (+60)</option><option value="+234">NG (+234)</option><option value="+31">NL (+31)</option><option value="+47">NO (+47)</option><option value="+64">NZ (+64)</option><option value="+51">PE (+51)</option><option value="+63">PH (+63)</option><option value="+92">PK (+92)</option><option value="+48">PL (+48)</option><option value="+351">PT (+351)</option><option value="+974">QA (+974)</option><option value="+40">RO (+40)</option><option value="+7">RU/KZ (+7)</option><option value="+966">SA (+966)</option><option value="+46">SE (+46)</option><option value="+65">SG (+65)</option><option value="+66">TH (+66)</option><option value="+216">TN (+216)</option><option value="+90">TR (+90)</option><option value="+255">TZ (+255)</option><option value="+380">UA (+380)</option><option value="+256">UG (+256)</option><option value="+44">UK (+44)</option><option value="+1">US/CA (+1)</option><option value="+58">VE (+58)</option><option value="+84">VN (+84)</option><option value="+27">ZA (+27)</option></select>
-    <div class="inner"><input id="c-phone" name="phone_number" type="tel" placeholder=" " required autocomplete="tel-national"><label for="c-phone">Phone number *</label></div>
+    <div class="inner"><input id="c-phone" name="phone_number" type="tel" placeholder=" " required autocomplete="tel-national" inputmode="tel"><label for="c-phone">Phone number *</label></div>
   </div>
-  <div class="field"><input id="c-email" name="email" type="email" placeholder=" " required autocomplete="email"><label for="c-email">Your email *</label></div>
+  <div class="field-row">
+    <div class="field sel"><div class="sel-box"><select id="c-state" name="state" required aria-label="State"><option value="" selected disabled>State *</option><option>Andhra Pradesh</option><option>Arunachal Pradesh</option><option>Assam</option><option>Bihar</option><option>Chhattisgarh</option><option>Goa</option><option>Gujarat</option><option>Haryana</option><option>Himachal Pradesh</option><option>Jharkhand</option><option>Karnataka</option><option>Kerala</option><option>Madhya Pradesh</option><option>Maharashtra</option><option>Manipur</option><option>Meghalaya</option><option>Mizoram</option><option>Nagaland</option><option>Odisha</option><option>Punjab</option><option>Rajasthan</option><option>Sikkim</option><option>Tamil Nadu</option><option>Telangana</option><option>Tripura</option><option>Uttar Pradesh</option><option>Uttarakhand</option><option>West Bengal</option><option>Andaman and Nicobar Islands</option><option>Chandigarh</option><option>Dadra and Nagar Haveli and Daman and Diu</option><option>Delhi</option><option>Jammu and Kashmir</option><option>Ladakh</option><option>Lakshadweep</option><option>Puducherry</option><option>Outside India</option></select><span class="sel-face" aria-hidden="true"></span></div></div>
+    <div class="field sel"><div class="sel-box"><select id="c-call" name="call_time" aria-label="Preferred call time"><option value="" selected disabled>Call time</option><option>Morning (9 am &ndash; 12 pm)</option><option>Afternoon (12 &ndash; 4 pm)</option><option>Evening (4 &ndash; 8 pm)</option><option>Anytime</option></select><span class="sel-face" aria-hidden="true"></span></div></div>
+  </div>
+  <div class="field"><input id="c-course" name="course" type="text" placeholder=" " autocomplete="off" maxlength="120"><label for="c-course">Subject (e.g. Data Science)</label></div>
+  <div class="field-row">
+    <div class="field sel"><div class="sel-box"><select id="c-level" name="study_level" aria-label="Study level"><option value="" selected disabled>Study level</option><option value="Bachelor's">Bachelor&rsquo;s</option><option value="Master's">Master&rsquo;s</option><option value="Doctoral">Doctoral</option><option value="Not sure">Not sure yet</option></select><span class="sel-face" aria-hidden="true"></span></div></div>
+    <div class="field sel"><div class="sel-box"><select id="c-intake" name="intake" aria-label="When you want to start"><option value="Next intake" selected>Start: next intake</option><option value="Within 12 months">Start: within 12 months</option><option value="Later">Start: later</option></select><span class="sel-face" aria-hidden="true"></span></div></div>
+  </div>
+  <input type="hidden" name="shortlist" value="" data-shortlist-input>
   <input type="hidden" name="destination" value="General Poland Inquiry" data-destination-input>
   <div class="ticket-tear" aria-hidden="true"></div>
   <div class="ticket-stub">
@@ -689,6 +696,18 @@
     <button class="btn" type="submit" data-submit-btn>Submit profile</button>
   </div>
 </form>
+        <div class="ticket-done" data-lead-done hidden role="status" tabindex="-1">
+          <span class="done-ico" aria-hidden="true"><svg width="26" height="26"><use href="#i-check"/></svg></span>
+          <span class="done-kick">Form completed</span>
+          <h3 class="done-title">Thank you<span data-done-name></span>!</h3>
+          <p class="done-text">Your Poland profile is with our team. A counsellor will call you<span data-done-time></span> within one working day to share your route map.</p>
+          <ul class="done-next">
+            <li><svg width="16" height="16"><use href="#i-phone"/></svg>Keep your phone handy for our call</li>
+            <li><svg width="16" height="16"><use href="#i-mail"/></svg>Check your inbox for a follow-up email</li>
+          </ul>
+          <a class="btn done-wa" href="https://wa.me/917358364959" target="_blank" rel="noopener noreferrer"><svg width="18" height="18"><use href="#i-chat"/></svg>Chat with us on WhatsApp</a>
+          <button class="done-again" type="button" data-lead-again>+ Submit another enquiry</button>
+        </div>
       </div>
     </div>
   </div>
@@ -770,6 +789,7 @@
       <button type="button" data-chat-chip>Top universities in Poland</button>
       <button type="button" data-chat-chip>Scholarships and loans</button>
       <button type="button" data-chat-chip>Can my family join me?</button>
+      <button type="button" data-chat-chip>Request a callback</button>
     </div>
     <div class="typing hidden" data-chat-typing><i></i><i></i><i></i></div>
   </div>

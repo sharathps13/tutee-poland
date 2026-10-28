@@ -308,15 +308,6 @@
 
   /* Duplicate marquee content so translateX(-50%) loops seamlessly. */
   function initMarquees() {
-    // Phones get one testimonial row instead of two: same stories, half the height.
-    var rows = $$('.voice-row');
-    if (isMobile() && rows.length > 1) {
-      var first = $('.marquee-group', rows[0]);
-      rows.slice(1).forEach(function (r) {
-        $$('.voice', r).forEach(function (v) { first.appendChild(v); });
-        r.parentNode.removeChild(r);
-      });
-    }
     $$('[data-marquee]').forEach(function (m) {
       var g = $('.marquee-group', m);
       if (!g) return;
@@ -1336,7 +1327,7 @@ ank field in the data is
     }).join('');
     var chips = $$('button', filters);
 
-    var active = -1, field = '', hovering = false, touched = false, inView = false, swapT = null, hoverT = null, followUntil = 0;
+    var active = -1, field = '', hovering = false, touched = false, inView = false, swapT = null, followUntil = 0;
     var shown = function (i) { return !field || fieldsOf(unis[i]).indexOf(field) > -1; };
 
     function fillCard() {
@@ -1385,14 +1376,14 @@ ank field in the data is
       i = (i + unis.length) % unis.length;
       if (i === active) return;
       active = i;
-      blds.forEach(function (b, j) { b.classList.toggle('on', j === active); });
+      blds.forEach(function (b, j) { b.classList.toggle('on', j === active); b.classList.toggle('near', Math.abs(j - active) === 1); });
       dots.forEach(function (d, j) { d.classList.toggle('on', j === active); });
       if (phone() && !fromSwipe && !instant) reveal(i);
       clearTimeout(swapT);
       if (instant || !card.innerHTML) { fillCard(); if (!phone()) aim(); return; }
       card.classList.add('swap');
-      swapT = setTimeout(function () { fillCard(); card.classList.remove('swap'); aim(); }, 220);
-      follow(900);
+      swapT = setTimeout(function () { fillCard(); card.classList.remove('swap'); aim(); }, 140);
+      follow(520);
     }
     function step(dir) {
       for (var k = 1; k <= unis.length; k++) {
@@ -1404,22 +1395,35 @@ ank field in the data is
     function open(i) {
       openUniDetail(unis[i], {
         ctaLabel: 'Evaluate my profile for this university',
-        onCta: function () { closeUniDetail(); setDestination(unis[i].name); setTimeout(function () { smoothTo('contact'); }, 60); }
+        onCta: function () { closeUniDetail(); setShortlist(unis[i].name); setTimeout(function () { smoothTo('contact'); }, 60); }
       });
     }
 
-    // Hover opens a photo only when the mouse really moves onto it (after a short dwell):
-    // opening one reshuffles the widths under a still cursor, which must not chain on.
+    // The photo under the cursor (or a finger sliding across on a tablet) opens straight
+    // away, and its neighbours open a little, so sweeping across ripples through them.
+    // A change needs real movement since the last one: opening a photo reshuffles the
+    // widths under a still cursor, and the browser's synthetic moves must not chain on.
+    var lastX = null, swiped = false, swipeFrom = null;
+    function under(e) {
+      var el = e.pointerType === 'mouse' ? e.target : document.elementFromPoint(e.clientX, e.clientY);
+      var b = el && el.closest && el.closest('.bld');
+      return b && line.contains(b) ? +b.getAttribute('data-i') : -1;
+    }
     line.addEventListener('pointermove', function (e) {
-      if (e.pointerType !== 'mouse') return;
-      var b = e.target.closest('.bld');
-      if (!b) return;
-      var i = +b.getAttribute('data-i');
+      if (phone()) return;
+      var touch = e.pointerType !== 'mouse';
+      if (touch && swipeFrom === null) return;              // a finger only steers while it is down
+      if (touch && Math.abs(e.clientX - swipeFrom) > 10) swiped = true;
       hovering = true;
-      clearTimeout(hoverT);
-      if (i !== active && shown(i)) hoverT = setTimeout(function () { set(i); }, 110);
+      if (lastX !== null && Math.abs(e.clientX - lastX) < 6) return;
+      var i = under(e);
+      if (i < 0 || i === active || !shown(i)) return;
+      lastX = e.clientX; touched = touched || touch;
+      set(i);
     });
-    line.addEventListener('pointerleave', function () { hovering = false; clearTimeout(hoverT); });
+    line.addEventListener('pointerdown', function (e) { if (e.pointerType !== 'mouse') { swipeFrom = e.clientX; swiped = false; } });
+    ['pointerup', 'pointercancel'].forEach(function (t) { line.addEventListener(t, function () { swipeFrom = null; }); });
+    line.addEventListener('pointerleave', function (e) { if (e.pointerType === 'mouse') { hovering = false; lastX = null; } });
     // a first tap opens a photo out, a second opens the details; keyboard focus opens it out
     var pressing = false, wasOpen = false;
     blds.forEach(function (b, i) {
@@ -1428,7 +1432,7 @@ ank field in the data is
       b.addEventListener('click', function () {
         var again = pressing ? wasOpen : active === i;
         pressing = false; touched = true;
-        clearTimeout(hoverT);
+        if (swiped) { swiped = false; return; }           // the end of a swipe is not a tap
         if (again) open(i); else set(i);
       });
       b.addEventListener('keydown', function (e) {
@@ -1588,6 +1592,7 @@ ank field in the data is
       }
       return { ok: true };
     },
+    state: function (v) { return v ? { ok: true } : { ok: false, msg: 'Please select your state.' }; },
     phone: function (v, iso) {
       var c = country(iso), min = c[3][0], max = c[3][1];
       var raw = v.trim();
@@ -1707,7 +1712,7 @@ ank field in the data is
   function enhanceValidation(form) {
     var picker = enhanceCountryPicker(form, function () { if (fields.phone.touched || fields.phone.input.value) check('phone', true); });
     var fields = {};
-    [['name', 'input[name="name"]'], ['email', 'input[name="email"]'], ['phone', 'input[name="phone_number"]']].forEach(function (p) {
+    [['name', 'input[name="name"]'], ['email', 'input[name="email"]'], ['phone', 'input[name="phone_number"]'], ['state', 'select[name="state"]']].forEach(function (p) {
       var input = $(p[1], form);
       if (!input) return;
       var box = input.closest('.field');
@@ -1716,10 +1721,12 @@ ank field in the data is
       msg.id = (input.id || p[0] + Math.random().toString(36).slice(2, 7)) + '-msg';
       msg.setAttribute('aria-live', 'polite');
       box.appendChild(msg);
-      var mark = document.createElement('span');
-      mark.className = 'vmark';
-      mark.setAttribute('aria-hidden', 'true');
-      (input.parentNode).appendChild(mark);
+      if (input.tagName !== 'SELECT') {   // a dropdown keeps its own chevron in that corner
+        var mark = document.createElement('span');
+        mark.className = 'vmark';
+        mark.setAttribute('aria-hidden', 'true');
+        input.parentNode.appendChild(mark);
+      }
       input.setAttribute('aria-describedby', msg.id);
       fields[p[0]] = { input: input, box: box, msg: msg, touched: false };
     });
@@ -1750,6 +1757,7 @@ ank field in the data is
     Object.keys(fields).forEach(function (key) {
       var f = fields[key];
       f.input.addEventListener('blur', function () { if (f.input.value.trim()) f.touched = true; check(key, f.touched); });
+      f.input.addEventListener('change', function () { f.touched = true; check(key, true); });
       f.input.addEventListener('input', function () {
         if (key === 'phone') {   // keep only what a phone number can contain
           var clean = f.input.value.replace(/[^\d\s\-().+]/g, '');
@@ -1784,51 +1792,139 @@ ank field in the data is
     };
   }
 
+  /* A sent pass stays "completed" in this browser for 30 days, so the same
+     person isn't asked to fill it in again. */
+  var LEAD_DONE_KEY = 'tc_pl_lead_done';
+  function leadDone() {
+    try {
+      var d = JSON.parse(localStorage.getItem(LEAD_DONE_KEY) || 'null');
+      return d && Date.now() - d.at < 30 * 864e5 ? d : null;
+    } catch (e) { return null; }
+  }
+
+  /* Campaign attribution: UTM tags from the landing URL, kept for the visit. */
+  var UTM_KEYS = ['utm_source', 'utm_medium', 'utm_campaign', 'utm_content'];
+  function utmTags() {
+    var out = {};
+    try {
+      var p = new URLSearchParams(location.search), kept = JSON.parse(sessionStorage.getItem('tcUtm') || '{}');
+      UTM_KEYS.forEach(function (k) { if (p.get(k)) kept[k] = p.get(k).slice(0, 100); });
+      sessionStorage.setItem('tcUtm', JSON.stringify(kept));
+      out = kept;
+    } catch (e) { /* storage unavailable */ }
+    return out;
+  }
+
+  // Boarding-pass style passenger name: SURNAME / GIVEN NAMES
+  function paxName(name) {
+    var parts = String(name || '').trim().split(/\s+/).filter(Boolean);
+    if (!parts.length) return '';
+    return (parts.length > 1 ? parts[parts.length - 1] + ' / ' + parts.slice(0, -1).join(' ') : parts[0]).toLocaleUpperCase();
+  }
+
   function initForms() {
+    var UTM = utmTags();
+    // on phones and tablets the floating chat buttons would cover the pass's
+    // own controls, so they step aside while it is on screen
+    var pass = $('.ticket');
+    if (pass && 'IntersectionObserver' in window) new IntersectionObserver(function (es) {
+      document.body.classList.toggle('at-pass', es[0].isIntersecting);
+    }, { rootMargin: '-15% 0px -15% 0px' }).observe(pass);
     $$('form[data-lead-form]').forEach(function (form) {
       enhanceValidation(form);
 
-      // Boarding-pass style passenger name on the profile pass: SURNAME / GIVEN NAMES
       var ticket = form.closest('.ticket'), pax = ticket && $('[data-pax]', ticket), nameIn = $('input[name="name"]', form);
-      if (pax && nameIn) {
-        var paintPax = function () {
-          var parts = nameIn.value.trim().split(/\s+/).filter(Boolean);
-          var was = pax.classList.contains('pax-empty');
-          if (!parts.length) { pax.textContent = 'Your name appears here'; pax.classList.add('pax-empty'); return; }
-          var txt = parts.length > 1 ? parts[parts.length - 1] + ' / ' + parts.slice(0, -1).join(' ') : parts[0];
-          pax.textContent = txt.toLocaleUpperCase();
-          pax.classList.remove('pax-empty');
-          if (was) { pax.classList.remove('pop'); void pax.offsetWidth; pax.classList.add('pop'); }
-        };
-        nameIn.addEventListener('input', paintPax);
-        form.addEventListener('reset', function () { setTimeout(paintPax, 0); });
+      var done = ticket && $('[data-lead-done]', ticket);
+      function paintPax(name) {
+        if (!pax) return;
+        var txt = paxName(name), was = pax.classList.contains('pax-empty');
+        if (!txt) { pax.textContent = 'Your name appears here'; pax.classList.add('pax-empty'); return; }
+        pax.textContent = txt;
+        pax.classList.remove('pax-empty');
+        if (was) { pax.classList.remove('pop'); void pax.offsetWidth; pax.classList.add('pop'); }
       }
-      var btn = $('[data-submit-btn]', form);
-      var okBox = $('[data-form-success]', form);
-      var errBox = $('[data-form-error]', form);
+      if (nameIn) nameIn.addEventListener('input', function () { paintPax(nameIn.value); });
 
-      function status(state, msg) {
-        if (okBox) okBox.classList.toggle('hidden', state !== 'success');
-        if (errBox) {
-          errBox.classList.toggle('hidden', state !== 'error');
-          if (state === 'error' && msg) ($('[data-form-error-text]', errBox) || errBox).textContent = msg;
-        }
+      // dropdowns read muted until something is picked
+      var selects = $$('.field.sel select', form);
+      // the face over each dropdown shows its choice, stepping the type down
+      // until the wording fits; a choice too long even then makes the row taller
+      function fitFace(s) {
+        var face = s.parentNode.querySelector('.sel-face');
+        if (!face) return;
+        var opt = s.options[s.selectedIndex];
+        face.textContent = opt ? opt.textContent : '';
+        face.classList.toggle('is-empty', !s.value);
+        face.style.fontSize = '';
+        var size = parseFloat(getComputedStyle(face).fontSize);
+        while (face.scrollHeight > face.clientHeight + 1 && size > 12.5) { size -= 0.5; face.style.fontSize = size + 'px'; }
+        for (var g = 0; g < 6 && face.scrollHeight > face.clientHeight + 1; g++) s.style.height = (s.offsetHeight + face.scrollHeight - face.clientHeight + 8) + 'px';
       }
+      function paintSelects() {
+        selects.forEach(function (s) { s.style.height = ''; s.classList.toggle('is-empty', !s.value); });
+        selects.forEach(fitFace);
+        // dropdowns sharing a row stay the same height
+        $$('.field-row', form).forEach(function (row) {
+          var inRow = $$('.field.sel select', row), h = Math.max.apply(null, inRow.map(function (s) { return s.offsetHeight; }));
+          if (inRow.some(function (s) { return s.style.height; })) inRow.forEach(function (s) { s.style.height = h + 'px'; });
+        });
+      }
+      selects.forEach(function (s) { s.addEventListener('change', paintSelects); });
+      paintSelects();
+      window.addEventListener('resize', function () { clearTimeout(paintSelects.t); paintSelects.t = setTimeout(paintSelects, 150); });
+
+      var btn = $('[data-submit-btn]', form);
+      var errBox = $('[data-form-error]', form);
+      function status(state, msg) {
+        if (!errBox) return;
+        errBox.classList.toggle('hidden', state !== 'error');
+        if (state === 'error' && msg) ($('[data-form-error-text]', errBox) || errBox).textContent = msg;
+      }
+
+      function showDone(d, animate) {
+        if (!done) return;
+        var first = String(d.name || '').trim().split(/\s+/)[0];
+        $('[data-done-name]', done).textContent = first ? ', ' + first : '';
+        $('[data-done-time]', done).textContent = d.call_time && !/^any/i.test(d.call_time) ? ' in the ' + d.call_time.replace(/\s*\(.*\)/, '').toLowerCase() : '';
+        form.hidden = true;
+        ticket.classList.add('is-done');
+        done.hidden = false;
+        done.classList.remove('is-enter');
+        if (animate && !REDUCED) { void done.offsetWidth; done.classList.add('is-enter'); }
+        paintPax(d.name);
+      }
+      // "+ Submit another enquiry": forget the sent flag and bring back a fresh pass
+      function reopen() {
+        try { localStorage.removeItem(LEAD_DONE_KEY); } catch (e) { /* private mode */ }
+        var keep = {};
+        $$('[data-destination-input], [data-shortlist-input]', form).forEach(function (i) { keep[i.name] = i.value; });
+        form.reset();
+        $$('[data-destination-input], [data-shortlist-input]', form).forEach(function (i) { i.value = keep[i.name]; });
+        if (form.__resetValidation) form.__resetValidation();
+        paintSelects(); paintPax(''); status('idle');
+        if (done) { done.hidden = true; done.classList.remove('is-enter'); }
+        ticket.classList.remove('is-done');
+        form.hidden = false;
+        if (nameIn) nameIn.focus({ preventScroll: true });
+      }
+      if (done) $('[data-lead-again]', done).addEventListener('click', reopen);
+
+      var sent = leadDone();
+      if (sent) showDone(sent, false);
 
       form.addEventListener('submit', function (e) {
         e.preventDefault();
         status('idle');
+        if (leadDone()) return;
         var data = {};
-        new FormData(form).forEach(function (v, k) { data[k] = v; });
+        new FormData(form).forEach(function (v, k) { data[k] = typeof v === 'string' ? v.trim() : v; });
 
-        // each field shows its own message; nothing is sent until all three pass
+        // each field shows its own message; nothing is sent until they all pass
         if (form.__validate && !form.__validate()) return;
-        data.name = String(data.name || '').trim();
-        data.email = String(data.email || '').trim();
         data.phone = (data.country_code || '') + ' ' + (form.__phoneDigits ? form.__phoneDigits() : data.phone_number || '');
-
-        delete data.country_code; delete data.phone_number; delete data.access_key;
+        delete data.country_code; delete data.phone_number;
         data.page = enquiryPage();
+        Object.keys(UTM).forEach(function (k) { data[k] = UTM[k]; });
 
         var label = btn ? btn.textContent : '';
         if (btn) { btn.disabled = true; btn.textContent = 'Submitting…'; }
@@ -1841,12 +1937,10 @@ ank field in the data is
           .then(function (r) { return r.json().catch(function () { return { success: false }; }); })
           .then(function (res) {
             if (res && res.success) {
-              status('success');
-              var dest = $('[data-destination-input]', form), keep = dest ? dest.value : '';
-              form.reset();
-              if (form.__resetValidation) form.__resetValidation();
-              if (dest) dest.value = keep;
-              setTimeout(function () { status('idle'); }, 6000);
+              var d = { name: data.name, call_time: data.call_time || '', at: Date.now() };
+              try { localStorage.setItem(LEAD_DONE_KEY, JSON.stringify(d)); } catch (err) { /* private mode */ }
+              showDone(d, true);
+              if (done) done.focus({ preventScroll: true });
             } else {
               status('error', (res && res.message) || 'Something went wrong. Please try again.');
             }
@@ -1856,7 +1950,8 @@ ank field in the data is
       });
     });
 
-    // Universities picked on the directory page pre-fill the enquiry. They arrive in
+    // Universities picked on the directory page (or from a university's details) go in the
+    // hidden shortlist and show on the pass as "Enquiry for". They arrive in
     // storage, or in ?apply= when storage is blocked (private windows, strict settings).
     var picked = '';
     try {
@@ -1868,19 +1963,27 @@ ank field in the data is
       if (!picked && params.get('apply')) picked = params.get('apply').slice(0, 600);
       if (params.has('apply')) history.replaceState(null, '', location.pathname + location.hash);
     } catch (err) { /* old browser */ }
-    if (picked) setDestination(picked);
+    if (picked) setShortlist(picked);
   }
 
-  function setDestination(v, root) {
+  /* The hidden destination carries "Poland shortlist: …" to the enquiry; the pass shows
+     just the names. */
+  function setDestination(v, root, label) {
     var val = v || 'General Poland Inquiry';
     $$('[data-destination-input]', root).forEach(function (i) { i.value = val; });
-    $$('[data-destination-label]', root).forEach(function (l) { l.textContent = val; });
+    $$('[data-destination-label]', root).forEach(function (l) { l.textContent = label || val; });
+  }
+  function setShortlist(list) {
+    list = String(list || '').trim();
+    $$('[data-shortlist-input]').forEach(function (i) { i.value = list; });
+    setDestination(list ? 'Poland shortlist: ' + list : '', null, list);
   }
 
   /* ------------------------------------------------------------------ *
-   * 10. Tutee AI: answers from this page's own content. No server, no personal
-   *     data: live university data, a knowledge base written from the page, then a
-   *     search of the page text; only what the page doesn't cover goes to an advisor.
+   * 10. Tutee AI: answers from this page's own content: live university data, a
+   *     knowledge base written from the page, then a search of the page text; only
+   *     what the page doesn't cover goes to an advisor. Asking for a callback starts
+   *     the lead capture below, which sends name, phone and email to /api/enquiry.
    * ------------------------------------------------------------------ */
   var CHAT_WELCOME = "Hi! 👋 I'm **Tutee AI**.\n\nAsk me anything about studying in Poland: visas, universities and rankings, working while you study, scholarships and loans, settling after graduation or bringing your family.";
 
@@ -1946,15 +2049,15 @@ ank field in the data is
       a: "Polish **doctoral schools charge no tuition** and award a **scholarship to every full-time doctoral candidate**. Ten universities belong to the Excellence Initiative: Research University (IDUB) programme." },
     { keys: ['recognised', 'recognized', 'recognition', 'valid degree', 'eu degree', 'accepted', 'degree value'],
       a: "Polish degrees are **EU-recognised**: the qualifications are recognised right across the European Union. Twenty Polish institutions also feature in the QS World University Rankings 2027." },
-    { keys: ['tutee', 'tutee connect', 'who are you', 'about you', 'success rate', 'why tutee', 'experience', 'track record'],
+    { keys: ['tutee', 'tutee connect', 'who are you', 'about you', 'success rate', 'visa success', 'visa success rate', '99', 'why tutee', 'experience', 'track record'],
       a: "Tutee Connect are Poland education experts with a **99% Polish visa success rate**, **200+** Polish university tie-ups and **5,000+** students guided. We scrutinise every profile from the view of Polish consular officers and choose the right pathway. Offices in Chennai and Dubai." },
     { keys: ['services', 'your services', 'what do you do', 'what do you offer'],
       a: '__SERVICES__' },
     { keys: ['evaluate', 'evaluation', 'evaluate my profile', 'profile', 'counselling', 'counseling', 'consultation', 'book', 'appointment', 'talk to', 'advisor', 'adviser', 'counsellor', 'counselor', 'speak to'],
-      a: "The **free profile evaluation** is right on this page: fill in the Profile Pass form (name, phone and email) and an expert counsellor builds your specific route map to study in Poland, at no cost.", acts: [{ label: 'Open the free evaluation form', go: 'contact' }, { label: 'WhatsApp us', go: 'whatsapp' }] },
+      a: "The **free profile evaluation** is right on this page: fill in the Profile Pass form (name, phone and email) and an expert counsellor builds your specific route map to study in Poland, at no cost. Or I can take your details here and have a counsellor call you back.", acts: [{ label: 'Request a callback', go: 'callback' }, { label: 'Open the free evaluation form', go: 'contact' }, { label: 'WhatsApp us', go: 'whatsapp' }] },
     { keys: ['refusal', 'refused', 'rejected', 'rejection', 'previous refusal', 'visa refusal', 'visa refused', 'visa rejected', 'denied', 'visa reject'],
       a: "A Polish study visa is decided largely on the file, so a **complete and internally consistent application** is the most effective way to avoid an unnecessary refusal. We've turned around profiles with a previous refusal, and an advisor can review yours.", acts: [ADVISOR] },
-    { keys: ['mba', 'masters', "master's", 'master', 'postgraduate', 'postgrad', 'bachelor', "bachelor's", 'undergraduate', 'degree'],
+    { keys: ['mba', 'gmat', 'masters', "master's", 'master', 'postgraduate', 'postgrad', 'bachelor', "bachelor's", 'undergraduate', 'degree'],
       a: "Polish universities offer bachelor's, master's and doctoral study, many taught in English. Two things to know:\n• Only **full-time** degrees give the no-work-permit, no-hour-cap work right; part-time, postgraduate and MBA study don't.\n• Some postgraduate courses, MBAs in particular, may ask for a GMAT score or work experience.\n\nAsk me about a field, such as engineering or business, to see which universities offer it.", acts: [{ label: 'Browse the directory', go: 'directory' }] }
   ];
 
@@ -1981,7 +2084,11 @@ ank field in the data is
   ];
 
   function unis() { return window.PL_UNIVERSITIES || []; }
-  function uniTitle(u) { var en = englishName(u); return en ? '**' + en + '** (' + u.name + ')' : '**' + u.name + '**'; }
+  function displayName(u) {
+    var en = englishName(u);
+    return en && foldText(en).trim().split(' ').some(function (w) { return !GENERIC[w] && !STOP[w]; }) ? en : u.name;
+  }
+  function uniTitle(u) { var en = displayName(u); return en !== u.name ? '**' + en + '** (' + u.name + ')' : '**' + u.name + '**'; }
   function rankedFirst(list) {
     return list.slice().sort(function (a, b) {
       return (a.ranked ? a.rank : 1e4) - (b.ranked ? b.rank : 1e4) || (parseInt(b.programmes, 10) || 0) - (parseInt(a.programmes, 10) || 0);
@@ -1989,12 +2096,11 @@ ank field in the data is
   }
   function uniLine(u, i) {
     var w = qsWorld(u);
-    return (i + 1) + '. ' + (englishName(u) || u.name) + ' (' + cityOf(u.location) + ')' + (w ? ': #' + w + ' world' : '');
+    return (i + 1) + '. ' + displayName(u) + ' (' + cityOf(u.location) + ')' + (w ? ': #' + w + ' world' : '');
   }
 
-  var uniIndex = null;
+  var uniIndex = null, cityWords = {};
   function buildUniIndex() {
-    var cityWords = {};
     unis().forEach(function (u) { foldText(u.location).trim().split(' ').forEach(function (w) { cityWords[w] = 1; }); });
     Object.keys(CITY_ALIASES).forEach(function (c) { CITY_ALIASES[c].forEach(function (a) { cityWords[a] = 1; }); });
     var tokenCount = {}, entries = [];
@@ -2012,29 +2118,46 @@ ank field in the data is
     entries.forEach(function (e) { e.distinct = e.distinct.filter(function (w) { return tokenCount[w] <= 2; }); });
     return entries;
   }
-  function findUni(q) {
+  // every institution the question names, strongest match first
+  function findUnis(q) {
     if (!uniIndex) uniIndex = buildUniIndex();
-    var best = null, bestScore = 0;
+    var hits = [], qWords = q.trim().split(' ');
     uniIndex.forEach(function (e) {
-      var s = 0;
-      e.phrases.forEach(function (p) { if (q.indexOf(' ' + p + ' ') > -1) s = Math.max(s, 100 + p.length); });
-      e.acr.forEach(function (a) { if (a.length >= 2 && q.indexOf(' ' + a + ' ') > -1 && !STOP[a]) s = Math.max(s, 60); });
-      e.distinct.forEach(function (w) { if (q.indexOf(' ' + w + ' ') > -1) s = Math.max(s, 20 + w.length); });
+      var s = 0, at = 1e9;
+      function seen(t) { var i = q.indexOf(' ' + t + ' '); if (i > -1 && i < at) at = i; return i > -1; }
+      e.phrases.forEach(function (p) { if (seen(p)) s = Math.max(s, 100 + p.length); });
+      e.acr.forEach(function (a) { if (a.length >= 2 && !STOP[a] && seen(a)) s = Math.max(s, 60); });
+      e.distinct.forEach(function (w) { if (seen(w)) s = Math.max(s, 20 + w.length); });
+      if (!s) e.distinct.forEach(function (w) {
+        qWords.forEach(function (x) {
+          if (x.length < 6 || cityWords[x] || GENERIC[x] || STOP[x] || w.length <= x.length || w.indexOf(x) !== 0) return;
+          s = Math.max(s, 18 + x.length); seen(x);
+        });
+      });
       if (s && e.u.ranked) s += (21 - e.u.rank) / 100;   // tie-break toward the better-known institution
-      if (s > bestScore) { bestScore = s; best = e.u; }
+      if (s) hits.push({ u: e.u, s: s, at: at });
     });
-    return best;
+    hits.sort(function (a, b) { return b.s - a.s; });
+    var list = hits.map(function (h) { return h.u; });
+    list.at = hits.map(function (h) { return h.at; });
+    return list;
   }
-  function findCity(q) {
-    var cities = {};
+  function findUni(q) { return findUnis(q)[0] || null; }
+  // every city the question names, in the order it names them
+  function findCities(q) {
+    var cities = {}, found = [];
     unis().forEach(function (u) { cities[cityOf(u.location)] = 1; });
-    var found = null;
     Object.keys(cities).forEach(function (c) {
-      var al = (CITY_ALIASES[c] || []).concat([foldText(c).trim()]);
-      if (al.some(function (a) { return a && q.indexOf(' ' + a + ' ') > -1; })) found = c;
+      var at = -1;
+      (CITY_ALIASES[c] || []).concat([foldText(c).trim()]).forEach(function (a) {
+        var i = a ? q.indexOf(' ' + a + ' ') : -1;
+        if (i > -1 && (at < 0 || i < at)) at = i;
+      });
+      if (at > -1) found.push({ c: c, at: at });
     });
-    return found;
+    return found.sort(function (a, b) { return a.at - b.at; }).map(function (x) { return x.c; });
   }
+  function findCity(q) { return findCities(q)[0] || null; }
   function findField(q) {
     for (var i = 0; i < FIELD_SYNONYMS.length; i++) if (hasAny(q, FIELD_SYNONYMS[i][1])) return FIELD_SYNONYMS[i][0];
     return null;
@@ -2056,13 +2179,15 @@ ank field in the data is
     return "We offer nine services, one seamless journey:\n" + s.map(function (x, i) { return '• **' + x.title + '**: ' + x.tagline; }).join('\n') + "\n\nAsk me about any one of them.";
   }
 
-  /* ---- page passages: anything else the page says ---- */
+  /* ---- page passages: anything else the page says, ranked with BM25 ----
+     The knowledge base answers go in too, so a question that misses every key
+     phrase can still land on the answer whose words it shares. */
   var passages = null;
   function buildPassages() {
     var out = [];
-    function add(title, text) {
+    function add(title, text, kb) {
       text = String(text || '').replace(/\s+/g, ' ').trim();
-      if (text.length > 40) out.push({ title: String(title || '').replace(/\s+/g, ' ').trim(), text: text, t: toks(title + ' ' + title + ' ' + text) });
+      if (text.length > 40) out.push({ title: String(title || '').replace(/\s+/g, ' ').trim(), text: text, kb: kb || null, t: toks(title + ' ' + title + ' ' + text) });
     }
     $$('.acc-item').forEach(function (i) { add(($('.acc-q', i) || i).textContent.replace(/^\s*\d+/, ''), ($('.acc-a', i) || i).textContent); });
     $$('.why-card').forEach(function (c) { add(($('h3', c) || c).textContent, ($('p', c) || c).textContent); });
@@ -2071,26 +2196,39 @@ ank field in the data is
     $$('.fam-line li').forEach(function (c) { add('Family migration: ' + ($('b', c) || c).textContent, c.textContent); });
     (window.PL_SERVICES || []).forEach(function (s) { add(s.title, s.tagline + '. ' + s.desc); });
     $$('.lede, .dir-note').forEach(function (l) { add('', l.textContent); });
-    var df = {};
-    out.forEach(function (p) { var seen = {}; p.t.forEach(function (w) { if (!seen[w]) { seen[w] = 1; df[w] = (df[w] || 0) + 1; } }); });
-    out.forEach(function (p) { p.df = df; p.n = out.length; });
+    KB.forEach(function (e) { if (e.a !== '__SERVICES__') add(e.keys.slice(0, 3).join(', '), e.keys.join(' ') + ' ' + e.a, e); });
+    var df = {}, total = 0;
+    out.forEach(function (p) {
+      p.tf = {}; p.len = p.t.length; total += p.len;
+      p.t.forEach(function (w) { p.tf[w] = (p.tf[w] || 0) + 1; });
+      Object.keys(p.tf).forEach(function (w) { df[w] = (df[w] || 0) + 1; });
+    });
+    out.df = df; out.avg = total / Math.max(1, out.length);
     return out;
+  }
+  function bm25(p, words) {
+    var k1 = 1.2, b = 0.75, N = passages.length, s = 0, hits = 0;
+    words.forEach(function (w) {
+      var f = p.tf[w];
+      if (!f) return;
+      hits++;
+      var n = passages.df[w] || 0;
+      s += Math.log(1 + (N - n + 0.5) / (n + 0.5)) * f * (k1 + 1) / (f + k1 * (1 - b + b * p.len / passages.avg));
+    });
+    return { s: s, hits: hits };
   }
   function searchPage(qt) {
     if (!passages) passages = buildPassages();
-    if (!passages.length || !qt.length) return null;
     var uniq = qt.filter(function (w, i) { return qt.indexOf(w) === i && w.length > 2; });
+    if (!passages.length || !uniq.length) return null;
     var best = null, bestScore = 0, bestHits = 0;
     passages.forEach(function (p) {
-      var s = 0, hits = 0;
-      uniq.forEach(function (w) {
-        var tf = p.t.filter(function (x) { return x === w; }).length;
-        if (tf) { hits++; s += Math.log(1 + p.n / (p.df[w] || 1)) * (1 + Math.min(tf, 3) * .2); }
-      });
-      if (s > bestScore) { bestScore = s; best = p; bestHits = hits; }
+      var r = bm25(p, uniq);
+      if (r.s > bestScore) { bestScore = r.s; best = p; bestHits = r.hits; }
     });
     // need real overlap, not one common word
-    if (!best || bestHits < Math.min(2, uniq.length) || bestScore < 2.2) return null;
+    if (!best || bestHits < Math.min(2, uniq.length) || bestScore < 3) return null;
+    if (best.kb) return kbReply(best.kb);
     var sentences = best.text.match(/[^.!?]+[.!?]+/g) || [best.text];
     var scored = sentences.map(function (s, i) { var st = toks(s); return { i: i, s: s.trim(), k: uniq.filter(function (w) { return st.indexOf(w) > -1; }).length }; });
     var keep = scored.filter(function (x) { return x.k > 0; }).sort(function (a, b) { return b.k - a.k; }).slice(0, 3).sort(function (a, b) { return a.i - b.i; });
@@ -2098,70 +2236,281 @@ ank field in the data is
     return { text: (best.title ? '**' + best.title + '**\n' : '') + keep.map(function (x) { return x.s; }).join(' '), acts: [ADVISOR] };
   }
 
-  /* ---- the answer pipeline ---- */
-  function answer(text) {
-    var q = foldText(text), qt = toks(text);
+  /* ---- typo tolerance: a word the page doesn't know becomes the nearest one it does ---- */
+  var vocab = null, vocabWords = null;
+  function buildVocab() {
+    var v = {};
+    function addText(s) { foldText(s).trim().split(' ').forEach(function (w) { if (w.length > 2 && !/\d/.test(w)) v[w] = (v[w] || 0) + 1; }); }
+    Object.keys(STOP).forEach(function (w) { v[w] = (v[w] || 0) + 5; });
+    KB.forEach(function (e) { e.keys.forEach(function (k) { addText(k); addText(k); }); addText(e.a); });
+    FIELD_SYNONYMS.forEach(function (f) { addText(f[0]); f[1].forEach(addText); });
+    Object.keys(CITY_ALIASES).forEach(function (c) { addText(c); CITY_ALIASES[c].forEach(addText); });
+    unis().forEach(function (u) { addText(u.name); addText(englishName(u) || ''); addText(u.location); });
+    if (!passages) passages = buildPassages();
+    passages.forEach(function (p) { addText(p.title + ' ' + p.text); });
+    addText('studying working university universities scholarship scholarships ranking ranked compare versus course courses programme programmes fees living teach teaching located ' +
+      'phone number contact details email whatsapp reach website office offices address where which options list offer offers top best highest leading famous ' +
+      'public private research international foreigners admit legal location city cities directory many number hello thanks between difference better');
+    FACETS.forEach(function (f) { f[1].forEach(addText); });
+    return v;
+  }
+  // edit distance counting a swapped pair of letters as one edit; gives up past max
+  function editDistance(a, b, max) {
+    var prev2 = null, prev = [], cur, i, j;
+    for (j = 0; j <= b.length; j++) prev[j] = j;
+    for (i = 1; i <= a.length; i++) {
+      cur = [i];
+      var rowMin = i;
+      for (j = 1; j <= b.length; j++) {
+        var cost = a.charAt(i - 1) === b.charAt(j - 1) ? 0 : 1;
+        var d = Math.min(prev[j] + 1, cur[j - 1] + 1, prev[j - 1] + cost);
+        if (prev2 && i > 1 && j > 1 && a.charAt(i - 1) === b.charAt(j - 2) && a.charAt(i - 2) === b.charAt(j - 1)) d = Math.min(d, prev2[j - 2] + 1);
+        cur[j] = d;
+        if (d < rowMin) rowMin = d;
+      }
+      if (rowMin > max) return max + 1;
+      prev2 = prev; prev = cur;
+    }
+    return prev[b.length];
+  }
+  function correct(text) {
+    if (!vocab) { vocab = buildVocab(); vocabWords = Object.keys(vocab); }
+    return foldText(text).trim().split(' ').map(function (w) {
+      if (w.length < 4 || vocab[w] || /\d/.test(w)) return w;
+      var max = w.length >= 7 ? 2 : 1, best = w, bd = max + 1, bk = -1;
+      vocabWords.forEach(function (c) {
+        if (Math.abs(c.length - w.length) > max) return;
+        var d = editDistance(w, c, max);
+        if (d > max) return;
+        // closest first; on a tie, the same first letter, then the same length, then the commoner word
+        var k = (c.charAt(0) === w.charAt(0) ? 1000 : 0) + (c.length === w.length ? 500 : 0) + Math.min(vocab[c], 499);
+        if (d < bd || (d === bd && k > bk)) { bd = d; bk = k; best = c; }
+      });
+      return best;
+    }).join(' ');
+  }
+  // shorthand people type in capitals, read before the case is folded away
+  function expandRaw(text) {
+    return String(text)
+      .replace(/\bIT\b/g, ' ICT ')
+      .replace(/\b(CS|CSE)\b/g, ' computer science ')
+      .replace(/\bAI\b/g, ' artificial intelligence ')
+      .replace(/\bPR\b/gi, ' permanent residence ')
+      .replace(/\bvs\.?(?=\s)/gi, ' versus ');
+  }
 
+  /* ---- follow-ups: what the conversation is about ---- */
+  var chatCtx = { uni: null, city: null, field: null };
+  function resetChatCtx() { chatCtx = { uni: null, city: null, field: null }; }
+  var FACETS = [
+    ['fees', ['fee', 'fees', 'tuition', 'cost', 'costs', 'price', 'expensive', 'cheap', 'how much']],
+    ['rank', ['ranked', 'ranking', 'rankings', 'rank', 'qs', 'position', 'how good', 'world rank']],
+    ['courses', ['course', 'courses', 'programme', 'programmes', 'program', 'programs', 'teach', 'teaches', 'subjects', 'fields', 'offer', 'offers', 'degrees', 'study there']],
+    ['where', ['where', 'location', 'located', 'which city', 'address']],
+    ['approved', ['approved', 'mswia', 'international', 'foreigners', 'foreign', 'admit', 'legal', 'legally', 'accept international']],
+    ['type', ['public', 'private', 'research university', 'type of', 'kind of']]
+  ];
+  function facetOf(q) { for (var i = 0; i < FACETS.length; i++) if (hasAny(q, FACETS[i][1])) return FACETS[i][0]; return null; }
+  function refersBack(q) { return hasAny(q, ['it', 'its', 'this one', 'that one', 'there', 'this university', 'that university', 'the university', 'they', 'their', 'them']); }
+  function shortName(u) { return displayName(u); }
+  function dirLink(q, label) { return '[' + label + '](./universities.html?q=' + encodeURIComponent(q) + ')'; }
+
+  function uniFacet(u, facet) {
+    var name = '**' + shortName(u) + '**', w = qsWorld(u), city = cityOf(u.location);
+    var fields = String(u.programs || '').split(',').map(function (s) { return s.trim(); }).filter(Boolean);
+    var acts = [{ label: 'Open full details', go: 'uni', name: u.name }, { label: 'Evaluate my profile for it', go: 'enquire', name: u.name }];
+    var r;
+    if (facet === 'rank') r = { text: u.ranked ? name + ' is ' + (w ? '**#' + w + ' in the world** and ' : '') + '**#' + u.rank + ' in Poland** in the QS World University Rankings 2027.' : name + " isn't in the QS World University Rankings 2027. It can still admit international students: every institution in our directory is MSWiA-approved or exempt.", chips: ['What does it teach?', 'Top universities in Poland'] };
+    else if (facet === 'fees') r = { text: "Fees at " + name + " aren't listed on this page, so I won't quote a figure. Polish public universities are among the **most affordable in the EU**, and an advisor can confirm the exact fee for your programme.", chips: ['Scholarships and loans', 'Can I work while studying?'], acts: [ADVISOR] };
+    else if (facet === 'courses') r = { text: name + ' runs **' + (u.programmes || '?') + ' study programmes**' + (fields.length ? ' across ' + fields.join(', ') : '') + '.\n' + dirLink(u.name, 'See it in the university directory'), chips: ['Is it QS-ranked?', 'Universities in ' + city] };
+    else if (facet === 'where') r = { text: name + ' is in **' + u.location + '**.', chips: ['Universities in ' + city, 'What does it teach?'] };
+    else if (facet === 'approved') r = { text: 'Yes. ' + name + " can admit international students: it's MSWiA-approved or exempt, which is what a residence permit for studies depends on.", chips: ['How do I get a Polish student visa?', 'What does it teach?'] };
+    else r = { text: name + ' is a **' + (u.type || 'higher education institution') + '** in ' + city + '.' + (/research/i.test(u.type || '') ? ' It belongs to the Excellence Initiative: Research University (IDUB) programme.' : ''), chips: ['Is it QS-ranked?', 'What does it teach?'] };
+    r.acts = r.acts || acts;
+    r.ctx = { uni: u, city: city };
+    return r;
+  }
+
+  function compareUnis(a, b) {
+    function line(u) {
+      var w = qsWorld(u);
+      return '• **' + shortName(u) + '**: ' + cityOf(u.location) + ', ' + (u.type || 'institution') + '; ' +
+        (u.ranked ? (w ? '#' + w + ' in the world, ' : '') + '#' + u.rank + ' in Poland' : 'not QS-ranked') + '; ' + (u.programmes || '?') + ' programmes';
+    }
+    var fa = String(a.programs || '').split(',').map(function (s) { return s.trim(); }).filter(Boolean);
+    var both = fa.filter(function (f) { return offers(b, f); });
+    return {
+      text: 'Side by side:\n' + line(a) + '\n' + line(b) + (both.length ? '\n\nBoth teach ' + both.join(', ') + '.' : '') +
+        '\n\nWhich suits you depends on your subject and profile. An advisor can weigh them for you, free.',
+      acts: [{ label: 'Open ' + shortName(a), go: 'uni', name: a.name }, { label: 'Open ' + shortName(b), go: 'uni', name: b.name }, ADVISOR],
+      chips: ['Top universities in Poland', 'Request a callback'], ctx: { uni: null, city: null }
+    };
+  }
+  function compareCities(list, field, q) {
+    list = list.slice(0, 3);
+    var rows = list.map(function (c) {
+      var all = unis().filter(function (x) { return cityOf(x.location) === c; });
+      var pool = field ? all.filter(function (x) { return offers(x, field); }) : all;
+      var top = rankedFirst(pool)[0], qs = all.filter(function (x) { return x.ranked; }).length;
+      return '• **' + c + '**: ' + pool.length + ' institution' + (pool.length === 1 ? '' : 's') + (field ? ' teaching ' + field : '') + ', ' + qs + ' QS-ranked' +
+        (top ? '. Best known: ' + shortName(top) + (qsWorld(top) ? ' (#' + qsWorld(top) + ' world)' : '') : '');
+    });
+    var money = hasAny(q, ['cost', 'costs', 'rent', 'living', 'cheap', 'cheaper', 'expensive', 'budget']);
+    return {
+      text: list.join(' vs ') + (field ? ', for ' + field : '') + ':\n' + rows.join('\n') +
+        (money ? "\n\nThis page doesn't compare living costs between cities, so I won't guess; an advisor can." : ''),
+      acts: [{ label: 'Browse the directory', go: 'directory' }].concat(money ? [ADVISOR] : []),
+      chips: list.map(function (c) { return 'Universities in ' + c; }).slice(0, 2).concat(['Request a callback']),
+      ctx: { city: list[list.length - 1], field: field, uni: null }
+    };
+  }
+
+  // what to ask next after a knowledge-base answer, keyed by its first key
+  var KB_NEXT = {
+    'visa': ['Can I work while studying?', 'What happens after graduation?', 'Do I need IELTS?'],
+    'mswia': ['How do I get a Polish student visa?', 'Top universities in Poland'],
+    'work': ['Can I stay after graduation?', 'Can my family join me?'],
+    'after graduation': ['What is the EU Blue Card?', 'How do I get permanent residence?'],
+    'blue card': ['How do I get permanent residence?', 'Can my family join me?'],
+    'permanent residence': ['Can my family join me?', 'Top universities in Poland'],
+    'family': ['Can my partner work?', 'How do I get permanent residence?'],
+    'scholarship': ['Education loans', 'Can I work while studying?'],
+    'loan': ['Scholarships', 'Proof of funds for the visa'],
+    'scholarships and loans': ['Education loans', 'Can I work while studying?'],
+    'cost': ['Scholarships and loans', 'Can I work while studying?'],
+    'proof of funds': ['Education loans', 'How do I get a Polish student visa?'],
+    'ielts': ['Admission requirements', 'Top universities in Poland'],
+    'requirement': ['Do I need IELTS?', 'How do I get a Polish student visa?'],
+    'intake': ['Admission requirements', 'Request a callback'],
+    'accommodation': ['Help after I arrive', 'Can I work while studying?'],
+    'post landing': ['Accommodation', 'Can I work while studying?'],
+    'why poland': ['Top universities in Poland', 'Can I work while studying?'],
+    'excellence initiative': ['Top universities in Poland', 'PhD in Poland'],
+    'phd': ['Research universities', 'Scholarships'],
+    'refusal': ['Request a callback', 'How do I get a Polish student visa?'],
+    'mba': ['Can I work while studying?', 'Top universities in Poland'],
+    'services': ['Request a callback', 'Help after I arrive'],
+    'tutee': ['What services do you offer?', 'Request a callback']
+  };
+  function kbReply(e) {
+    return { text: e.a === '__SERVICES__' ? servicesAnswer() : e.a, acts: e.acts, chips: KB_NEXT[e.keys[0]] || null, ctx: { uni: null } };
+  }
+
+  /* ---- the answer pipeline ---- */
+  function route(q, qt) {
     if (/^ (hi|hello|hey|hii|hiya|namaste|good (morning|afternoon|evening)) /.test(q) && qt.length <= 2)
-      return { text: "Hello! What would you like to know about studying in Poland? Try asking about visas, top universities, working while you study or bringing your family." };
+      return { text: "Hello! What would you like to know about studying in Poland? Try asking about visas, top universities, working while you study or bringing your family.", chips: ['Top universities in Poland', 'How do I get a Polish student visa?', 'Can I work while studying?'] };
     if (/ (thanks|thank you|thx|ty) /.test(q) && qt.length <= 3) return { text: "You're welcome! Ask me anything else about studying in Poland." };
 
-    var u = findUni(q);
-    if (u) return uniAnswer(u);
+    var cities = findCities(q), field = findField(q), facet = facetOf(q);
+    var compare = hasAny(q, ['versus', 'compare', 'comparison', 'difference', 'better', 'or', 'between']);
+    var named = findUnis(q);
+    if (named.length >= 2 && compare) return named.at[0] <= named.at[1] ? compareUnis(named[0], named[1]) : compareUnis(named[1], named[0]);
+    var u = named[0] || null;
+    // "is it ranked?", "what does it teach?": about the university just discussed
+    if (!u && chatCtx.uni && facet && refersBack(q) && !cities.length && !field && !hasAny(q, ['living', 'live', 'life', 'rent']))
+      u = chatCtx.uni;
+    if (u) {
+      // "can I study medicine at Jagiellonian?"
+      if (field && (!facet || facet === 'courses')) {
+        var yes = offers(u, field);
+        return { text: yes ? 'Yes. **' + shortName(u) + '** teaches ' + field + ', among ' + (u.programmes || 'its') + ' programmes in all. Whether a specific course runs in English, and when, varies by intake.\n' + dirLink(u.name, 'See it in the university directory')
+            : "**" + shortName(u) + "** doesn't list " + field + ' among its fields. ' + dirLink(field, 'Universities that teach ' + field),
+          acts: [{ label: 'Open full details', go: 'uni', name: u.name }, ADVISOR], chips: [field + ' in ' + cityOf(u.location), 'Is it QS-ranked?'], ctx: { uni: u, city: cityOf(u.location), field: field } };
+      }
+      if (facet) return uniFacet(u, facet);
+      var card = uniAnswer(u);
+      card.chips = ['What does it teach?', 'Universities in ' + cityOf(u.location), 'Fees there?'];
+      card.ctx = { uni: u, city: cityOf(u.location) };
+      return card;
+    }
 
     if (hasAny(q, ['phone', 'phone number', 'call you', 'contact number', 'email', 'e mail', 'contact', 'contact details', 'whatsapp', 'reach you', 'website', 'your office', 'your offices', 'office address', 'your address', 'where are you']) && !hasAny(q, ['visa', 'university', 'universities']))
       return { text: "You can reach Tutee Connect here:\n📞 +91 73583 64959\n📧 info@tuteeconnect.com\n🌐 www.tuteeconnect.com\n📍 Chennai: 1st Floor, ALA Corner Complex, Virugambakkam - 600092\n📍 Dubai: Tutee Connect LLC FZ, Meydan Grandstand, U.A.E.",
-        acts: [{ label: 'WhatsApp us', go: 'whatsapp' }, { label: 'Free evaluation form', go: 'contact' }] };
+        acts: [{ label: 'WhatsApp us', go: 'whatsapp' }, { label: 'Free evaluation form', go: 'contact' }], chips: ['Request a callback'] };
 
-    var city = findCity(q), field = findField(q);
+    if (cities.length >= 2) return compareCities(cities, field, q);
+    var city = cities[0] || null;
+    // "what about Wrocław?" keeps the subject; "and ICT?" keeps the city
+    var followUp = /^ (and|what about|how about|what of|in|ok and) /.test(q);
+    var carried = false;
+    if (city && !field && chatCtx.field && (followUp || qt.length === 1)) { field = chatCtx.field; carried = true; }
+    if (field && !city && chatCtx.city && followUp) city = chatCtx.city;
+
     var aboutUnis = hasAny(q, ['university', 'universities', 'college', 'colleges', 'institution', 'institutions', 'where', 'which', 'study in', 'offer', 'offers', 'options', 'list']);
     var aboutRank = hasAny(q, ['top', 'best', 'ranked', 'ranking', 'rankings', 'rank', 'qs', 'highest', 'leading', 'good universities', 'famous']);
 
-    if (city && (aboutUnis || aboutRank || field || qt.length <= 2)) {
+    // a strong knowledge-base hit beats a two-word guess at a subject ("GMAT for MBA")
+    var kbBest = null, kbScore = 0;
+    KB.forEach(function (e) {
+      var s = 0;
+      e.keys.forEach(function (k) { if (has(q, k)) s += 2 + foldText(k).trim().split(' ').length; });
+      if (s > kbScore) { kbScore = s; kbBest = e; }
+    });
+    if (city && (aboutUnis || aboutRank || field || qt.length === 1 || followUp)) {
       var inCity = unis().filter(function (x) { return cityOf(x.location) === city && (!field || offers(x, field)); });
-      if (!inCity.length) return { text: 'I couldn’t find ' + (field ? field + ' at ' : '') + 'institutions in ' + city + ' in our directory.', acts: [{ label: 'Browse the directory', go: 'directory' }, ADVISOR] };
+      var note = '';
+      // a subject carried over from the last question, with nothing here: show the whole city instead
+      if (!inCity.length && carried) {
+        note = 'None of ' + city + "'s institutions list " + field + '. Here are all of them.\n';
+        field = null;
+        inCity = unis().filter(function (x) { return cityOf(x.location) === city; });
+      }
+      if (!inCity.length) return { text: 'I couldn’t find ' + (field ? field + ' at ' : '') + 'institutions in ' + city + ' in our directory.', acts: [{ label: 'Browse the directory', go: 'directory' }, ADVISOR], ctx: { city: city, field: field } };
       var top = rankedFirst(inCity).slice(0, 6);
-      return { text: '**' + inCity.length + ' institution' + (inCity.length === 1 ? '' : 's') + ' in ' + city + (field ? ' offering ' + field : '') + '**, best-known first:\n' + top.map(uniLine).join('\n') + (inCity.length > top.length ? '\n…and ' + (inCity.length - top.length) + ' more in the directory.' : ''),
-        acts: [{ label: 'Browse the directory', go: 'directory' }] };
+      var other = city === 'Warsaw' ? 'Kraków' : 'Warsaw';
+      return { text: note + '**' + inCity.length + ' institution' + (inCity.length === 1 ? '' : 's') + ' in ' + city + (field ? ' teaching ' + field : '') + '**, best-known first:\n' + top.map(uniLine).join('\n') +
+          '\n' + dirLink(field ? city + ' ' + field : city, inCity.length > top.length ? 'See all ' + inCity.length + ' in the directory' : 'Open them in the directory'),
+        acts: [{ label: 'Browse the directory', go: 'directory' }],
+        chips: (field ? [] : ['ICT in ' + city, 'Engineering in ' + city]).concat(['Compare ' + city + ' and ' + other]).slice(0, 3),
+        ctx: { city: city, field: field, uni: null } };
     }
-    if (field && (aboutUnis || aboutRank || hasAny(q, ['course', 'courses', 'programme', 'programmes', 'program', 'programs', 'study', 'degree']) || qt.length <= 2)) {
+    if (field && (aboutUnis || aboutRank || hasAny(q, ['course', 'courses', 'programme', 'programmes', 'program', 'programs', 'study', 'degree']) || followUp || (qt.length <= 2 && kbScore < 3))) {
       var withField = rankedFirst(unis().filter(function (x) { return offers(x, field); }));
-      if (withField.length) return { text: '**' + withField.length + ' institutions offer ' + field + '**. The highest ranked:\n' + withField.slice(0, 6).map(uniLine).join('\n') + '\n\nAvailability of a specific course varies by university and intake.',
-        acts: [{ label: 'Browse the directory', go: 'directory' }, ADVISOR] };
+      if (withField.length) return { text: '**' + withField.length + ' institutions teach ' + field + '**. The highest ranked:\n' + withField.slice(0, 6).map(uniLine).join('\n') +
+          '\n' + dirLink(field, 'Browse them all in the directory') + '\n\nAvailability of a specific course varies by university and intake.',
+        acts: [{ label: 'Browse the directory', go: 'directory' }, ADVISOR],
+        chips: field === 'Services' ? ['Scholarships and loans'] : [field + ' in Warsaw', field + ' in Kraków', 'Scholarships and loans'],
+        ctx: { field: field, city: null, uni: null } };
     }
     if (aboutRank && (aboutUnis || has(q, 'qs'))) {
       var ranked = rankedFirst(unis().filter(function (x) { return x.ranked; })).slice(0, 10);
-      return { text: '**Top Polish universities, QS World University Rankings 2027:**\n' + ranked.map(uniLine).join('\n') + '\n\nAll 20 QS-ranked Polish institutions are in our directory.', acts: [{ label: 'Browse the directory', go: 'directory' }] };
+      return { text: '**Top Polish universities, QS World University Rankings 2027:**\n' + ranked.map(uniLine).join('\n') + '\n\nAll 20 QS-ranked Polish institutions are in ' + dirLink('', 'our directory').replace('?q=', '') + '.',
+        acts: [{ label: 'Browse the directory', go: 'directory' }], chips: ['Which is best for ICT?', 'Compare Warsaw and Kraków', 'Tell me about Jagiellonian University'], ctx: { uni: null } };
     }
     if (hasAny(q, ['how many universities', 'how many institutions', 'number of universities', 'list of universities', 'all universities', 'directory', 'cities'])) {
       var cs = {}; unis().forEach(function (x) { var c = cityOf(x.location); cs[c] = (cs[c] || 0) + 1; });
       var hubs = Object.keys(cs).sort(function (a, b) { return cs[b] - cs[a]; }).slice(0, 6).map(function (c) { return c + ' (' + cs[c] + ')'; }).join(', ');
-      return { text: 'Our directory lists **' + unis().length + ' institutions** across **' + Object.keys(cs).length + ' cities** that can legally admit international students: 20 are in the QS World University Rankings 2027 and 10 in the Excellence Initiative: Research University programme.\n\nBiggest hubs: ' + hubs + '.', acts: [{ label: 'Browse the directory', go: 'directory' }] };
+      return { text: 'Our directory lists **' + unis().length + ' institutions** across **' + Object.keys(cs).length + ' cities** that can legally admit international students: 20 are in the QS World University Rankings 2027 and 10 in the Excellence Initiative: Research University programme.\n\nBiggest hubs: ' + hubs + '.',
+        acts: [{ label: 'Browse the directory', go: 'directory' }], chips: ['Top universities in Poland', 'Universities in Warsaw'] };
     }
 
     // services by name, e.g. "documentation", "post-landing"
     var svc = (window.PL_SERVICES || []).filter(function (s) { return has(q, s.title) || (toks(s.title).length && toks(s.title).every(function (w) { return qt.indexOf(w) > -1; })); })[0];
-    if (svc) return { text: '**' + svc.title + '**: ' + svc.tagline + '\n\n' + String(svc.desc).split(/\n{2,}/)[0], acts: [{ label: 'Request this service', go: 'contact' }] };
+    if (svc) return { text: '**' + svc.title + '**: ' + svc.tagline + '\n\n' + String(svc.desc).split(/\n{2,}/)[0], acts: [{ label: 'Request this service', go: 'contact' }], chips: ['Request a callback', 'What services do you offer?'] };
 
     // knowledge base
-    var best = null, bestScore = 0;
-    KB.forEach(function (e) {
-      var s = 0;
-      e.keys.forEach(function (k) { if (has(q, k)) s += 2 + foldText(k).trim().split(' ').length; });
-      if (s > bestScore) { bestScore = s; best = e; }
-    });
-    if (best && bestScore >= 3) return { text: best.a === '__SERVICES__' ? servicesAnswer() : best.a, acts: best.acts };
+    if (kbBest && kbScore >= 3) return kbReply(kbBest);
 
     // anything else the page itself says
     var found = searchPage(qt);
     if (found) return found;
 
-    return { text: "I couldn't find that on this page, and I'd rather not guess. Our advisors can answer it directly, and it's free.",
-      acts: [{ label: 'Talk to an advisor', go: 'contact' }, { label: 'WhatsApp us', go: 'whatsapp' }] };
+    return { text: "I couldn't find that on this page, and I'd rather not guess. Our advisors can answer it directly, and it's free: use the [free evaluation form](#contact) or ask me for a callback.",
+      acts: [{ label: 'Request a callback', go: 'callback' }, { label: 'WhatsApp us', go: 'whatsapp' }] };
+  }
+
+  function answer(text) {
+    var asked = foldText(text);
+    var q = ' ' + correct(expandRaw(text)) + ' ', qt = toks(q);
+    var res = route(q, qt);
+    if (res.ctx) Object.keys(res.ctx).forEach(function (k) { chatCtx[k] = res.ctx[k]; });
+    if (res.chips) res.chips = res.chips.filter(function (c) { return foldText(c) !== asked; }).slice(0, 3);
+    return res;
   }
 
   function enquireAbout(name) {
-    if ($('#contact [data-destination-input]')) { setDestination(name); goToSection('contact'); return; }
+    if ($('#contact [data-destination-input]')) { setShortlist(name); goToSection('contact'); return; }
     try { localStorage.setItem('selectedUniversity', name); window.location.href = './index.html#contact'; }
     catch (e) { window.location.href = './index.html?apply=' + encodeURIComponent(name) + '#contact'; }
   }
@@ -2179,10 +2528,23 @@ ank field in the data is
 
     var clockFmt = null;   // one formatter, made on first use (making one per message was slow)
     function clockNow() { return (clockFmt || (clockFmt = new Intl.DateTimeFormat([], { hour: '2-digit', minute: '2-digit' }))).format(new Date()); }
-    function push(role, content, acts, atTop) {
+    // The conversation is kept for this browser tab (sessionStorage), so a reload or a trip
+    // to the directory and back doesn't lose it. The name, phone and email typed for a
+    // callback are never kept.
+    var STORE = 'tc_pl_chat', log = [], answered = 0;
+    function save() {
+      try { sessionStorage.setItem(STORE, JSON.stringify({ log: log.slice(-30), n: answered, ctx: { city: chatCtx.city, field: chatCtx.field, uni: chatCtx.uni && chatCtx.uni.name } })); }
+      catch (e) { /* storage unavailable */ }
+    }
+    // answers may carry links: [text](#section) or [text](./universities.html?q=...)
+    function chatHtml(s) {
+      return mdToHtml(s).replace(/\[([^\]]+)\]\((#[\w-]+|\.\/universities\.html[^\s)]*)\)/g, '<a href="$2" data-chat-link>$1</a>');
+    }
+    function push(role, content, acts, atTop, keep) {
       var m = document.createElement('div');
       m.className = 'msg ' + (role === 'assistant' ? 'ai' : 'me');
-      m.innerHTML = mdToHtml(content);
+      m.innerHTML = role === 'assistant' ? chatHtml(content) : mdToHtml(content);
+      if (!atTop && keep !== false) { log.push({ r: role, c: content, a: acts || null }); save(); }
       if (acts && acts.length) {
         var row = document.createElement('div');
         row.className = 'msg-acts';
@@ -2198,7 +2560,23 @@ ank field in the data is
       if (atTop) list.insertBefore(m, list.firstChild); else list.insertBefore(m, typing);
       list.scrollTop = list.scrollHeight;
     }
+    // questions to ask next, under the latest answer only
+    function suggest(chips) {
+      $$('.chat-next', list).forEach(function (n) { n.remove(); });
+      if (!chips || !chips.length) return;
+      var row = document.createElement('div');
+      row.className = 'chips chat-next';
+      chips.forEach(function (c) {
+        var b = document.createElement('button');
+        b.type = 'button'; b.textContent = c;
+        b.addEventListener('click', function () { send(c); });
+        row.appendChild(b);
+      });
+      list.insertBefore(row, typing);
+      list.scrollTop = list.scrollHeight;
+    }
     function act(a) {
+      if (a.go === 'callback') { send(a.label); return; }
       if (a.go === 'whatsapp') { window.open(waHref, '_blank', 'noopener'); return; }
       if (a.go === 'contact') { close(); goToSection('contact'); return; }
       if (a.go === 'directory') { close(); if (!smoothTo('directory')) window.location.href = './universities.html'; return; }
@@ -2212,22 +2590,103 @@ ank field in the data is
     function open() { document.body.classList.add('chat-open'); setTimeout(function () { if (input && FINE) input.focus(); }, 300); }
     function close() { document.body.classList.remove('chat-open'); }
     function reset() {
-      $$('.msg', list).forEach(function (n) { n.remove(); });
+      $$('.msg, .chat-next', list).forEach(function (n) { n.remove(); });
+      stage = 'idle'; lead = { name: '', phone: '', email: '' };
+      log = []; answered = 0; resetChatCtx(); save();
       if (chipRow) chipRow.classList.remove('hidden');
       if (input) input.value = '';
       setTyping(false); syncSendBtn();
       push('assistant', CHAT_WELCOME, null, true);
     }
+
+    /* Lead capture: "Request a callback", "talk to a counsellor" or "call me"
+       asks for name, phone and email one at a time, then sends them to
+       /api/enquiry like the form does. "cancel" (or a question) leaves it. */
+    var stage = 'idle', lead = { name: '', phone: '', email: '' };
+    var LEAD_RE = /^(request a call ?back|evaluate my profile|talk to a counsell?or|book a (free )?(consultation|call)|call me( back)?|i want to (talk|speak) to (a|someone|someone from your team|a counsell?or))\b/i;
+    var CHAT_EMAIL_RE = /^[^\s@]+@[^\s@.]+(\.[^\s@.]+)*\.[A-Za-z]{2,}$/;
+    function later(fn, ms) { setTyping(true); setTimeout(function () { setTyping(false); fn(); }, ms); }
+    function submitLead() {
+      return fetch(ENQUIRY_ENDPOINT, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
+        body: JSON.stringify({
+          subject: 'New Lead from Chatbot!', from_name: 'Tutee AI Counsellor',
+          name: lead.name, phone: lead.phone, email: lead.email,
+          destination: 'Chatbot General Inquiry', form_location: 'Tutee AI chat', page: enquiryPage()
+        })
+      }).then(function (r) { return r.json().catch(function () { return { success: false }; }); });
+    }
+    function startLead() {
+      later(function () {
+        stage = 'asking_name';
+        push('assistant', "Happy to set that up. An expert counsellor reviews your profile personally and calls you within **one working day**.\n\nWhat's your **full name**? (Type **cancel** any time to stop.)", null, false, false);
+      }, 500);
+    }
+    // returns true when the message belonged to the details flow
+    function leadStep(text) {
+      if (stage !== 'idle' && /^(cancel|stop|no thanks|never ?mind|skip)\b/i.test(text)) {
+        stage = 'idle';
+        later(function () { push('assistant', "No problem, I've stopped and nothing was sent. What else would you like to know?", null, false, false); }, 400);
+        return true;
+      }
+      if (stage !== 'idle' && /\?$/.test(text)) stage = 'idle';   // a question leaves the flow and gets answered
+      if (stage === 'asking_name') {
+        if (text.replace(/[^A-Za-zÀ-ɏ]/g, '').length < 2) {
+          later(function () { push('assistant', 'Please type your **full name**, or **cancel**.', null, false, false); }, 400);
+          return true;
+        }
+        lead.name = text; stage = 'asking_phone';
+        later(function () { push('assistant', 'Thanks ' + text.split(/\s+/)[0] + '! What is the best **phone number** (with country code) to reach you at?', null, false, false); }, 600);
+        return true;
+      }
+      if (stage === 'asking_phone') {
+        if (!/^[0-9]{7,15}$/.test(text.replace(/\D/g, ''))) {
+          later(function () { push('assistant', "That doesn't look like a valid phone number. Please enter a valid number (e.g., +91 98765 43210), or type **cancel**.", null, false, false); }, 500);
+          return true;
+        }
+        lead.phone = text; stage = 'asking_email';
+        later(function () { push('assistant', 'Got it. Lastly, what is your **email address**?', null, false, false); }, 600);
+        return true;
+      }
+      if (stage === 'asking_email') {
+        if (!CHAT_EMAIL_RE.test(text)) {
+          later(function () { push('assistant', "That doesn't look like a valid email address. Could you double-check it, or type **cancel**?", null, false, false); }, 500);
+          return true;
+        }
+        lead.email = text; stage = 'idle';
+        push('assistant', 'Perfect! Sending your details to our counsellors now…', null, false, false);
+        setTyping(true);
+        submitLead().then(function (res) {
+          setTyping(false);
+          if (res && res.success) push('assistant', '✅ **Done!** An expert counsellor will call you within one working day.\n\nAnything else I can help with in the meantime?');
+          else push('assistant', "Sorry, that didn't go through. Please use the free evaluation form or WhatsApp us.", [{ label: 'Free evaluation form', go: 'contact' }, { label: 'WhatsApp us', go: 'whatsapp' }]);
+        }).catch(function () {
+          setTyping(false);
+          push('assistant', 'Network error while sending. Please try the free evaluation form or WhatsApp us.', [{ label: 'Free evaluation form', go: 'contact' }, { label: 'WhatsApp us', go: 'whatsapp' }]);
+        });
+        return true;
+      }
+      if (LEAD_RE.test(text)) { startLead(); return true; }
+      return false;
+    }
+
     function send(text) {
       if (!text || !text.trim()) return;
       text = text.trim().slice(0, 400);
-      push('user', text);
+      // while the callback details are being asked for, what's typed is personal: shown, never kept
+      push('user', text, null, false, stage === 'idle');
       if (input) input.value = '';
       syncSendBtn();
       if (chipRow) chipRow.classList.add('hidden');
+      $$('.chat-next', list).forEach(function (n) { n.remove(); });
+      if (leadStep(text)) return;
       var res = answer(text);
+      answered++;
+      var chips = (res.chips || []).slice();
+      if (answered % 4 === 0 && chips.indexOf('Request a callback') < 0) chips.push('Request a callback');
       setTyping(true);
-      setTimeout(function () { setTyping(false); push('assistant', res.text, res.acts); }, 450 + Math.min(700, res.text.length));
+      setTimeout(function () { setTyping(false); push('assistant', res.text, res.acts); suggest(chips); save(); }, 450 + Math.min(700, res.text.length));
     }
     function syncSendBtn() { if (sendBtn && input) sendBtn.disabled = !input.value.trim(); }
 
@@ -2242,7 +2701,26 @@ ank field in the data is
       input.addEventListener('keydown', function (e) { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); send(input.value); } });
     }
     window.addEventListener('keydown', function (e) { if (e.key === 'Escape') close(); });
+    // a link in an answer: a section of this page scrolls there; the directory opens normally
+    list.addEventListener('click', function (e) {
+      var a = e.target.closest && e.target.closest('a[data-chat-link]');
+      if (!a) return;
+      var h = a.getAttribute('href') || '';
+      if (h.charAt(0) === '#' && document.getElementById(h.slice(1))) { e.preventDefault(); close(); goToSection(h.slice(1)); }
+    });
     push('assistant', CHAT_WELCOME, null, true);
+    // bring back this tab's conversation
+    try {
+      var kept = JSON.parse(sessionStorage.getItem(STORE) || 'null');
+      if (kept && kept.log && kept.log.length) {
+        kept.log.forEach(function (m) { push(m.r, m.c, m.a, false, false); });
+        log = kept.log; answered = kept.n || 0;
+        var kc = kept.ctx || {};
+        chatCtx.city = kc.city || null; chatCtx.field = kc.field || null;
+        chatCtx.uni = kc.uni ? unis().filter(function (x) { return x.name === kc.uni; })[0] || null : null;
+        if (chipRow) chipRow.classList.add('hidden');
+      }
+    } catch (e) { /* storage unavailable */ }
     window.TC_chatAnswer = answer;   // handy for checking answers from the console
   }
 
