@@ -156,7 +156,7 @@
           <span class="eyebrow">Why Poland?</span>
           <h2 class="h2 split" data-split>Europe's rising star for <em>ambitious</em> students.</h2>
           <p class="lede" data-reveal style="--d:.2s">Poland is one of the fastest-growing destinations for international students in the European Union. With part-time work that carries no weekly cap, a nine-month permit to find work after graduation and an EU-recognised qualification, it is the ideal place to study and build a career.</p>
-          <p class="lede" data-reveal style="--d:.3s;font-size:14px;font-weight:700;color:var(--red)"><span class="only-desk">Keep scrolling →</span><span class="only-mob">Swipe to explore →</span></p>
+          <p class="lede why-hint" data-reveal style="--d:.3s;font-size:14px;font-weight:700;color:var(--red)"><span class="only-desk">Keep scrolling →</span><span class="only-mob">Swipe to explore →</span></p>
         </div>
         <article class="why-card photo">
           <picture><source type="image/webp" srcset="./assets/img/photos/poland-city.webp"><img src="./assets/img/photos/poland-city.jpg" alt="" loading="lazy" decoding="async"></picture>
@@ -281,7 +281,7 @@
           <div><b data-count="64">0</b>cities</div>
           <div><b data-count="20">0</b>QS-ranked</div>
         </div>
-        <p class="sky-note"><span class="only-desk">Each photo's height is its university's number of study programmes. </span>Ranks are positions among Polish institutions in the QS World University Rankings 2027 (#1 = highest-placed in Poland). <span class="only-desk">Hover or tap a photo; click it again for full details.</span><span class="only-mob">Swipe through the photos; tap the front one for full details.</span></p>
+        <p class="sky-note"><span class="only-desk">Each photo's height is its university's number of study programmes. </span>Ranks are positions among Polish institutions in the QS World University Rankings 2027 (#1 = highest-placed in Poland). <span class="only-desk">Hover or tap a photo; click it again for full details.</span><span class="only-mob">Tap a university for its full details.</span></p>
       </div>
     </div>
     <!-- outline of Poland for the details pop-up -->
@@ -299,10 +299,10 @@
     <div class="section-head center">
       <span class="eyebrow">Fund your future</span>
       <h2 class="h2 split" data-split>Scholarships, loans &amp; <em>earning</em> — sorted.</h2>
-      <p class="lede" data-reveal style="--d:.2s">Three ways we make your Polish degree possible. <span class="only-desk">Scroll</span><span class="only-mob">Swipe</span> through them.</p>
+      <p class="lede" data-reveal style="--d:.2s">Three ways we make your Polish degree possible. <span class="only-desk">Scroll through them.</span><span class="only-mob">Tap a tab to switch between them.</span></p>
     </div>
     <div class="stack" data-stack>
-      <article class="stack-card sc-1" style="--i:0" id="scholarships">
+      <article class="stack-card sc-1" style="--i:0" id="scholarships" data-tab="Scholarships">
         <div class="copy">
           <span class="label">01 · Scholarships &amp; grants</span>
           <h3>Unlock your potential with scholarships</h3>
@@ -320,7 +320,7 @@
         </div>
       </article>
 
-      <article class="stack-card sc-2" style="--i:1" id="financial-aid">
+      <article class="stack-card sc-2" style="--i:1" id="financial-aid" data-tab="Loans">
         <div class="copy">
           <span class="label">02 · Education loans</span>
           <h3>Your Polish dream shouldn't break the bank</h3>
@@ -342,7 +342,7 @@
         </div>
       </article>
 
-      <article class="stack-card sc-3" style="--i:2" id="earn-while-you-learn">
+      <article class="stack-card sc-3" style="--i:2" id="earn-while-you-learn" data-tab="Earn &amp; learn">
         <div class="copy">
           <span class="label">03 · Earn while you learn</span>
           <h3>Work part-time. Repay as you study.</h3>
@@ -374,170 +374,180 @@
       <p class="lede" data-reveal style="--d:.2s">Poland offers a structured staircase for international students: study, stay on, work, settle. Each step builds on the last, and we plan the whole climb with you from day one.</p>
     </div>
 
-    <!-- The staircase: choose a step and the climber hops to it; the panel says what happens there -->
-    <div class="climb" id="relocate" data-climb>
-      <div class="climb-left">
-        <p class="climb-hint"><svg width="16" height="16"><use href="#i-spark"/></svg>Choose a step to see what happens there</p>
-        <div class="climb-stairs" role="tablist" aria-label="Four steps to settling in Poland" data-reveal>
-          <button type="button" class="cs s1" role="tab" aria-selected="false" aria-controls="cp-0" id="cs-0" data-step style="--step:0">
-            <span class="cs-n">01</span>
-            <span class="cs-ico"><svg width="20" height="20"><use href="#i-cap"/></svg></span>
-            <span class="cs-kick">Study</span>
-            <span class="cs-t">Polish student visa</span>
+    <!-- Bounce cards: the five stages as a fanned hand of photo cards that bounce in. Hover (or tap)
+         a card to bring it forward while its neighbours spring aside; click it again to open the
+         stage, with its working instrument (visa file, dial, Blue Card, gauge, switchboard). -->
+    <div class="bnc" data-bx>
+      <div class="bnc-fan" data-bnc-fan>
+        <article class="bnc-card bx-study" data-bx-tile style="--i:0">
+          <button type="button" class="bnc-face" data-bnc-face aria-label="Student visa: open the details">
+            <span class="bnc-photo"><picture><source type="image/webp" srcset="assets/img/photos/unis/uj.webp"><img src="assets/img/photos/unis/uj.jpg" alt="" width="960" height="659" loading="lazy" decoding="async"></picture></span>
+            <span class="bnc-kick"><b>01</b>Study</span>
+            <span class="bnc-text"><span class="bnc-title">Student visa</span><span class="bnc-line">Work part-time with no weekly cap</span></span>
+            <span class="bnc-open" aria-hidden="true">Details<svg width="13" height="13" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"/></svg></span>
           </button>
-          <button type="button" class="cs s2" role="tab" aria-selected="false" aria-controls="cp-1" id="cs-1" data-step style="--step:1">
-            <span class="cs-n">02</span>
-            <span class="cs-ico"><svg width="20" height="20"><use href="#i-spark"/></svg></span>
-            <span class="cs-kick">Graduate</span>
-            <span class="cs-t">Nine-month graduate permit</span>
-          </button>
-          <button type="button" class="cs s3" role="tab" aria-selected="false" aria-controls="cp-2" id="cs-2" data-step style="--step:2">
-            <span class="cs-n">03</span>
-            <span class="cs-ico"><svg width="20" height="20"><use href="#i-brief"/></svg></span>
-            <span class="cs-kick">Work</span>
-            <span class="cs-t">EU Blue Card</span>
-          </button>
-          <button type="button" class="cs s4" role="tab" aria-selected="false" aria-controls="cp-3" id="cs-3" data-step style="--step:3">
-            <picture><source type="image/webp" srcset="./assets/img/photos/students-campus.webp"><img src="./assets/img/photos/students-campus.jpg" alt="" loading="lazy" decoding="async"></picture>
-            <span class="cs-n">04</span>
-            <span class="cs-ico"><svg width="20" height="20"><use href="#i-shield"/></svg></span>
-            <span class="cs-kick">Settle</span>
-            <span class="cs-t">EU long-term resident</span>
-          </button>
-          <span class="climber" data-climber aria-hidden="true"><i><b>You</b><svg width="20" height="20"><use href="#i-person"/></svg></i></span>
-          <span class="climb-ground" aria-hidden="true"><i></i></span>
-        </div>
-      </div>
-
-      <div class="climb-panel" data-reveal style="--d:.15s">
-        <article class="cp" id="cp-0" role="tabpanel" aria-labelledby="cs-0" data-cp>
-          <span class="cp-kick">Step 01 · Study</span>
-          <h3>Polish student visa</h3>
-          <span class="cp-chip">Bachelor's or master's</span>
-          <p class="cp-lede">Complete a full-time degree at a university approved to admit international students. We help you choose programmes that lead straight into the graduate permit.</p>
-          <div class="cp-cols">
-            <div><h4>What it means for you</h4><ul>
-              <li>A Polish national visa to arrive, then a temporary residence permit for studies</li>
+          <div class="bx-kit" data-bx-kit hidden>
+            <button type="button" class="bx-gadget bx-file" data-bx-file aria-label="Your visa file: admission letter, proof of funds, health insurance, accommodation. 99% visa success. Check it again">
+              <span class="bx-file-list" aria-hidden="true">
+                <span><svg width="17" height="17"><use href="#i-check"/></svg>Admission letter</span>
+                <span><svg width="17" height="17"><use href="#i-check"/></svg>Proof of funds</span>
+                <span><svg width="17" height="17"><use href="#i-check"/></svg>Health insurance</span>
+                <span><svg width="17" height="17"><use href="#i-check"/></svg>Accommodation</span>
+              </span>
+              <span class="bx-stamp" aria-hidden="true"><b>99%</b><small>visa success</small></span>
+            </button>
+          </div>
+          <div class="bx-info" data-bx-info hidden>
+            <p>Complete a full-time degree at a university approved to admit international students. We help you choose programmes that lead straight into the graduate permit.</p>
+            <ul>
+              <li>A national visa to arrive, then a residence permit for studies; your first permit runs 15 months</li>
               <li>Part-time work with no work permit and no weekly cap while you study full-time</li>
-              <li>Your first permit runs 15 months</li>
-            </ul></div>
-            <div><h4>How we help</h4><ul>
-              <li>Shortlisting MSWiA-approved universities and programmes</li>
-              <li>A visa file checked the way a Polish consular officer reads it</li>
-              <li>Your residence permit for studies</li>
-            </ul></div>
+              <li>Your visa file: admission letter, proof of funds, health insurance and accommodation</li>
+            </ul>
+            <p class="help"><b>We help:</b> an MSWiA-approved shortlist, and a visa file checked the way a consular officer reads it.</p>
+            <p class="fact"><b>99%</b>Polish visa success rate</p>
           </div>
         </article>
-        <article class="cp" id="cp-1" role="tabpanel" aria-labelledby="cs-1" data-cp hidden>
-          <span class="cp-kick">Step 02 · Graduate</span>
-          <h3>Nine-month graduate permit</h3>
-          <span class="cp-chip">9 months</span>
-          <p class="cp-lede">Stay on after graduation to find work or start a business, with no sponsor and no work permit.</p>
-          <div class="cp-cols">
-            <div><h4>What it means for you</h4><ul>
+        <article class="bnc-card bx-grad" data-bx-tile style="--i:1">
+          <button type="button" class="bnc-face" data-bnc-face aria-label="Nine months to stay on: open the details">
+            <span class="bnc-photo"><picture><source type="image/webp" srcset="assets/img/photos/hero/krakow-wawel-1280.webp"><img src="assets/img/photos/hero/krakow-wawel-1280.jpg" alt="" width="1280" height="960" loading="lazy" decoding="async"></picture></span>
+            <span class="bnc-kick"><b>02</b>Graduate</span>
+            <span class="bnc-text"><span class="bnc-title">Nine months to stay on</span><span class="bnc-line">No sponsor, no work permit</span></span>
+            <span class="bnc-open" aria-hidden="true">Details<svg width="13" height="13" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"/></svg></span>
+          </button>
+          <div class="bx-kit" data-bx-kit hidden>
+            <div class="bx-gadget bx-nine">
+              <div class="bx-nine-head">
+                <span class="bx-nine-big"><b>9</b><span>months<small>to stay on</small></span></span>
+                <span class="bx-nine-tag"><svg width="13" height="13"><use href="#i-check"/></svg>No sponsor</span>
+              </div>
+              <ol class="bx-nine-phases">
+                <li class="bx-ph is-hunt"><span class="bx-ph-ico"><svg width="16" height="16"><use href="#i-search"/></svg></span><small>Months 1–3</small><b>Job-hunt</b><span class="bx-ph-mo" aria-hidden="true"><i>1</i><i>2</i><i>3</i></span></li>
+                <li class="bx-ph is-job"><span class="bx-ph-ico"><svg width="16" height="16"><use href="#i-brief"/></svg></span><small>Months 4–6</small><b>Take a job</b><span class="bx-ph-mo" aria-hidden="true"><i>4</i><i>5</i><i>6</i></span></li>
+                <li class="bx-ph is-switch"><span class="bx-ph-ico"><svg width="16" height="16"><use href="#i-reset"/></svg></span><small>Months 7–9</small><b>Switch permit</b><span class="bx-ph-mo" aria-hidden="true"><i>7</i><i>8</i><i>9</i></span></li>
+              </ol>
+              <p class="bx-nine-note"><svg width="14" height="14"><use href="#i-plane"/></svg>Apply before your student permit ends</p>
+            </div>
+          </div>
+          <div class="bx-info" data-bx-info hidden>
+            <p>Stay on after graduation to find work or start a business, with no sponsor and no work permit.</p>
+            <ul>
               <li>Nine months to job-hunt or launch a business</li>
-              <li>No sponsor required</li>
-              <li>Graduates of full-time Polish degrees need no work permit</li>
-            </ul></div>
-            <div><h4>How we help</h4><ul>
-              <li>Timing: you apply in person while still legally resident</li>
-              <li>The application and its documents</li>
-              <li>Planning the move to your work permit</li>
-            </ul></div>
+              <li>No sponsor required; graduates of full-time Polish degrees need no work permit</li>
+              <li>Apply in person while you're still legally resident in Poland</li>
+            </ul>
+            <p class="help"><b>We help:</b> with the timing, the application and the move to your work permit.</p>
+            <p class="fact"><b>0</b>work permits for full-time graduates</p>
           </div>
         </article>
-        <article class="cp" id="cp-2" role="tabpanel" aria-labelledby="cs-2" data-cp hidden>
-          <span class="cp-kick">Step 03 · Work</span>
-          <h3>EU Blue Card</h3>
-          <span class="cp-chip">Partner may work too</span>
-          <p class="cp-lede">Move to an EU Blue Card or a combined residence-and-work permit for long-term employment.</p>
-          <div class="cp-cols">
-            <div><h4>What it means for you</h4><ul>
+        <article class="bnc-card bx-work" data-bx-tile style="--i:2">
+          <button type="button" class="bnc-face" data-bnc-face aria-label="EU Blue Card: open the details">
+            <span class="bnc-photo"><picture><source type="image/webp" srcset="assets/img/photos/why-work.webp"><img src="assets/img/photos/why-work.jpg" alt="" width="800" height="1140" loading="lazy" decoding="async"></picture></span>
+            <span class="bnc-kick"><b>03</b>Work</span>
+            <span class="bnc-text"><span class="bnc-title">EU Blue Card</span><span class="bnc-line">Long-term work in Poland</span></span>
+            <span class="bnc-open" aria-hidden="true">Details<svg width="13" height="13" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"/></svg></span>
+          </button>
+          <div class="bx-kit" data-bx-kit hidden>
+            <div class="bx-gadget bx-card-wrap">
+              <button type="button" class="bx-card" data-bx-card aria-pressed="false" aria-label="EU Blue Card: turn it over to see what it gives your partner">
+                <span class="bx-card-in">
+                  <span class="bx-card-face bx-card-front" aria-hidden="true">
+                    <span class="bx-card-holo"></span>
+                    <svg class="bx-card-stars" viewBox="0 0 60 60" data-bx-stars></svg>
+                    <span class="bx-card-chip"></span>
+                    <span class="bx-card-type">Karta pobytu</span>
+                    <span class="bx-card-name">EU Blue Card</span>
+                    <span class="bx-card-lines"><i></i><i></i><i></i></span>
+                  </span>
+                  <span class="bx-card-face bx-card-back" aria-hidden="true">
+                    <span class="bx-card-strip"></span>
+                    <b>Your partner</b>
+                    <span>may work with no separate work permit</span>
+                  </span>
+                </span>
+              </button>
+              <small class="bx-card-hint">Tap to turn over</small>
+            </div>
+          </div>
+          <div class="bx-info" data-bx-info hidden>
+            <p>Move to an EU Blue Card or a combined residence-and-work permit for long-term employment.</p>
+            <ul>
               <li>Long-term employment in Poland</li>
               <li>Your partner may work with no separate work permit</li>
-              <li>The simplest route for bringing your family</li>
-            </ul></div>
-            <div><h4>How we help</h4><ul>
-              <li>Choosing between the Blue Card and a combined permit</li>
-              <li>Family applications, documents and voivodeship office appointments</li>
-            </ul></div>
+              <li>Bringing your family is far simpler on a Blue Card</li>
+            </ul>
+            <p class="help"><b>We help:</b> choose between the Blue Card and a combined permit, plus family applications and office appointments.</p>
           </div>
         </article>
-        <article class="cp" id="cp-3" role="tabpanel" aria-labelledby="cs-3" data-cp hidden>
-          <span class="cp-kick">Step 04 · Settle</span>
-          <h3>EU long-term resident</h3>
-          <span class="cp-chip">5 years · study counts ½</span>
-          <p class="cp-lede">The final step: long-term resident status after five continuous years of residence, with study time counted at one half.</p>
-          <div class="cp-cols">
-            <div><h4>What it means for you</h4><ul>
+        <article class="bnc-card bx-settle" data-bx-tile style="--i:3">
+          <button type="button" class="bnc-face" data-bnc-face aria-label="Five years to residence: open the details">
+            <span class="bnc-photo"><picture><source type="image/webp" srcset="assets/img/photos/hero/warsaw-old-town-1280.webp"><img src="assets/img/photos/hero/warsaw-old-town-1280.jpg" alt="" width="1280" height="853" loading="lazy" decoding="async"></picture></span>
+            <span class="bnc-kick"><b>04</b>Settle</span>
+            <span class="bnc-text"><span class="bnc-title">Five years to residence</span><span class="bnc-line">Study time counts at half</span></span>
+            <span class="bnc-open" aria-hidden="true">Details<svg width="13" height="13" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"/></svg></span>
+          </button>
+          <div class="bx-kit" data-bx-kit hidden>
+            <div class="bx-gadget bx-pass">
+              <div class="bx-pass-head">
+                <svg class="bx-pass-seal" viewBox="0 0 200 200" aria-hidden="true"><use href="#rosette"/></svg>
+                <span class="bx-pass-title">Karta pobytu<small>Your residence record</small></span>
+                <span class="bx-pass-total"><b data-bx-years>3.5</b><small>of 5 years</small></span>
+              </div>
+              <div class="bx-pass-grid" data-bx-cells aria-hidden="true"></div>
+              <p class="bx-pass-read" aria-live="polite"><span data-bx-verdict>1.5 years to go</span></p>
+              <div class="bx-steps">
+                <div class="bx-step is-study"><span class="bx-step-lbl"><b>Years of study</b><small>count at half</small></span>
+                  <button type="button" data-bx-dec="study" aria-label="One year less of study">&minus;</button><output data-bx-out="study">3</output><button type="button" data-bx-inc="study" aria-label="One more year of study">+</button></div>
+                <div class="bx-step is-work"><span class="bx-step-lbl"><b>Years of work</b><small>count in full</small></span>
+                  <button type="button" data-bx-dec="work" aria-label="One year less of work">&minus;</button><output data-bx-out="work">2</output><button type="button" data-bx-inc="work" aria-label="One more year of work">+</button></div>
+              </div>
+              <span class="bx-resident" aria-hidden="true"><small>EU long-term</small><b>Resident</b><small>5 years reached</small></span>
+            </div>
+          </div>
+          <div class="bx-info" data-bx-info hidden>
+            <p>The final step: EU long-term resident status after five continuous years of residence, with study time counted at one half.</p>
+            <ul>
               <li>Five continuous years of residence in Poland</li>
               <li>Each year of study counts as half a year</li>
-            </ul></div>
-            <div><h4>How we help</h4><ul>
-              <li>Keeping your residence continuous from your first permit</li>
-              <li>Planning the five-year clock with you from day one</li>
-            </ul></div>
+              <li>Work years on a permit or Blue Card count in full</li>
+            </ul>
+            <p class="help"><b>We help:</b> keep your residence continuous and plan the five-year clock from day one.</p>
+            <p class="fact"><b>½</b>of study time counts to residence</p>
           </div>
         </article>
-        <div class="cp-foot">
-          <div class="cp-nav">
-            <button type="button" data-climb-prev aria-label="Previous step"><svg width="18" height="18"><use href="#i-left"/></svg></button>
-            <span><b data-climb-at>01</b> / 04</span>
-            <button type="button" data-climb-next aria-label="Next step"><svg width="18" height="18"><use href="#i-right"/></svg></button>
+        <article class="bnc-card bx-family" data-bx-tile style="--i:4">
+          <button type="button" class="bnc-face" data-bnc-face aria-label="Bring your family: open the details">
+            <span class="bnc-photo"><picture><source type="image/webp" srcset="assets/img/photos/family.webp"><img src="assets/img/photos/family.jpg" alt="" width="1400" height="1050" loading="lazy" decoding="async"></picture></span>
+            <span class="bnc-kick"><b>05</b>Family</span>
+            <span class="bnc-text"><span class="bnc-title">Bring your family</span><span class="bnc-line">Partner and children under 18</span></span>
+            <span class="bnc-open" aria-hidden="true">Details<svg width="13" height="13" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"/></svg></span>
+          </button>
+          <div class="bx-kit" data-bx-kit hidden>
+            <div class="bx-gadget bx-switch">
+              <div class="bx-seg" role="radiogroup" aria-label="Your stage" data-bx-seg>
+                <button type="button" role="radio" aria-checked="true" data-bx-stage="0">Year 1</button>
+                <button type="button" role="radio" aria-checked="false" tabindex="-1" data-bx-stage="1">Year 2</button>
+                <button type="button" role="radio" aria-checked="false" tabindex="-1" data-bx-stage="2">Blue Card</button>
+              </div>
+              <ul class="bx-people" aria-live="polite">
+                <li data-bx-who="partner"><i class="led"></i><b>Partner</b><span data-bx-st>Not yet</span></li>
+                <li data-bx-who="child"><i class="led"></i><b>Child</b><span data-bx-st>Not yet</span></li>
+              </ul>
+            </div>
           </div>
-          <a class="btn sm" href="#contact" data-scroll-to="contact">Plan my route <svg class="arrow" width="16" height="16"><use href="#i-arrow"/></svg></a>
-        </div>
+          <div class="bx-info" data-bx-info hidden>
+            <p>Your partner and children under 18 can join you once you've held residence permits for two years in a row, and it's simplest from the EU Blue Card onwards.</p>
+            <ul>
+              <li><b>Year 1:</b> your first permit runs 15 months, so reunification can't start from it yet</li>
+              <li><b>Year 2:</b> after two years on consecutive permits, with the current one issued for at least a year, they can join you</li>
+              <li><b>Blue Card:</b> the simplest route, and your partner may work with no separate work permit</li>
+            </ul>
+            <p class="help"><b>We help:</b> with family applications, documents and office appointments, timed to your permits.</p>
+          </div>
+        </article>
       </div>
-    </div>
-
-    <div class="path-facts" data-reveal>
-      <div class="fact"><b><span data-count="99">0</span>%</b><span>Polish visa success rate</span></div>
-      <div class="fact"><b>0</b><span>work permits needed by graduates of full-time Polish degrees</span></div>
-      <div class="fact"><b>½</b><span>of your study time counts towards long-term residence</span></div>
-    </div>
-    <!-- Family: pick a stage and the family in the photo shows who can be with you then -->
-    <div class="fam" data-fam data-st="0" data-reveal>
-      <svg class="fam-rosette" viewBox="0 0 200 200" aria-hidden="true"><use href="#rosette"/></svg>
-      <div class="fam-scene">
-        <picture><source type="image/webp" srcset="./assets/img/photos/family.webp"><img src="./assets/img/photos/family.jpg" alt="Łazienki Royal Park in Warsaw" loading="lazy" decoding="async"></picture>
-        <span class="fam-stamp" aria-hidden="true"><span>Not yet</span><span>Welcome</span><span>Simplest route</span></span>
-        <svg class="fam-plane" width="34" height="34" aria-hidden="true"><use href="#i-plane"/></svg>
-        <div class="fam-people" aria-hidden="true">
-          <span class="fp fp-you"><i><svg width="22" height="22"><use href="#i-person"/></svg></i><b>You</b><small>In Poland</small></span>
-          <span class="fp fp-partner"><i><svg width="22" height="22"><use href="#i-person"/></svg><em><svg width="12" height="12"><use href="#i-brief"/></svg></em></i><b>Partner</b><small><span>At home</span><span>With you</span><span>Can work</span></small></span>
-          <span class="fp fp-kids"><i><svg width="17" height="17"><use href="#i-person"/></svg></i><b>Children</b><small><span>At home</span><span>With you</span><span>With you</span></small></span>
-        </div>
-      </div>
-      <div class="fam-copy">
-        <span class="eyebrow on-dark">Family migration</span>
-        <h3>Relocating with your <em>family?</em></h3>
-        <p>Poland lets students bring their partner and children under 18 once they have held residence permits for two years, and makes it straightforward from the EU Blue Card onwards. Pick a stage to see who can be with you.</p>
-        <div class="fam-stages" role="tablist" aria-label="When your family can join you">
-          <span class="fam-track" aria-hidden="true"><i></i></span>
-          <button type="button" role="tab" id="fs-0" aria-controls="fd-0" aria-selected="true" data-fam-stage><span class="fs-dot">1</span><small>Year 1</small><b>First permit</b></button>
-          <button type="button" role="tab" id="fs-1" aria-controls="fd-1" aria-selected="false" data-fam-stage><span class="fs-dot">2</span><small>Year 2</small><b>As a student</b></button>
-          <button type="button" role="tab" id="fs-2" aria-controls="fd-2" aria-selected="false" data-fam-stage><span class="fs-dot">3</span><small>Next</small><b>EU Blue Card</b></button>
-        </div>
-        <div class="fam-details">
-          <div class="fd" id="fd-0" role="tabpanel" aria-labelledby="fs-0" data-fam-detail>
-            <b class="fd-status">Not yet</b>
-            <p>Your first permit runs 15 months, so reunification can't start from it. We plan the timing from day one.</p>
-          </div>
-          <div class="fd" id="fd-1" role="tabpanel" aria-labelledby="fs-1" data-fam-detail hidden>
-            <b class="fd-status">Family can join</b>
-            <p>After two years on consecutive permits, with the current one issued for at least a year, your partner and children under 18 can join you.</p>
-          </div>
-          <div class="fd" id="fd-2" role="tabpanel" aria-labelledby="fs-2" data-fam-detail hidden>
-            <b class="fd-status">Simplest route</b>
-            <p>On an EU Blue Card, bringing your family is far simpler, and your partner may work with no separate work permit.</p>
-          </div>
-        </div>
-        <div class="fam-help">
-          <span class="fam-help-ico"><svg width="20" height="20"><use href="#i-shield"/></svg></span>
-          <p><b>We handle the paperwork:</b> applications, documents and voivodeship office appointments.</p>
-          <a class="btn light sm" href="#contact" data-scroll-to="contact">Get family visa help <svg class="arrow" width="16" height="16"><use href="#i-arrow"/></svg></a>
-        </div>
-      </div>
+      <div class="bnc-dots" data-bnc-dots aria-hidden="true"></div>
+      <p class="bnc-hint" data-bnc-hint>Hover a card to bring it forward. Click it for the details.</p>
     </div>
   </div>
 </section>
@@ -684,8 +694,8 @@
   </div>
   <div class="field"><input id="c-course" name="course" type="text" placeholder=" " autocomplete="off" maxlength="120"><label for="c-course">Subject (e.g. Data Science)</label></div>
   <div class="field-row">
-    <div class="field sel"><div class="sel-box"><select id="c-level" name="study_level" aria-label="Study level"><option value="" selected disabled>Study level</option><option value="Bachelor's">Bachelor&rsquo;s</option><option value="Master's">Master&rsquo;s</option><option value="Doctoral">Doctoral</option><option value="Not sure">Not sure yet</option></select><span class="sel-face" aria-hidden="true"></span></div></div>
-    <div class="field sel"><div class="sel-box"><select id="c-intake" name="intake" aria-label="When you want to start"><option value="Next intake" selected>Start: next intake</option><option value="Within 12 months">Start: within 12 months</option><option value="Later">Start: later</option></select><span class="sel-face" aria-hidden="true"></span></div></div>
+    <div class="field sel"><div class="sel-box"><select id="c-level" name="study_level" aria-label="Study level"><option value="" selected disabled>Degree</option><option value="Bachelor's">Bachelor&rsquo;s</option><option value="Master's">Master&rsquo;s</option><option value="Doctoral">Doctoral</option><option value="Not sure">Not sure yet</option></select><span class="sel-face" aria-hidden="true"></span></div></div>
+    <div class="field sel"><div class="sel-box"><select id="c-intake" name="intake" aria-label="When you want to start"><option value="Next intake" selected>Next intake</option><option value="Within 12 months">In 12 months</option><option value="Later">Start later</option></select><span class="sel-face" aria-hidden="true"></span></div></div>
   </div>
   <input type="hidden" name="shortlist" value="" data-shortlist-input>
   <input type="hidden" name="destination" value="General Poland Inquiry" data-destination-input>

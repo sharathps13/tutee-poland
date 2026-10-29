@@ -527,6 +527,21 @@
     var idxEl = $('[data-hscroll-index]');
     var cards = $$('.why-card', track);
     var stops = [0], owner = [-1], stopOf = [], ticks = [];
+    // phones list the reasons as slim rows: tap one to read it (one open at a time)
+    cards.forEach(function (c, i) {
+      var b = document.createElement('button');
+      b.type = 'button';
+      b.className = 'why-more';
+      b.setAttribute('aria-expanded', 'false');
+      b.setAttribute('aria-label', 'Read about: ' + ($('h3', c) || c).textContent);
+      c.appendChild(b);
+      b.addEventListener('click', function () {
+        var open = !c.classList.contains('open');
+        cards.forEach(function (o) { o.classList.remove('open'); $('.why-more', o).setAttribute('aria-expanded', 'false'); });
+        if (open) { c.classList.add('open'); b.setAttribute('aria-expanded', 'true'); }
+      });
+      if (i === 0) { c.classList.add('open'); b.setAttribute('aria-expanded', 'true'); }
+    });
     var enabled = false, p = 0, x = 0, tx = 0, gliding = false, on = -2;
     snapDots(track, Array.prototype.slice.call(track.children));
 
@@ -798,6 +813,32 @@
     var stack = $('[data-stack]');
     var cards = $$('[data-stack] .stack-card');
     snapDots(stack, cards);
+    // phones switch between the cards with tabs instead of swiping sideways
+    if (stack && cards.length > 1) {
+      var tabs = document.createElement('div');
+      tabs.className = 'stack-tabs';
+      tabs.setAttribute('role', 'tablist');
+      tabs.setAttribute('aria-label', 'Ways to fund your degree');
+      tabs.innerHTML = cards.map(function (c, i) {
+        var name = c.getAttribute('data-tab') || ($('.label', c) || c).textContent.split('\u00b7').pop().trim();
+        return '<button type="button" role="tab" aria-controls="' + c.id + '" aria-selected="' + (i ? 'false' : 'true') + '"' + (i ? ' tabindex="-1"' : '') + '>' + esc(name) + '</button>';
+      }).join('');
+      stack.parentNode.insertBefore(tabs, stack);
+      var tabBtns = $$('button', tabs), tabAt = 0;
+      var showCard = function (i) {
+        tabAt = (i + cards.length) % cards.length;
+        cards.forEach(function (c, j) { c.classList.toggle('on', j === tabAt); });
+        tabBtns.forEach(function (b, j) { b.setAttribute('aria-selected', String(j === tabAt)); b.tabIndex = j === tabAt ? 0 : -1; });
+      };
+      tabBtns.forEach(function (b, i) { b.addEventListener('click', function () { showCard(i); }); });
+      tabs.addEventListener('keydown', function (e) {
+        var d = { ArrowRight: 1, ArrowLeft: -1 }[e.key];
+        if (!d) return;
+        e.preventDefault(); showCard(tabAt + d); tabBtns[tabAt].focus();
+      });
+      stack.classList.add('tabbed');
+      showCard(0);
+    }
     if (cards.length < 2 || REDUCED) return;
     var cleared = false;
     addScene(function () {
@@ -832,116 +873,338 @@
     });
   }
 
-  /* Settle in Poland: four steps to climb. Choosing one sends the climber up (or
-     down) to its tread and opens what happens there. */
-  function initClimb() {
-    var root = $('[data-climb]');
-    if (!root) return;
-    var stairs = $('.climb-stairs', root), steps = $$('[data-step]', root), panels = $$('[data-cp]', root);
-    var climber = $('[data-climber]', root), at = $('[data-climb-at]', root);
-    var prev = $('[data-climb-prev]', root), next = $('[data-climb-next]', root);
-    var cur = -1, pos = null, hopId = 0;   // pos: where the climber is drawn right now
+  /* Settle in Poland: bounce cards. The five stages are a fanned hand of photo cards that bounce in;
+     hovering (or tapping) one straightens and lifts it while its neighbours spring aside, and opening
+     it shows the stage in a pop-up with its working instrument: a visa file, nine months in three phases, an
+     EU Blue Card, a residence record or a family switchboard. */
+  var FAM_SWITCH = [
+    { partner: 'Not yet', child: 'Not yet' },
+    { partner: 'Can join you', child: 'Can join you' },
+    { partner: 'Joins, and may work', child: 'Can join you' }
+  ];
 
-    // where the climber stands on the chosen step (its tread sits 8px up while the step is lifted)
-    function spot() {
-      var s = stairs.getBoundingClientRect(), r = steps[cur].getBoundingClientRect();
-      return { x: r.left - s.left + r.width / 2, y: steps[cur].offsetTop - 8 };
-    }
-    function draw(p) {
-      pos = p;
-      climber.style.transform = 'translate(' + p.x.toFixed(1) + 'px,' + p.y.toFixed(1) + 'px) translate(-50%, calc(-100% - 14px))';
-    }
-    // Hop in an arc from wherever the climber is drawn right now. A new choice made
-    // mid-hop carries on from that point instead of restarting from the ground, so
-    // quick clicks give one smooth path, never a stutter.
-    function place(hop) {
-      var to = spot(), id = ++hopId;
-      if (!hop || !pos || REDUCED) { draw(to); return; }
-      var from = pos, t0 = performance.now(), dur = 620;
-      var lift = 26 + Math.min(34, Math.abs(to.x - from.x) * 0.12);
-      climber.classList.remove('land');
-      (function tick() {
-        if (id !== hopId) return;                                          // a newer hop took over from here
-        var k = clamp((performance.now() - t0) / dur, 0, 1);
-        var e = k < 0.5 ? 4 * k * k * k : 1 - Math.pow(-2 * k + 2, 3) / 2;
-        draw({ x: from.x + (to.x - from.x) * e, y: from.y + (to.y - from.y) * e - Math.sin(Math.PI * k) * lift });
-        if (k < 1) frame(tick);
-        else { void climber.offsetWidth; climber.classList.add('land'); }
-      })();
-    }
-    function set(i, focus) {
-      i = clamp(i, 0, steps.length - 1);
-      if (i === cur) return;
-      var first = cur < 0;
-      cur = i;
-      steps.forEach(function (b, j) {
-        b.classList.toggle('on', j === cur);
-        b.classList.toggle('done', j < cur);
-        b.setAttribute('aria-selected', String(j === cur));
-        b.tabIndex = j === cur ? 0 : -1;
-      });
-      panels.forEach(function (p, j) { p.hidden = j !== cur; });
-      stairs.style.setProperty('--at', cur);
-      if (at) at.textContent = ('0' + (cur + 1)).slice(-2);
-      if (prev) prev.disabled = cur === 0;
-      if (next) next.disabled = cur === steps.length - 1;
-      place(!first);
-      if (focus) steps[cur].focus();
-    }
-    steps.forEach(function (b, i) { b.addEventListener('click', function () { set(i); }); });
-    stairs.addEventListener('keydown', function (e) {
-      var d = { ArrowRight: 1, ArrowDown: 1, ArrowLeft: -1, ArrowUp: -1 }[e.key];
-      if (!d) return;
-      e.preventDefault();
-      set(cur + d, true);
-    });
-    if (prev) prev.addEventListener('click', function () { set(cur - 1); });
-    if (next) next.addEventListener('click', function () { set(cur + 1); });
-    var replace = function () { place(false); };
-    window.addEventListener('resize', replace);
-    window.addEventListener('load', replace);
-    set(0);
-  }
-
-  /* Family: three stages on a track. The family in the photo shows who is with you
-     at each one; until the reader picks, it plays through them by itself. */
-  function initFamily() {
-    var root = $('[data-fam]');
+  function initBento() {
+    var root = $('[data-bx]');
     if (!root) return;
-    var stages = $$('[data-fam-stage]', root), details = $$('[data-fam-detail]', root), plane = $('.fam-plane', root);
-    var cur = -1, touched = false, hovering = false, inView = false;
-    function set(i) {
-      i = (i + stages.length) % stages.length;
-      if (i === cur) return;
-      var from = cur;
-      cur = i;
-      root.setAttribute('data-st', String(cur));
-      stages.forEach(function (b, j) {
-        b.classList.toggle('on', j === cur);
-        b.classList.toggle('past', j < cur);
-        b.setAttribute('aria-selected', String(j === cur));
-        b.tabIndex = j === cur ? 0 : -1;
+    var NS = 'http://www.w3.org/2000/svg';
+    var svgEl = function (tag, attrs) {
+      var n = document.createElementNS(NS, tag);
+      for (var k in attrs) n.setAttribute(k, attrs[k]);
+      return n;
+    };
+    var fmt = function (v) { return String(Math.round(v * 100) / 100); };
+
+    var seen = function (el, cb, t) {
+      if (!('IntersectionObserver' in window)) { cb(); return; }
+      var io = new IntersectionObserver(function (es) { if (es[0].isIntersecting) { io.disconnect(); cb(); } }, { threshold: t || 0.5 });
+      io.observe(el);
+    };
+
+    // the hand of cards: each sits at its own angle and offset; the one brought forward straightens
+    // and lifts while its neighbours spring aside (as far as the row has room for)
+    var fan = $('[data-bnc-fan]', root), cards = $$('[data-bx-tile]', root), up = -1, lastPointer = '';
+    var ROT = [9, 4, -3, -8, 3];
+    var PHONE = window.matchMedia('(max-width: 700px)');
+    var layout = function () {
+      if (PHONE.matches) {   // phones swipe a carousel instead; the fan transforms stand down
+        cards.forEach(function (c) { c.style.removeProperty('--t'); c.style.removeProperty('--dl'); c.classList.remove('up'); });
+        return;
+      }
+      var cw = cards[0].offsetWidth, half = fan.clientWidth / 2;
+      var step = Math.min(cw * .7, (half * 2 - cw) / 4), push = Math.max(0, Math.min(cw * .5, 120, half - cw / 2 - 2 * step - 8));
+      cards.forEach(function (c, j) {
+        var x = (j - 2) * step, rot = ROT[j], y = 0, s = 1;
+        if (up >= 0) {
+          if (j === up) { rot = 0; y = -14; s = 1.06; }
+          else x += j < up ? -push : push;
+        }
+        c.style.setProperty('--t', 'translate(' + x.toFixed(1) + 'px, ' + y + 'px) rotate(' + rot + 'deg) scale(' + s + ')');
+        c.style.setProperty('--dl', up >= 0 ? Math.abs(j - up) * 40 + 'ms' : '0ms');
+        c.classList.toggle('up', j === up);
       });
-      details.forEach(function (d, j) { d.hidden = j !== cur; });
-      // the family flies in when they become able to join
-      if (plane && from === 0 && cur === 1 && !REDUCED) { plane.classList.remove('fly'); void plane.offsetWidth; plane.classList.add('fly'); }
-    }
-    stages.forEach(function (b, i) { b.addEventListener('click', function () { touched = true; set(i); }); });
-    $('.fam-stages', root).addEventListener('keydown', function (e) {
-      var d = { ArrowRight: 1, ArrowLeft: -1 }[e.key];
-      if (!d) return;
-      e.preventDefault(); touched = true;
-      set(clamp(cur + d, 0, stages.length - 1));
-      stages[cur].focus();
+    };
+    var bring = function (j) { if (j !== up) { up = j; layout(); } };
+    layout();
+    var resizeT;
+    window.addEventListener('resize', function () { clearTimeout(resizeT); resizeT = setTimeout(setMode, 120); });
+    cards.forEach(function (c, j) {
+      var face = $('[data-bnc-face]', c);
+      c.addEventListener('pointerenter', function (e) { if (e.pointerType === 'mouse') bring(j); });
+      face.addEventListener('pointerdown', function (e) { lastPointer = e.pointerType; });
+      face.addEventListener('focus', function () { bring(j); });
+      // a mouse click or Enter opens the stage; on touch the first tap brings the card forward
+      face.addEventListener('click', function () {
+        var touch = lastPointer === 'touch' || lastPointer === 'pen';
+        lastPointer = '';
+        if (touch && up !== j && !PHONE.matches) { bring(j); return; }
+        openPop(j);
+      });
     });
-    root.addEventListener('mouseenter', function () { hovering = true; });
-    root.addEventListener('mouseleave', function () { hovering = false; });
+    fan.addEventListener('pointerleave', function (e) { if (e.pointerType === 'mouse') bring(-1); });
+    fan.addEventListener('focusout', function (e) { if (!fan.contains(e.relatedTarget)) bring(-1); });
+    document.addEventListener('pointerdown', function (e) { if (up >= 0 && !fan.contains(e.target) && !(pop && pop.contains(e.target))) bring(-1); });
+    // phones: the centred card stands straight, its neighbours lean away and shrink, and dots
+    // show where you are in the row
+    var dotBox = $('[data-bnc-dots]', root), hint = $('[data-bnc-hint]', root), spinQ = false;
+    dotBox.innerHTML = cards.map(function () { return '<i></i>'; }).join('');
+    var dots = $$('i', dotBox);
+    var spin = function () {
+      spinQ = false;
+      if (!PHONE.matches) return;
+      var mid = fan.scrollLeft + fan.clientWidth / 2, best = 0, bestD = Infinity;
+      cards.forEach(function (c, j) {
+        var off = clamp((c.offsetLeft + c.offsetWidth / 2 - mid) / c.offsetWidth, -1.5, 1.5);
+        c.style.setProperty('--rot', (off * 7).toFixed(2) + 'deg');
+        c.style.setProperty('--sc', (1 - Math.min(Math.abs(off), 1) * .12).toFixed(3));
+        if (Math.abs(off) < bestD) { bestD = Math.abs(off); best = j; }
+      });
+      cards.forEach(function (c, j) { c.classList.toggle('mid', j === best); });
+      dots.forEach(function (d, j) { d.classList.toggle('on', j === best); });
+    };
+    fan.addEventListener('scroll', function () { if (!spinQ) { spinQ = true; frame(spin); } }, { passive: true });
+    var setMode = function () {
+      layout();
+      if (PHONE.matches) spin();
+      else cards.forEach(function (c) { c.style.removeProperty('--rot'); c.style.removeProperty('--sc'); c.classList.remove('mid'); });
+      hint.textContent = PHONE.matches ? 'Swipe through the steps. Tap a card for the details.'
+        : FINE ? 'Hover a card to bring it forward. Click it for the details.'
+        : 'Tap a card to bring it forward. Tap it again for the details.';
+    };
+    if (PHONE.addEventListener) PHONE.addEventListener('change', setMode); else PHONE.addListener(setMode);
+    setMode();
+    // the bounce in, once the hand comes into view
+    if (!REDUCED) {
+      root.classList.add('armed');
+      seen(fan, function () { root.classList.add('go'); }, 0.3);
+    }
+
+    // 01 · the visa file ticks itself off, then the stamp comes down; tap it to check again
+    var file = $('[data-bx-file]', root);
+    if (file) {
+      var items = $$('.bx-file-list > span', file), timers = [];
+      var runFile = function () {
+        timers.forEach(clearTimeout); timers = [];
+        file.classList.remove('stamped', 'thud');
+        items.forEach(function (li) { li.classList.remove('ok'); });
+        if (REDUCED) { items.forEach(function (li) { li.classList.add('ok'); }); file.classList.add('stamped'); return; }
+        items.forEach(function (li, i) { timers.push(setTimeout(function () { li.classList.add('ok'); }, 350 + i * 420)); });
+        timers.push(setTimeout(function () { file.classList.add('stamped'); }, 350 + items.length * 420 + 150));
+        timers.push(setTimeout(function () { file.classList.add('thud'); }, 350 + items.length * 420 + 450));
+      };
+      file.addEventListener('click', runFile);
+      file.__run = runFile;   // runs each time the Study pop-up opens
+    }
+
+    // 02 · the nine months: each time the pop-up opens, the month pages light up one by one
+    var nine = $('.bx-nine', root);
+    if (nine) {
+      var pages = $$('.bx-ph-mo i', nine), nineT = [];
+      nine.__run = function () {
+        nineT.forEach(clearTimeout); nineT = [];
+        if (REDUCED) { pages.forEach(function (pg) { pg.classList.add('on'); }); return; }
+        pages.forEach(function (pg) { pg.classList.remove('on'); });
+        pages.forEach(function (pg, k) { nineT.push(setTimeout(function () { pg.classList.add('on'); }, 450 + k * 160)); });
+      };
+    }
+    // 03 · the EU Blue Card turns over
+    var card = $('[data-bx-card]', root);
+    if (card) {
+      var stars = $('[data-bx-stars]', card);
+      for (var s = 0; s < 12; s++) {
+        var sa = s * Math.PI / 6, cx = 30 + Math.sin(sa) * 22, cyy = 30 - Math.cos(sa) * 22, pts = [];
+        for (var p = 0; p < 10; p++) {
+          var pr = p % 2 ? 1.6 : 4, pa = p * Math.PI / 5;
+          pts.push((cx + Math.sin(pa) * pr).toFixed(2) + ' ' + (cyy - Math.cos(pa) * pr).toFixed(2));
+        }
+        stars.appendChild(svgEl('path', { d: 'M' + pts.join('L') + 'Z' }));
+      }
+      card.addEventListener('click', function () {
+        var on = !card.classList.contains('flip');
+        card.classList.toggle('flip', on);
+        card.setAttribute('aria-pressed', String(on));
+      });
+    }
+
+    // 04 · the residence record: five years as ten half-year boxes. Each year of study stamps
+    // one box (it counts at half), each year of work stamps two; at five years the card is stamped
+    var cellBox = $('[data-bx-cells]', root);
+    if (cellBox) {
+      var passEl = cellBox.closest('.bx-pass'), yrs = { study: 3, work: 2 }, MAX = { study: 6, work: 5 }, filled = [];
+      cellBox.innerHTML = [1, 2, 3, 4, 5].map(function (y) {
+        return '<span class="bx-yr"><span class="bx-cell"></span><span class="bx-cell"></span><small>Year ' + y + '</small></span>';
+      }).join('');
+      var cells = $$('.bx-cell', cellBox);
+      var yearsEl = $('[data-bx-years]', passEl), verdict = $('[data-bx-verdict]', passEl);
+      var STAMP = { study: '<svg width="16" height="16"><use href="#i-cap"/></svg>', work: '<svg width="16" height="16"><use href="#i-brief"/></svg>' };
+      var paintPass = function (first) {
+        var st = Math.min(yrs.study, 10), wk = Math.min(yrs.work * 2, 10 - st), total = (st + wk) / 2;
+        cells.forEach(function (c, k) {
+          var kind = k < st ? 'study' : k < st + wk ? 'work' : '';
+          if (filled[k] === kind) return;
+          filled[k] = kind;
+          c.className = 'bx-cell' + (kind ? ' is-' + kind + (first || REDUCED ? '' : ' land') : '');
+          c.innerHTML = kind ? STAMP[kind] : '';
+        });
+        ['study', 'work'].forEach(function (k) {
+          $('[data-bx-out="' + k + '"]', passEl).textContent = yrs[k];
+          $('[data-bx-dec="' + k + '"]', passEl).disabled = yrs[k] <= 0;
+          $('[data-bx-inc="' + k + '"]', passEl).disabled = yrs[k] >= MAX[k];
+        });
+        yearsEl.textContent = fmt(total);
+        var left = 5 - total;
+        verdict.textContent = left <= 0 ? 'Five years reached: you can apply' : fmt(left) + (left === 1 ? ' year' : ' years') + ' to go';
+        passEl.classList.toggle('done', left <= 0);
+      };
+      $$('[data-bx-inc], [data-bx-dec]', passEl).forEach(function (b) {
+        b.addEventListener('click', function () {
+          var k = b.getAttribute('data-bx-inc') || b.getAttribute('data-bx-dec');
+          yrs[k] = clamp(yrs[k] + (b.hasAttribute('data-bx-inc') ? 1 : -1), 0, MAX[k]);
+          paintPass(false);
+        });
+      });
+      paintPass(true);
+    }
+
+    // 05 · the family switchboard
+    var seg = $('[data-bx-seg]', root);
+    if (seg) {
+      var opts = $$('[data-bx-stage]', seg), who = {}, stageNow = -1;
+      $$('[data-bx-who]', root).forEach(function (li) { who[li.getAttribute('data-bx-who')] = li; });
+      var setStage = function (i) {
+        if (i === stageNow) return;
+        stageNow = i;
+        opts.forEach(function (o, j) { o.setAttribute('aria-checked', String(j === i)); o.tabIndex = j === i ? 0 : -1; });
+        ['partner', 'child'].forEach(function (k) {
+          var txt = FAM_SWITCH[i][k], li = who[k];
+          $('[data-bx-st]', li).textContent = txt;
+          li.classList.toggle('on', txt !== 'Not yet');
+        });
+      };
+      opts.forEach(function (o, i) { o.addEventListener('click', function () { setStage(i); }); });
+      seg.addEventListener('keydown', function (e) {
+        var d = { ArrowRight: 1, ArrowDown: 1, ArrowLeft: -1, ArrowUp: -1 }[e.key];
+        if (!d) return;
+        e.preventDefault();
+        setStage((stageNow + d + opts.length) % opts.length);
+        opts[stageNow].focus();
+      });
+      setStage(0);
+    }
+
+    // the pop-up: the stage's photo with its instrument moved in over it, and the full story beside;
+    // arrows step through the five
+    var tiles = cards, kits = cards.map(function (c) { return $('[data-bx-kit]', c); });
+    var pop = null, popAt = -1, popLast = null;
+    var buildPop = function () {
+      var el = document.createElement('div');
+      el.className = 'bxp';
+      el.setAttribute('aria-hidden', 'true');
+      el.innerHTML =
+        '<div class="bxp-card" role="dialog" aria-modal="true" aria-labelledby="bxp-title" tabindex="-1">' +
+          '<button type="button" class="bxp-x" data-bxp-close aria-label="Close details"><svg width="18" height="18"><use href="#i-x"/></svg></button>' +
+          '<div class="bxp-photo" data-bxp-photo><img alt="" data-bxp-img><span class="bxp-num" data-bxp-num aria-hidden="true"></span>' +
+            '<ol class="bxp-route" data-bxp-route>' + tiles.map(function (t, j) {
+              return '<li><button type="button" data-bxp-go="' + j + '" aria-label="' + esc($('.bnc-title', t).textContent) + '"><i></i><span>' + esc($('.bnc-kick', t).lastChild.textContent.trim()) + '</span></button></li>';
+            }).join('') + '<span class="bxp-route-plane" data-bxp-plane aria-hidden="true"><svg width="16" height="16"><use href="#i-plane"/></svg></span></ol>' +
+            '<div class="bxp-cap"><span class="bxp-kick" data-bxp-kick></span><h3 id="bxp-title" data-bxp-title></h3></div>' +
+            '<div class="bxp-kit" data-bxp-kit></div>' +
+          '</div>' +
+          '<div class="bxp-main">' +
+            '<div class="bxp-body" data-bxp-body></div>' +
+            '<div class="bxp-foot">' +
+              '<div class="bxp-nav">' +
+                '<button type="button" data-bxp-step="-1" aria-label="Previous step"><svg width="18" height="18"><use href="#i-left"/></svg></button>' +
+                '<span data-bxp-count></span>' +
+                '<button type="button" data-bxp-step="1" aria-label="Next step"><svg width="18" height="18"><use href="#i-right"/></svg></button>' +
+              '</div>' +
+              '<a class="btn sm" href="#contact" data-bxp-cta>Plan my route <svg class="arrow" width="16" height="16"><use href="#i-arrow"/></svg></a>' +
+            '</div>' +
+          '</div>' +
+        '</div>';
+      document.body.appendChild(el);
+      el.addEventListener('click', function (e) {
+        if (e.target === el || e.target.closest('[data-bxp-close]')) closePop();
+        var s = e.target.closest('[data-bxp-step]');
+        if (s) fillPop(popAt + +s.getAttribute('data-bxp-step'), true);
+        var go = e.target.closest('[data-bxp-go]');
+        if (go && +go.getAttribute('data-bxp-go') !== popAt) fillPop(+go.getAttribute('data-bxp-go'), true);
+      });
+      $('[data-bxp-cta]', el).addEventListener('click', function (e) { e.preventDefault(); closePop(); setTimeout(function () { smoothTo('contact'); }, 250); });
+      // the Blue Card in the pop-up still tilts with the cursor
+      var photo = $('[data-bxp-photo]', el);
+      if (FINE && !REDUCED) {
+        photo.addEventListener('pointermove', function (e) {
+          var r = photo.getBoundingClientRect();
+          photo.style.setProperty('--mx', ((e.clientX - r.left) / r.width - .5).toFixed(3));
+          photo.style.setProperty('--my', ((e.clientY - r.top) / r.height - .5).toFixed(3));
+        });
+        photo.addEventListener('pointerleave', function () { photo.style.removeProperty('--mx'); photo.style.removeProperty('--my'); });
+      }
+      window.addEventListener('keydown', function (e) {
+        if (!el.classList.contains('open')) return;
+        var inKit = document.activeElement && document.activeElement.closest && document.activeElement.closest('.bxp-kit');
+        if (e.key === 'Escape') { e.stopPropagation(); closePop(); }
+        else if ((e.key === 'ArrowRight' || e.key === 'ArrowLeft') && !inKit) fillPop(popAt + (e.key === 'ArrowRight' ? 1 : -1), true);
+        else if (e.key === 'Tab') {   // keep focus inside the pop-up
+          var f = $$('button, a[href], input, [tabindex="0"]', el);
+          if (e.shiftKey && document.activeElement === f[0]) { e.preventDefault(); f[f.length - 1].focus(); }
+          else if (!e.shiftKey && document.activeElement === f[f.length - 1]) { e.preventDefault(); f[0].focus(); }
+        }
+      }, true);
+      return el;
+    };
+    var fillPop = function (i, swap) {
+      var box = $('[data-bxp-kit]', pop);
+      if (popAt >= 0 && box.firstElementChild) kits[popAt].appendChild(box.firstElementChild);
+      popAt = (i + tiles.length) % tiles.length;
+      var t = tiles[popAt], img = $('.bnc-photo img', t), g = kits[popAt].firstElementChild;
+      $('[data-bxp-img]', pop).src = img.currentSrc || img.src;
+      $('[data-bxp-kick]', pop).innerHTML = $('.bnc-kick', t).innerHTML;
+      $('[data-bxp-title]', pop).textContent = $('.bnc-title', t).textContent;
+      $('[data-bxp-body]', pop).innerHTML = $('[data-bx-info]', t).innerHTML;
+      $('[data-bxp-count]', pop).textContent = (popAt + 1) + ' of ' + tiles.length;
+      $('[data-bxp-num]', pop).textContent = '0' + (popAt + 1);
+      $$('[data-bxp-go]', pop).forEach(function (b, j) { b.classList.toggle('past', j < popAt); b.classList.toggle('on', j === popAt); b.setAttribute('aria-current', j === popAt ? 'step' : 'false'); });
+      $('[data-bxp-plane]', pop).style.left = 'calc(12px + ' + (popAt / (tiles.length - 1)).toFixed(3) + ' * (100% - 24px))';
+      $('.bxp-card', pop).setAttribute('data-stage', popAt);
+      if (g) { box.appendChild(g); if (g.__run) g.__run(); }
+      $('[data-bxp-body]', pop).scrollTop = 0;
+      $('.bxp-card', pop).scrollTop = 0;
+      if (swap && !REDUCED) { pop.classList.remove('swap'); void pop.offsetWidth; pop.classList.add('swap'); }
+    };
+    var openPop = function (i) {
+      if (!pop) pop = buildPop();
+      fillPop(i);
+      // the pop-up grows out of the card that was opened
+      var r = tiles[i].getBoundingClientRect(), card = $('.bxp-card', pop);
+      card.style.setProperty('--fx', Math.round((r.left + r.width / 2 - window.innerWidth / 2) * .4) + 'px');
+      card.style.setProperty('--fy', Math.round((r.top + r.height / 2 - window.innerHeight / 2) * .4) + 'px');
+      popLast = document.activeElement;
+      pop.classList.add('open');
+      pop.setAttribute('aria-hidden', 'false');
+      document.body.style.overflow = 'hidden';
+      setTimeout(function () { card.focus(); }, 50);
+    };
+    var closePop = function () {
+      if (!pop || !pop.classList.contains('open')) return;
+      pop.classList.remove('open');
+      pop.setAttribute('aria-hidden', 'true');
+      document.body.style.overflow = '';
+      if (popLast && popLast.focus) popLast.focus({ preventScroll: true });
+    };
+
+    // on phones and tablets the floating chat buttons step aside while the instruments are on screen
     if ('IntersectionObserver' in window) {
-      new IntersectionObserver(function (es) { inView = es[0].isIntersecting; }, { threshold: 0.45 }).observe(root);
+      new IntersectionObserver(function (es) { document.body.classList.toggle('at-fam', es[0].isIntersecting); }, { rootMargin: '-15% 0px -15% 0px' }).observe(root);
     }
-    if (!REDUCED) setInterval(function () { if (!touched && inView && !hovering && !document.hidden) set(cur + 1); }, 4200);
-    set(0);
   }
+
+  /* What each stage means for your family (the switchboard and Tutee AI both read it). */
+  var FAM_STAGES = [
+    { name: 'Year 1: first permit', status: 'Not yet', text: "Your first permit runs 15 months, so reunification can't start from it. We plan the timing from day one." },
+    { name: 'Year 2: as a student', status: 'Family can join', text: 'After two years on consecutive permits, with the current one issued for at least a year, your partner and children under 18 can join you.' },
+    { name: 'EU Blue Card', status: 'Simplest route', text: 'On an EU Blue Card, bringing your family is far simpler, and your partner may work with no separate work permit.' }
+  ];
 
   function initParallax() {
     if (REDUCED) return;
@@ -957,6 +1220,23 @@
       });
       if (arch && window.pageYOffset < vh) arch.style.setProperty('--py', (window.pageYOffset * 0.08).toFixed(1));
     });
+  }
+
+  /* Phones: the floating chat buttons slide away while you scroll down to read and come back the
+     moment you scroll up (or reach the end), so they never sit on what you're reading or tapping. */
+  function initFabTuck() {
+    if (!$('.fab-wrap')) return;
+    var phone = window.matchMedia('(max-width: 760px)'), lastY = window.pageYOffset, queued = false;
+    var check = function () {
+      queued = false;
+      var y = window.pageYOffset, dy = y - lastY;
+      if (!phone.matches) { document.body.classList.remove('fab-tuck'); lastY = y; return; }
+      if (Math.abs(dy) < 8) return;
+      var nearEnd = y + window.innerHeight > document.documentElement.scrollHeight - 140;
+      document.body.classList.toggle('fab-tuck', dy > 0 && y > 160 && !nearEnd);
+      lastY = y;
+    };
+    window.addEventListener('scroll', function () { if (!queued) { queued = true; frame(check); } }, { passive: true });
   }
 
   /* Contact: the dark panel grows to full width as it arrives. */
@@ -1092,6 +1372,55 @@
       wheelSum = 0; wheelAt = now;
       pick(cur + dir);
     }, { passive: false });
+
+    // A finger dragged round the ring turns the wheel with it and, on letting go, it settles on
+    // the nearest service; a quick flick turns it one step. Only the ring takes the gesture:
+    // the centre and everything around the dial still scroll the page.
+    var drag = null, dragged = false;
+    var angleAt = function (e) { return Math.atan2(e.clientY - drag.cy, e.clientX - drag.cx) * 180 / Math.PI; };
+    wheel.addEventListener('pointerdown', function (e) {
+      if (e.pointerType === 'mouse') return;
+      var r = dial.getBoundingClientRect();
+      drag = { id: e.pointerId, cx: r.left + r.width / 2, cy: r.top + r.height / 2, acc: 0, t: performance.now(), on: false };
+      drag.last = angleAt(e);
+      drag.rot0 = rot === null ? home() - cur * step : rot;
+    });
+    wheel.addEventListener('pointermove', function (e) {
+      if (!drag || e.pointerId !== drag.id) return;
+      var a = angleAt(e);
+      drag.acc += ((a - drag.last) % 360 + 540) % 360 - 180;
+      drag.last = a;
+      if (!drag.on && Math.abs(drag.acc) > 6) {
+        drag.on = true; touched = true;
+        dial.classList.add('still');
+        try { wheel.setPointerCapture(e.pointerId); } catch (err) {}
+      }
+      if (!drag.on) return;
+      var r2 = drag.rot0 + drag.acc;
+      wheel.style.transform = 'rotate(' + r2.toFixed(2) + 'deg)';
+      wheel.style.setProperty('--counter', (-r2).toFixed(2) + 'deg');
+    });
+    var endDrag = function (e) {
+      if (!drag || e.pointerId !== drag.id) return;
+      var d = drag; drag = null;
+      if (!d.on) return;
+      dragged = true;
+      dial.classList.remove('still');
+      rot = d.rot0 + d.acc;
+      var i = Math.round((home() - rot) / step);
+      // a short, quick flick still counts as one step in its direction
+      if (Math.abs(d.acc) < step / 2 && performance.now() - d.t < 350) i = cur + (d.acc > 0 ? -1 : 1);
+      i = (i % n + n) % n;
+      if (i === cur) turn(); else paint(i);
+    };
+    wheel.addEventListener('pointerup', endDrag);
+    wheel.addEventListener('pointercancel', endDrag);
+    // the lift at the end of a drag is not a tap on a service
+    wheel.addEventListener('click', function (e) { if (dragged) { dragged = false; e.stopPropagation(); e.preventDefault(); } }, true);
+    if (!FINE) {
+      var hint = $('.dial-hint', dial);
+      if (hint) hint.lastChild.textContent = 'Swipe round the dial to turn it';
+    }
 
     // The wheel turns itself until the reader takes over.
     root.addEventListener('mouseenter', function () { hovering = true; });
@@ -1326,6 +1655,28 @@ ank field in the data is
       return '<button type="button" aria-pressed="' + (k ? 'false' : 'true') + '"' + (k ? ' data-field="' + esc(f) + '"' : ' class="on"') + '>' + esc(f) + ' <b>' + n + '</b></button>';
     }).join('');
     var chips = $$('button', filters);
+    // phones choose a field from a dropdown instead of a row of chips to swipe along
+    var pick = document.createElement('label');
+    pick.className = 'sky-pick';
+    pick.innerHTML = '<span>Field of study</span><select>' + chips.map(function (c, k) {
+      return '<option value="' + k + '">' + esc(c.firstChild.textContent.trim()) + ' (' + $('b', c).textContent + ')</option>';
+    }).join('') + '</select>';
+    filters.parentNode.insertBefore(pick, filters);
+    var pickSel = $('select', pick);
+    pickSel.addEventListener('change', function () { chips[+pickSel.value].click(); });
+    // phones list the top five, with a button for the rest
+    var moreBtn = document.createElement('button'), showAll = false;
+    moreBtn.type = 'button';
+    moreBtn.className = 'btn ghost sm sky-more';
+    line.parentNode.insertBefore(moreBtn, dotRow.nextSibling);
+    function paintCut() {
+      var n = 0;
+      blds.forEach(function (b, j) { var s = shown(j); if (s) n++; b.classList.toggle('cut', s && !showAll && n > 5); });
+      moreBtn.hidden = n <= 5;
+      moreBtn.textContent = showAll ? 'Show fewer' : 'Show all ' + n + ' universities';
+      moreBtn.setAttribute('aria-expanded', String(showAll));
+    }
+    moreBtn.addEventListener('click', function () { showAll = !showAll; paintCut(); });
 
     var active = -1, field = '', hovering = false, touched = false, inView = false, swapT = null, followUntil = 0;
     var shown = function (i) { return !field || fieldsOf(unis[i]).indexOf(field) > -1; };
@@ -1433,7 +1784,7 @@ ank field in the data is
         var again = pressing ? wasOpen : active === i;
         pressing = false; touched = true;
         if (swiped) { swiped = false; return; }           // the end of a swipe is not a tap
-        if (again) open(i); else set(i);
+        if (again || phone()) open(i); else set(i);       // in the phone list one tap opens it
       });
       b.addEventListener('keydown', function (e) {
         if (e.key !== 'ArrowRight' && e.key !== 'ArrowLeft') return;
@@ -1467,6 +1818,8 @@ ank field in the data is
         chips.forEach(function (o) { o.classList.toggle('on', o === c); o.setAttribute('aria-pressed', String(o === c)); });
         blds.forEach(function (b, j) { b.classList.toggle('off', !shown(j)); b.tabIndex = shown(j) ? 0 : -1; });
         dots.forEach(function (d, j) { d.hidden = !shown(j); });
+        pickSel.value = String(chips.indexOf(c));
+        paintCut();
         if (!shown(active)) step(1);
         else { fillCard(); aim(); if (phone()) reveal(active); }
       });
@@ -1489,6 +1842,7 @@ ank field in the data is
     // until the reader takes over, the skyline walks through the universities by itself
     if (!REDUCED) setInterval(function () { if (!touched && inView && !hovering && !document.hidden && !phone()) step(1); }, 4200);
     set(0, true);
+    paintCut();
   }
 
   /* ------------------------------------------------------------------ *
@@ -1857,6 +2211,10 @@ ank field in the data is
         face.classList.toggle('is-empty', !s.value);
         face.style.fontSize = '';
         var size = parseFloat(getComputedStyle(face).fontSize);
+        // first try to keep the choice on one line by shrinking a step or two, then let it wrap
+        face.style.whiteSpace = 'nowrap';
+        while (face.scrollWidth > face.clientWidth + 1 && size > 13) { size -= 0.5; face.style.fontSize = size + 'px'; }
+        face.style.whiteSpace = '';
         while (face.scrollHeight > face.clientHeight + 1 && size > 12.5) { size -= 0.5; face.style.fontSize = size + 'px'; }
         for (var g = 0; g < 6 && face.scrollHeight > face.clientHeight + 1; g++) s.style.height = (s.offsetHeight + face.scrollHeight - face.clientHeight + 8) + 'px';
       }
@@ -2192,8 +2550,8 @@ ank field in the data is
     $$('.acc-item').forEach(function (i) { add(($('.acc-q', i) || i).textContent.replace(/^\s*\d+/, ''), ($('.acc-a', i) || i).textContent); });
     $$('.why-card').forEach(function (c) { add(($('h3', c) || c).textContent, ($('p', c) || c).textContent); });
     $$('.stack-card').forEach(function (c) { add(($('h3', c) || c).textContent, ($('.copy', c) || c).textContent); });
-    $$('.stair').forEach(function (c) { add(($('h3', c) || c).textContent, ($('p', c) || c).textContent); });
-    $$('.fam-line li').forEach(function (c) { add('Family migration: ' + ($('b', c) || c).textContent, c.textContent); });
+    $$('[data-bx-tile]').forEach(function (c) { add(($('.bnc-title', c) || c).textContent, c.textContent.replace(/\s+/g, ' ')); });
+    FAM_STAGES.forEach(function (s) { add('Family migration: ' + s.name, s.status + '. ' + s.text); });
     (window.PL_SERVICES || []).forEach(function (s) { add(s.title, s.tagline + '. ' + s.desc); });
     $$('.lede, .dir-note').forEach(function (l) { add('', l.textContent); });
     KB.forEach(function (e) { if (e.a !== '__SERVICES__') add(e.keys.slice(0, 3).join(', '), e.keys.join(' ') + ' ' + e.a, e); });
@@ -3035,8 +3393,8 @@ ank field in the data is
   }
   var queue = [
     initReveal, initHScroll, initRail, initMarquees, function () { initServices(window.PL_SERVICES || []); }, initSkyline, initDirectory,
-    initStack, initSteps, initClimb, initFamily, initParallax, initClipGrow, initFaq, initForms, initGlowWord,
-    initButtons, initFlagCursor, initIdleSections, startChatLater, initSceneLoop
+    initStack, initSteps, initBento, initParallax, initClipGrow, initFaq, initForms, initGlowWord,
+    initButtons, initFlagCursor, initIdleSections, initFabTuck, startChatLater, initSceneLoop
   ];
   (function next() {
     var fn = queue.shift();
