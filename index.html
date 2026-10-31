@@ -296,6 +296,20 @@
   </div>
 </section>
 
+<!-- =============================== LIVE NEWS =============================== -->
+<!-- A slim pill straddling the gap between Universities and Funding: a zero-height strip,
+     so it adds no space. Headlines come from /api/news (netlify/functions/news.mjs) as
+     plain text with the page's own photos; the page's own facts stand in when it can't
+     be reached. initNewsTicker(). -->
+<div class="news" data-news>
+  <div class="wrap">
+    <div class="news-in" role="region" aria-label="Latest Poland news">
+      <span class="news-live"><i aria-hidden="true"></i><span data-news-label>Poland updates</span></span>
+      <div class="news-view"><div class="news-track" data-news-track></div></div>
+    </div>
+  </div>
+</div>
+
 <!-- =============================== FUNDING (stacking cards) =============================== -->
 <section class="section fund" id="funding" data-rail-label="Funding">
   <div class="wrap">
@@ -629,7 +643,7 @@
     <div class="wrap pass-grid">
       <div class="pass-intro on-dark">
         <span class="eyebrow on-dark">Free profile evaluation</span>
-        <h2 class="h2 split" data-split>Your boarding pass to <em>Poland</em> starts here.</h2>
+        <h2 class="h2 split" data-split>Reserve your seat for <em>Poland&rsquo;s</em> next intake.</h2>
         <p class="lede" data-reveal style="--d:.2s">One free evaluation, three stamps in your passport. Share your details and a counsellor builds your specific route map to study in Poland.</p>
         <ol class="stamps">
           <li class="stamp" data-reveal style="--d:.25s;--r:-7deg"><span class="stamp-n">01</span><b>Profile review</b><small>Academics, gaps &amp; finances</small></li>
@@ -699,6 +713,13 @@
   <div class="field-row">
     <div class="field sel"><div class="sel-box"><select id="c-level" name="study_level" aria-label="Study level"><option value="" selected disabled>Degree</option><option value="Bachelor's">Bachelor&rsquo;s</option><option value="Master's">Master&rsquo;s</option><option value="Doctoral">Doctoral</option><option value="Not sure">Not sure yet</option></select><span class="sel-face" aria-hidden="true"></span></div></div>
     <div class="field sel"><div class="sel-box"><select id="c-intake" name="intake" aria-label="When you want to start"><option value="Next intake" selected>Next intake</option><option value="Within 12 months">In 12 months</option><option value="Later">Start later</option></select><span class="sel-face" aria-hidden="true"></span></div></div>
+  </div>
+  <!-- Universities on the pass: the shortlist as chips (× takes one off everywhere).
+       The hidden `shortlist` field below always holds exactly these. -->
+  <div class="pass-unis is-empty" data-sl-chips>
+    <div class="pass-unis-top"><span class="pass-unis-k" id="pass-unis-k">Universities</span><a href="./universities.html" target="_blank" rel="noopener" data-sl-add>+ Add universities</a></div>
+    <ul class="pass-unis-list" data-sl-chip-list aria-labelledby="pass-unis-k"></ul>
+    <p class="pass-unis-none">None yet &mdash; shortlist a few, or your counsellor will.</p>
   </div>
   <input type="hidden" name="shortlist" value="" data-shortlist-input>
   <input type="hidden" name="destination" value="General Poland Inquiry" data-destination-input>
@@ -773,6 +794,14 @@
     <div class="big-word" aria-hidden="true" data-glow-word data-text="Do zobaczenia">Do zobaczenia</div>
   </div>
 </footer>
+
+<!-- Shortlist tray: what's shortlisted here or on the directory, leading to the pass.
+     Shown once something is shortlisted; hidden while the pass is on screen. initShortlistTray(). -->
+<a class="tray sl-tray" href="#contact" data-scroll-to="contact" data-sl-tray data-sl-one="Shortlisted · Review &amp; send" data-sl-many="Shortlisted · Review &amp; send">
+  <span class="c" data-sl-tray-count aria-hidden="true">0</span>
+  <span class="tray-label" data-sl-tray-label aria-live="polite">Shortlisted · Review &amp; send</span>
+  <svg class="arrow" width="18" height="18" aria-hidden="true"><use href="#i-arrow"/></svg>
+</a>
 
 <div class="fab-wrap">
   <a class="fab wa" href="https://wa.me/917358364959" target="_blank" rel="noopener noreferrer" aria-label="Chat with us on WhatsApp">

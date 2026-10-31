@@ -3039,3 +3039,168 @@ section.path { overflow: clip; }
   .done-wa { min-height: 46px; font-size: 14.5px; }
   .done-again { margin-top: 8px; font-size: 13.5px; }
 }
+
+/* ==========================================================================
+   SHORTLIST — Select buttons that read as controls with a calm ring that says
+   "tap me", the pass's university chips and the floating tray
+   ========================================================================== */
+/* resting: a crimson outline on white, so the button reads as a control on any card */
+.sel-btn { position: relative; background: #fff; border-color: rgba(212, 33, 61, .55); color: var(--red); }
+.sel-btn:hover { background: var(--red-soft); border-color: var(--red); color: var(--maroon); }
+.sel-btn.on, .u-card.sel .sel-btn { background: var(--red); border-color: var(--red); color: #fff; }
+.sel-btn.on .tick { background: #fff; color: var(--red); border-color: #fff; }
+/* every 7s a soft ring leaves the button, staggered card to card (--i) so they never all
+   ring at once; transform and opacity only, so nothing moves and nothing repaints */
+.sel-btn::after, .bld-sl::after {
+  content: ""; position: absolute; inset: -2px; border-radius: inherit; border: 2px solid var(--red);
+  opacity: 0; pointer-events: none; animation: sl-ping 7s ease-out infinite; animation-delay: calc(1.5s - var(--i, 0) * 1.3s);
+}
+@keyframes sl-ping {
+  0% { opacity: .7; transform: none; }
+  14%, 100% { opacity: 0; transform: scale(var(--ping-x, 1.12), var(--ping-y, 1.45)); }
+}
+/* a shortlisted button's filled state is enough */
+.sel-btn.on::after, .u-card.sel .sel-btn::after, .bld-sl.on::after { animation: none; }
+
+/* home skyline: Select sits beside "Full details" in the floating card */
+.sc-acts { display: inline-flex; flex-wrap: wrap; align-items: center; gap: 8px 16px; }
+.sky-card .sel-btn { height: 38px; padding: 0 14px; }
+.sky-card .sel-btn::after { animation-delay: var(--ping-at, 1.5s); }
+/* phone list: each row gets its own round shortlist button in place of the chevron. The
+   button sits in a zero-width second column and is pulled back over its row. */
+.bld-sl { display: none; }
+@media (max-width: 760px), (max-height: 500px) and (orientation: landscape) {
+  .sky-line { grid-template-columns: minmax(0, 1fr) 0; column-gap: 0; }
+  .sky .bld { grid-column: 1; }
+  .bld-sl {
+    grid-column: 2; align-self: center; justify-self: start; position: relative; z-index: 3; display: grid; place-items: center;
+    width: 40px; height: 40px; margin-left: -50px; border-radius: 50%; background: #fff; color: var(--red);
+    box-shadow: inset 0 0 0 1.5px rgba(212, 33, 61, .55); transition: background .3s, color .3s; --ping-x: 1.45;
+  }
+  .bld-sl .tick { font-size: 19px; font-weight: 700; line-height: 1; }
+  .bld-sl.on { background: var(--red); color: #fff; box-shadow: 0 6px 14px -8px rgba(212, 33, 61, .9); }
+  .sky .bld.cut + .bld-sl, .sky .bld.off + .bld-sl { display: none; }
+  .sky .bld-info { padding-right: 60px; }
+  .sky .bld-info::after { display: none; }
+}
+
+/* the pass: shortlisted universities as chips, each with its own × */
+.pass-unis { margin: 0 0 10px; padding: 8px 8px 10px 14px; border-radius: 16px; border: 1.5px dashed rgba(212, 33, 61, .35); background: #fff; }
+.pass-unis-top { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 0 12px; }
+.pass-unis-k { font-size: 10.5px; font-weight: 700; letter-spacing: .16em; text-transform: uppercase; color: var(--muted); }
+.pass-unis-top a { padding: 6px; font-size: 13.5px; font-weight: 700; color: var(--red); text-decoration: underline; text-underline-offset: 3px; }
+.pass-unis-top a:hover { color: var(--maroon); }
+.pass-unis-list { list-style: none; display: flex; flex-wrap: wrap; gap: 6px; margin: 4px 0 0; padding: 0; }
+.sl-chip { display: inline-flex; align-items: center; gap: 2px; max-width: 100%; padding: 3px 3px 3px 12px; border-radius: 999px; background: var(--red-soft); color: var(--maroon); font-size: 13px; font-weight: 700; line-height: 1.25; }
+.sl-chip span { min-width: 0; overflow-wrap: anywhere; }
+.sl-chip button { flex: none; display: grid; place-items: center; width: 28px; height: 28px; border-radius: 50%; color: var(--maroon); transition: background .2s, color .2s; }
+.sl-chip button:hover { background: var(--red); color: #fff; }
+.pass-unis-none { margin: 2px 0 0; font-size: 13px; font-weight: 600; line-height: 1.4; color: var(--muted); }
+.pass-unis.is-empty .pass-unis-list, .pass-unis:not(.is-empty) .pass-unis-none { display: none; }
+
+/* the tray: crimson, the site's CTA colour, so it never blends into a section. Placed
+   with `translate` so the add "bump" can scale it about its own centre; as wide as its
+   words, so a long "Added: …" wraps only when the screen is narrower than that. */
+.tray {
+  transform: none; translate: -50% 140%; visibility: hidden; min-height: 56px; width: max-content; max-width: calc(100vw - 32px);
+  background: var(--red); box-shadow: 0 18px 40px -14px rgba(212, 33, 61, .8), var(--shadow-lg);
+  transition: translate .6s var(--ease), visibility 0s .6s;
+}
+.tray.show { transform: none; translate: -50% 0; visibility: visible; transition: translate .6s var(--ease); }
+.tray .c { background: #fff; color: var(--red); }
+.tray .tray-label { min-width: 0; white-space: normal; line-height: 1.2; }
+.tray .btn { --bg: #fff; --fg: var(--maroon); box-shadow: 0 10px 24px -12px rgba(36, 4, 5, .6); }
+.tray .btn::before { background: var(--gold); }
+.tray .btn:hover { color: var(--wine); }
+/* every add: the tray pops, the count flips and a ring goes out; a remove settles the count */
+.tray::after { content: ""; position: absolute; inset: 0; border-radius: inherit; border: 2px solid var(--red); opacity: 0; pointer-events: none; }
+.tray.is-bump { animation: tray-bump .45s cubic-bezier(.3, 1.6, .5, 1); }
+.tray.is-bump::after { animation: tray-ring .7s ease-out; }
+.tray .c.is-flip { animation: tray-flip .5s var(--ease); }
+.tray .c.is-settle { animation: tray-settle .35s var(--ease); }
+@keyframes tray-bump { 40% { scale: 1.12; } }
+@keyframes tray-ring { from { opacity: .8; } to { opacity: 0; transform: scale(1.18, 1.7); } }
+@keyframes tray-flip { 0% { transform: rotateX(90deg) scale(.7); } 60% { transform: scale(1.3); } }
+@keyframes tray-settle { from { transform: scale(.8); } }
+/* until it is first clicked, a soft gold glow every 10s */
+.tray::before {
+  content: ""; position: absolute; inset: 0; border-radius: inherit; pointer-events: none; opacity: 0;
+  box-shadow: 0 0 0 5px rgba(244, 161, 58, .5), 0 0 30px 8px rgba(212, 33, 61, .55);
+}
+.tray.show:not(.is-seen)::before { animation: tray-glow 10s ease-in-out 3s infinite; }
+@keyframes tray-glow { 0%, 100% { opacity: 0; } 7% { opacity: 1; } 16% { opacity: 0; } }
+
+@media (max-width: 420px) { .tray:not(.sl-tray) { width: calc(100vw - 32px); } }
+
+/* home page: the whole tray is a link to the pass, bottom left (the chat buttons hold the
+   right), and steps aside while the pass is on screen */
+.sl-tray { left: 22px; translate: 0 140%; gap: 12px; padding: 8px 22px 8px 8px; color: #fff; }
+.sl-tray.show { translate: 0 0; }
+.sl-tray .c { width: 40px; height: 40px; font-size: 16px; }
+.sl-tray .arrow { flex: none; transition: transform .4s var(--ease); }
+.sl-tray:hover .arrow { transform: translateX(4px); }
+.sl-tray:focus-visible { outline-offset: 4px; border-radius: 999px; }
+.at-pass .sl-tray { translate: 0 140%; visibility: hidden; transition: translate .6s var(--ease), visibility 0s .6s; }
+/* phones: it spans most of the width, so the chat buttons step up above it */
+@media (max-width: 760px) {
+  .sl-tray { left: 16px; bottom: 16px; }
+  .sl-tray-open .fab-wrap { bottom: 86px; }
+}
+@media (max-width: 420px) {
+  .sl-tray { flex-wrap: nowrap; padding: 7px 18px 7px 7px; border-radius: 999px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .sel-btn::after, .bld-sl::after { animation: none; }
+  .tray, .tray.show, .at-pass .sl-tray { transition: visibility 0s; }
+  .tray.is-bump, .tray.is-bump::after, .tray .c.is-flip, .tray .c.is-settle, .tray.show:not(.is-seen)::before { animation: none; }
+}
+
+/* ==========================================================================
+   LIVE NEWS — a slim wine pill straddling the line between Universities and
+   Funding. The wrapper has no height, so the page layout is unchanged.
+   ========================================================================== */
+.news { position: relative; z-index: 6; height: 0; }
+.news .wrap { position: relative; height: 0; }
+.news-in {
+  position: absolute; left: var(--gutter); right: var(--gutter); top: 0; transform: translateY(-50%); height: 46px;
+  display: flex; align-items: center; border-radius: 999px; overflow: hidden; background: var(--wine); color: #fff;
+  box-shadow: 0 16px 34px -18px rgba(36, 4, 5, .8), inset 0 0 0 1px rgba(244, 161, 58, .18);
+}
+.news-live {
+  position: relative; z-index: 1; flex: none; display: inline-flex; align-items: center; gap: 9px; height: 100%; padding: 0 18px 0 16px;
+  font-size: 11.5px; font-weight: 700; letter-spacing: .14em; text-transform: uppercase; color: #fff; background: var(--red);
+}
+/* a little Polish flag, which becomes a pulsing dot once the headlines are live */
+.news-live i { width: 18px; height: 9px; border-radius: 2px; flex: none; background: linear-gradient(#fff 0 50%, var(--maroon) 50% 100%); box-shadow: 0 0 0 1px rgba(255, 255, 255, .45); }
+.news.is-live .news-live i { width: 8px; height: 8px; border-radius: 50%; background: #fff; box-shadow: 0 0 0 0 rgba(255, 255, 255, .7); animation: news-pulse 1.8s ease-out infinite; }
+@keyframes news-pulse { to { box-shadow: 0 0 0 7px rgba(255, 255, 255, 0); } }
+.news-view {
+  flex: 1; min-width: 0; height: 100%; overflow: hidden;
+  -webkit-mask-image: linear-gradient(90deg, transparent, #000 24px, #000 calc(100% - 32px), transparent);
+  mask-image: linear-gradient(90deg, transparent, #000 24px, #000 calc(100% - 32px), transparent);
+}
+.news-track { display: flex; width: max-content; height: 100%; animation: news-roll var(--news-dur, 60s) linear infinite; }
+.news-set { display: flex; align-items: center; height: 100%; }
+.news-in:hover .news-track, .news.is-paused .news-track { animation-play-state: paused; }
+@keyframes news-roll { to { transform: translateX(-50%); } }
+.news-item { flex: none; display: inline-flex; align-items: center; gap: 9px; padding: 0 22px 0 4px; font-size: 13.5px; white-space: nowrap; }
+.news-item img { width: 26px; height: 26px; flex: none; border-radius: 8px; object-fit: cover; box-shadow: 0 0 0 1.5px rgba(244, 161, 58, .45); }
+.news-item b { font-weight: 700; color: #fff; }
+.news-item small { font-size: 11.5px; font-weight: 600; color: var(--gold); }
+/* a small folk diamond between headlines */
+.news-item + .news-item::before { content: ""; flex: none; width: 5px; height: 5px; margin: 0 14px 0 -8px; transform: rotate(45deg); background: rgba(244, 161, 58, .6); }
+@media (max-width: 760px) {
+  .news-in { height: 36px; }
+  .news-live { padding: 0 12px 0 11px; font-size: 10px; letter-spacing: .08em; gap: 7px; }
+  .news-live [data-news-label] { display: none; }
+  .news-live::after { content: "News"; }
+  .news.is-live .news-live::after { content: "Live"; }
+  .news-item { gap: 7px; padding-right: 18px; font-size: 12.5px; }
+  .news-item img { width: 22px; height: 22px; border-radius: 6px; }
+  .news-item small { font-size: 10.5px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .news-track { animation: none; }
+  .news-view { overflow-x: auto; scrollbar-width: none; }
+  .news.is-live .news-live i { animation: none; }
+}

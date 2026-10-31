@@ -279,13 +279,14 @@
   }
 
   /* Sections off screen get .idle, which pauses their looping CSS animations (spinning
-     rosettes, logo and story marquees, the waving flag) so they cost nothing there. */
+     rosettes, logo and story marquees, the waving flag, the Select buttons' ring) so they
+     cost nothing there. */
   function initIdleSections() {
     if (!('IntersectionObserver' in window)) return;
     var io = new IntersectionObserver(function (es) {
       es.forEach(function (e) { e.target.classList.toggle('idle', !e.isIntersecting); });
     }, { rootMargin: '200px 0px' });
-    $$('main > section, .contact, .footer').forEach(function (s) { io.observe(s); });
+    $$('main > section, .dir-body, .contact, .footer').forEach(function (s) { io.observe(s); });
   }
 
   /* Magnetic buttons + the cursor-following fill. */
@@ -1637,9 +1638,11 @@ ank field in the data is
           (qsWorld(u) ? '<span class="bi-qs">QS World #' + esc(qsWorld(u)) + '</span>' : '') + '</span>' +
           '<b class="bi-name">' + esc(en || u.name) + '</b>' +
           '<span class="bi-meta">' + esc(cityOf(u.location)) + ' · ' + esc(u.programmes) + ' programmes</span></span>' +
-      '</button>';
+      '</button>' +
+      // the phone list's own shortlist button, beside its row (CSS shows it only there)
+      '<button type="button" class="bld-sl" data-sky-sl="' + i + '" style="--i:' + i + '" aria-pressed="false"></button>';
     }).join('');
-    var blds = $$('.bld', line);
+    var blds = $$('.bld', line), rowSl = $$('[data-sky-sl]', line);
     // phones swipe through the photos as a carousel, with a dot per photo underneath
     var phone = function () { return window.matchMedia('(max-width: 760px), (max-height: 500px) and (orientation: landscape)').matches; };
     var dotRow = document.createElement('div');
@@ -1692,9 +1695,30 @@ ank field in the data is
         '<div class="sc-meta"><span><svg viewBox="0 0 24 24"><use href="#i-pin"/></svg>' + esc(cityOf(u.location)) + '</span>' +
           '<span><b>' + esc(u.programmes) + '</b> programmes</span></div>' +
         '<div class="sc-fields">' + fieldsOf(u).map(function (f) { return '<span' + (f === field ? ' class="hit"' : '') + '>' + esc(f) + '</span>'; }).join('') + '</div>' +
-        '<div class="sc-foot"><button type="button" class="sc-more" data-sky-open>Full details <svg width="16" height="16"><use href="#i-arrow"/></svg></button>' +
+        '<div class="sc-foot"><span class="sc-acts"><button type="button" class="sel-btn" data-sky-pick aria-pressed="false"></button>' +
+          '<button type="button" class="sc-more" data-sky-open>Full details <svg width="16" height="16"><use href="#i-arrow"/></svg></button></span>' +
           (ph ? '<p class="sc-credit">Photo: ' + esc(ph[2]) + ' (' + ph[3] + ')</p>' : '') + '</div>';
+      paintPicks();
     }
+    // the card's Select button and the phone rows' buttons show whether each one is shortlisted
+    function paintPicks() {
+      var cardBtn = $('[data-sky-pick]', card);
+      if (cardBtn && active > -1) {
+        paintSelBtn(cardBtn, shortlist.has(unis[active].name), englishName(unis[active]) || unis[active].name);
+        // the card is redrawn for every university; keep its 7s ring on the clock, not restarted
+        cardBtn.style.setProperty('--ping-at', (-(performance.now() / 1000) % 7).toFixed(2) + 's');
+      }
+      rowSl.forEach(function (b, j) {
+        var on = shortlist.has(unis[j].name), nm = englishName(unis[j]) || unis[j].name;
+        b.classList.toggle('on', on);
+        b.setAttribute('aria-pressed', String(on));
+        b.setAttribute('aria-label', (on ? 'Remove ' : 'Add ') + nm + (on ? ' from' : ' to') + ' your shortlist');
+        b.innerHTML = '<span class="tick" aria-hidden="true">' + (on ? '✓' : '+') + '</span>';
+      });
+    }
+    function shortlistUni(i) { shortlist.toggle(unis[i].name); }
+    shortlist.onChange(paintPicks);
+    rowSl.forEach(function (b, j) { b.addEventListener('click', function () { shortlistUni(j); }); });
 
     // the card floats above its photo (clamped inside the scene) with the caret over it;
     // on phones it sits in the flow above the skyline and only the caret moves
@@ -1745,8 +1769,10 @@ ank field in the data is
     }
     function open(i) {
       openUniDetail(unis[i], {
+        altLabel: function () { return shortlist.has(unis[i].name) ? 'Remove from shortlist' : 'Add to shortlist'; },
+        onAlt: function () { shortlistUni(i); },
         ctaLabel: 'Evaluate my profile for this university',
-        onCta: function () { closeUniDetail(); setShortlist(unis[i].name); setTimeout(function () { smoothTo('contact'); }, 60); }
+        onCta: function () { closeUniDetail(); shortlist.add(unis[i].name); setTimeout(function () { smoothTo('contact'); }, 60); }
       });
     }
 
@@ -1809,7 +1835,10 @@ ank field in the data is
     }, { passive: true });
     card.addEventListener('mouseenter', function () { hovering = true; });
     card.addEventListener('mouseleave', function () { hovering = false; });
-    card.addEventListener('click', function (e) { if (e.target.closest('[data-sky-open]')) open(active); });
+    card.addEventListener('click', function (e) {
+      if (e.target.closest('[data-sky-open]')) open(active);
+      else if (e.target.closest('[data-sky-pick]')) shortlistUni(active);
+    });
 
     chips.forEach(function (c) {
       c.addEventListener('click', function () {
@@ -2308,9 +2337,11 @@ ank field in the data is
       });
     });
 
-    // Universities picked on the directory page (or from a university's details) go in the
-    // hidden shortlist and show on the pass as "Enquiry for". They arrive in
-    // storage, or in ?apply= when storage is blocked (private windows, strict settings).
+    // Universities picked on the directory page (or from a university's details) are in the
+    // shortlist store already. Two older routes still arrive: the one-off storage key an
+    // earlier directory page set, and ?apply= when storage is blocked (private windows,
+    // strict settings).
+    if (!$('[data-shortlist-input]')) return;
     var picked = '';
     try {
       picked = localStorage.getItem('selectedUniversity') || '';
@@ -2318,10 +2349,23 @@ ank field in the data is
     } catch (err) { /* storage unavailable */ }
     try {
       var params = new URLSearchParams(location.search);
-      if (!picked && params.get('apply')) picked = params.get('apply').slice(0, 600);
+      if (!picked && params.get('apply')) picked = params.get('apply').slice(0, 1500);
       if (params.has('apply')) history.replaceState(null, '', location.pathname + location.hash);
     } catch (err) { /* old browser */ }
-    if (picked) setShortlist(picked);
+    if (picked) addToShortlist(picked);
+    paintPassShortlist();
+    shortlist.onChange(paintPassShortlist);
+
+    // the chips' × removes a university everywhere; focus moves to its neighbour
+    // (or to "+ Add universities") so a keyboard user isn't dropped at the top
+    document.addEventListener('click', function (e) {
+      var b = e.target.closest && e.target.closest('[data-sl-remove]');
+      if (!b) return;
+      var box = b.closest('[data-sl-chips]'), all = $$('[data-sl-remove]', box), at = all.indexOf(b);
+      shortlist.remove(b.getAttribute('data-sl-remove'));
+      var left = $$('[data-sl-remove]', box), next = left[Math.min(at, left.length - 1)] || $('[data-sl-add]', box);
+      if (next) next.focus({ preventScroll: true });
+    });
   }
 
   /* The hidden destination carries "Poland shortlist: …" to the enquiry; the pass shows
@@ -2331,10 +2375,107 @@ ank field in the data is
     $$('[data-destination-input]', root).forEach(function (i) { i.value = val; });
     $$('[data-destination-label]', root).forEach(function (l) { l.textContent = label || val; });
   }
-  function setShortlist(list) {
-    list = String(list || '').trim();
-    $$('[data-shortlist-input]').forEach(function (i) { i.value = list; });
-    setDestination(list ? 'Poland shortlist: ' + list : '', null, list);
+
+  /* ------------------------------------------------------------------ *
+   * 9a. Shortlist: the universities a visitor picks, by Polish name, shared by the
+   *     home page and the directory through localStorage (another tab's changes
+   *     arrive through the storage event). The pass's hidden `shortlist` field and
+   *     its chips, the Select buttons and the floating notice all follow it.
+   * ------------------------------------------------------------------ */
+  var shortlist = (function () {
+    var KEY = 'tcPlShortlist', MAX = 20, mem = [], stored = true, fns = [];
+    function clean(l) { return Array.isArray(l) ? l.filter(function (n) { return typeof n === 'string' && n; }).slice(0, MAX) : []; }
+    function read() {
+      if (!stored) return mem.slice();
+      try { return clean(JSON.parse(localStorage.getItem(KEY) || '[]')); } catch (e) { stored = false; return mem.slice(); }
+    }
+    function tell(info) {
+      var list = mem.slice();
+      fns.forEach(function (fn) { try { fn(list, info || {}); } catch (e) { setTimeout(function () { throw e; }); } });
+    }
+    function write(list, info) {
+      mem = list.slice(0, MAX);
+      try { localStorage.setItem(KEY, JSON.stringify(mem)); stored = true; } catch (e) { stored = false; }
+      tell(info);
+    }
+    mem = read();
+    window.addEventListener('storage', function (e) {
+      if (e.key !== KEY) return;
+      var was = mem;
+      mem = read();
+      tell({ added: mem.filter(function (n) { return was.indexOf(n) < 0; }).pop() });
+    });
+    return {
+      MAX: MAX,
+      all: read,
+      has: function (n) { return read().indexOf(n) > -1; },
+      // false only when the list is full
+      add: function (n) {
+        var l = read();
+        if (!n || l.indexOf(n) > -1) return true;
+        if (l.length >= MAX) { tell({ full: n }); return false; }
+        l.push(n); write(l, { added: n });
+        return true;
+      },
+      remove: function (n) {
+        var l = read(), i = l.indexOf(n);
+        if (i < 0) return;
+        l.splice(i, 1); write(l, { removed: n });
+      },
+      // true when the university is on the list afterwards
+      toggle: function (n) { if (this.has(n)) { this.remove(n); return false; } return this.add(n); },
+      kept: function () { return stored; },          // false: storage blocked, this page only
+      onChange: function (fn) { fns.push(fn); }
+    };
+  })();
+
+  var uniByName = null;
+  function findUniByName(name) {
+    if (!uniByName) { uniByName = {}; (window.PL_UNIVERSITIES || []).forEach(function (u) { uniByName[u.name] = u; }); }
+    return uniByName[name] || null;
+  }
+  // the English name where the data has one ("University of Warsaw"), else the Polish one
+  function uniLabel(name) { var u = findUniByName(name); return (u && englishName(u)) || name; }
+  // A comma-joined list from ?apply= or older storage. Some names contain ", "
+  // themselves, so neighbouring pieces are rejoined while they make a known name.
+  function shortlistNames(list) {
+    var parts = String(list || '').split(/\s*,\s*/), out = [];
+    for (var i = 0; i < parts.length; i++) {
+      var hit = '';
+      for (var j = parts.length; j > i + 1 && !hit; j--) {
+        if (findUniByName(parts.slice(i, j).join(', '))) { hit = parts.slice(i, j).join(', '); i = j - 1; }
+      }
+      if (!hit) hit = parts[i].trim();
+      if (hit) out.push(hit);
+    }
+    return out;
+  }
+  function addToShortlist(list) { shortlistNames(list).forEach(function (n) { shortlist.add(n); }); }
+  // a shortlist toggle button: a tick ring and a word, with the university in its name
+  function paintSelBtn(b, on, name, words) {
+    words = words || ['Shortlist', 'Shortlisted'];
+    b.classList.toggle('on', on);
+    b.setAttribute('aria-pressed', String(on));
+    if (name) b.setAttribute('aria-label', words[0] + ' ' + name);
+    b.innerHTML = '<span class="tick" aria-hidden="true">' + (on ? '✓' : '') + '</span>' + (on ? words[1] : words[0]);
+  }
+
+  /* The pass follows the shortlist: the hidden field always equals the chips, the
+     destination carries "Poland shortlist: …" and the stub names the pick. */
+  function paintPassShortlist() {
+    var list = shortlist.all(), joined = list.join(', ');
+    $$('[data-shortlist-input]').forEach(function (i) { i.value = joined; });
+    setDestination(joined ? 'Poland shortlist: ' + joined : '', null,
+      list.length > 1 ? list.length + ' shortlisted universities' : (list.length ? uniLabel(list[0]) : ''));
+    $$('[data-sl-chips]').forEach(function (box) {
+      box.classList.toggle('is-empty', !list.length);
+      $('[data-sl-chip-list]', box).innerHTML = list.map(function (n) {
+        var label = uniLabel(n);
+        return '<li class="sl-chip"' + (label !== n ? ' title="' + esc(n) + '"' : '') + '><span>' + esc(label) + '</span>' +
+          '<button type="button" data-sl-remove="' + esc(n) + '" aria-label="Remove ' + esc(label) + ' from your shortlist">' +
+          '<svg width="12" height="12" aria-hidden="true"><use href="#i-x"/></svg></button></li>';
+      }).join('');
+    });
   }
 
   /* ------------------------------------------------------------------ *
@@ -2806,7 +2947,7 @@ ank field in the data is
     return '';
   }
   // "universities near <a place we know>" is answered by its city instead
-  function namesLandmark(q) { return /b(near|nearby|nearest|close to|closest to|next to|around|walking distance)b/.test(q) && LANDMARKS.some(function (l) { return l.some(function (x) { return x instanceof RegExp && x.test(q); }); }); }
+  function namesLandmark(q) { return /\b(near|nearby|nearest|close to|closest to|next to|around|walking distance)\b/.test(q) && LANDMARKS.some(function (l) { return l.some(function (x) { return x instanceof RegExp && x.test(q); }); }); }
 
   /* ---- the answer pipeline ---- */
   function route(q, qt, asked) {
@@ -2935,9 +3076,9 @@ ank field in the data is
   }
 
   function enquireAbout(name) {
-    if ($('#contact [data-destination-input]')) { setShortlist(name); goToSection('contact'); return; }
-    try { localStorage.setItem('selectedUniversity', name); window.location.href = './index.html#contact'; }
-    catch (e) { window.location.href = './index.html?apply=' + encodeURIComponent(name) + '#contact'; }
+    shortlist.add(name);
+    if ($('#contact [data-destination-input]')) { goToSection('contact'); return; }
+    window.location.href = './index.html' + (shortlist.kept() ? '' : '?apply=' + encodeURIComponent(name)) + '#contact';
   }
 
   function initChat() {
@@ -3174,7 +3315,6 @@ ank field in the data is
     var nEl = $('[data-uni-count-n]'), nounEl = $('[data-uni-count-noun]'), scopeEl = $('[data-uni-count-scope]');
     var moreWrap = $('[data-uni-more-wrap]'), moreBtn = $('[data-uni-more]');
     var emptyBox = $('[data-uni-empty]'), resultBox = $('[data-uni-results]');
-    var bar = $('[data-uni-bar]'), barCount = $('[data-uni-bar-count]'), barNoun = $('[data-uni-bar-noun]');
     var modal = $('[data-uni-modal]'), modalBtn = $('[data-uni-modal-submit]'), picked = $('[data-uni-picked]');
     var regionSel = $('[data-region-filter]');
     var mapG = $('[data-umap-cities]');
@@ -3182,7 +3322,7 @@ ank field in the data is
     var sortSel = $('[data-uni-sort]');
     var shownEl = $('[data-uni-shown]');
 
-    var PAGE = 24, shown = PAGE, filtered = all, selected = [];
+    var PAGE = 24, shown = PAGE, filtered = all, selected = shortlist.all();
     var typeF = '', regionF = '', cityF = '', sortF = 'rank';
 
     /* Diacritic-folded search. "ł" does not decompose under NFD (the stroke is
@@ -3211,7 +3351,7 @@ ank field in the data is
           (fields.length > 2 ? '<span class="more">+' + (fields.length - 2) + '</span>' : '') + '</div>' +
         '<div class="foot"><div class="progs"><b>' + esc(u.programmes) + '</b>programmes</div>' +
           '<div class="acts">' +
-          '<button type="button" class="sel-btn" data-uni-select aria-pressed="' + on + '">' + selBtnHtml(on) + '</button></div></div>' +
+          '<button type="button" class="sel-btn" data-uni-select aria-pressed="' + on + '" aria-label="Select ' + esc(en || u.name) + '">' + selBtnHtml(on) + '</button></div></div>' +
       '</article>';
     }
 
@@ -3233,30 +3373,28 @@ ank field in the data is
       if (clearBtn) clearBtn.classList.toggle('hidden', !(search && search.value) && !typeF && !regionF && !cityF);
     }
 
+    // the floating tray follows the shortlist by itself (initShortlistTray)
     function paintSelection() {
       var k = selected.length;
-      bar.classList.toggle('show', k > 0);
-      document.body.classList.toggle('tray-open', k > 0);
-      barCount.textContent = k;
-      barNoun.textContent = (k === 1 ? 'Institution' : 'Institutions') + ' selected';
       if (modalBtn) modalBtn.textContent = k ? 'Apply to ' + k + ' ' + (k === 1 ? 'institution' : 'institutions') : 'Submit profile';
       if (picked) picked.innerHTML = selected.map(function (s) { return '<span>' + esc(s) + '</span>'; }).join('');
       setDestination(selected.join(', '), modal);
     }
 
-    function toggle(name) {
-      var i = selected.indexOf(name);
-      if (i > -1) selected.splice(i, 1); else selected.push(name);
-      var on = i < 0;
+    // Select adds to (or takes off) the shared shortlist; the cards follow it, including
+    // changes made in another tab or from the pass's chips on the home page
+    function toggle(name) { shortlist.toggle(name); }
+    function paintCards() {
       $$('.u-card', grid).forEach(function (c) {
-        if (c.getAttribute('data-name') !== name) return;
+        var on = selected.indexOf(c.getAttribute('data-name')) > -1;
+        if (c.classList.contains('sel') === on) return;
         c.classList.toggle('sel', on);
         var b = $('[data-uni-select]', c);
         b.setAttribute('aria-pressed', String(on));
         b.innerHTML = selBtnHtml(on);
       });
-      paintSelection();
     }
+    shortlist.onChange(function (list) { selected = list; paintCards(); paintSelection(); });
     function showDetail(name) {
       var u = find(name);
       if (!u) return;
@@ -3392,11 +3530,10 @@ ank field in the data is
     moreBtn.addEventListener('click', function () { shown += PAGE; renderGrid(true); });
 
     // Applying happens on the free counselling form on the home page, pre-filled with the shortlist.
+    // The shortlist is in storage already; only when storage is blocked does it ride in ?apply=.
     function goApply() {
       var list = selected.join(', ');
-      var stored = false;
-      try { localStorage.setItem('selectedUniversity', list); stored = true; } catch (e) { /* storage blocked */ }
-      window.location.href = './index.html' + (stored || !list ? '' : '?apply=' + encodeURIComponent(list)) + '#contact';
+      window.location.href = './index.html' + (shortlist.kept() || !list ? '' : '?apply=' + encodeURIComponent(list)) + '#contact';
     }
     var proceed = $('[data-uni-proceed]');
     if (proceed) proceed.addEventListener('click', goApply);
@@ -3418,6 +3555,114 @@ ank field in the data is
     applyFilter();
     paintSelection();
     if (startQ) setTimeout(toResults, 350);
+  }
+
+  /* ------------------------------------------------------------------ *
+   * 11a. Shortlist tray: the floating notice of what's shortlisted. The directory's
+   *      reads "3 Institutions selected" beside its Continue button; the home page's
+   *      reads "3 Shortlisted · Review & send" and leads to the pass (hidden while the
+   *      pass is on screen). Every add pops it, flips the count, sends a ring out and
+   *      reads "Added: <university>" for a moment; a remove only settles the count.
+   *      Until the visitor first clicks it, it glows now and then.
+   * ------------------------------------------------------------------ */
+  function initShortlistTray() {
+    var tray = $('[data-sl-tray]');
+    if (!tray) return;
+    var count = $('[data-sl-tray-count]', tray), label = $('[data-sl-tray-label]', tray);
+    var one = tray.getAttribute('data-sl-one') || '', many = tray.getAttribute('data-sl-many') || one;
+    // the count is drawn in its own circle; the label repeats it for screen readers
+    var words = function (n) { return '<span class="sr-only">' + n + ' </span>' + esc(n === 1 ? one : many); };
+    var replay = function (el, cls) { el.classList.remove(cls); void el.offsetWidth; el.classList.add(cls); };
+    var last = -1, labelT = null;
+    try { if (sessionStorage.getItem('tcPlTraySeen')) tray.classList.add('is-seen'); } catch (e) { /* storage blocked */ }
+    tray.addEventListener('click', function () {
+      tray.classList.add('is-seen');
+      try { sessionStorage.setItem('tcPlTraySeen', '1'); } catch (e) { /* storage blocked */ }
+    });
+    function paint(list, info) {
+      var n = list.length;
+      tray.classList.toggle('show', n > 0);
+      // lifts the chat buttons clear of it (the home page's tray is shorter on phones)
+      document.body.classList.toggle(tray.classList.contains('sl-tray') ? 'sl-tray-open' : 'tray-open', n > 0);
+      count.textContent = n;
+      clearTimeout(labelT);
+      // the label says what just happened, then goes back to the count's words
+      var flash = info.added && last > -1 ? 'Added: ' + uniLabel(info.added) : info.full ? 'Shortlist full: remove one to add another' : '';
+      label.innerHTML = flash ? esc(flash) : words(n);
+      if (flash) labelT = setTimeout(function () { label.innerHTML = words(shortlist.all().length); }, 2500);
+      if (!REDUCED && info.added && last > -1) { replay(tray, 'is-bump'); replay(count, 'is-flip'); }
+      else if (!REDUCED && n < last && n > 0) replay(count, 'is-settle');
+      last = n;
+    }
+    shortlist.onChange(paint);
+    // painted a frame after load, so a shortlist kept from earlier slides in
+    frame(function () { if (last < 0) paint(shortlist.all(), {}); });
+  }
+
+  /* ------------------------------------------------------------------ *
+   * 11b. Live news bar between Universities and Funding: Polish headlines from
+   *      /api/news (netlify/functions/news.mjs) as plain text, each with one of the
+   *      page's own photos. The page's own facts stand in until they arrive, and
+   *      stay when they can't (a local preview has no functions).
+   * ------------------------------------------------------------------ */
+  var NEWS_FALLBACK = [
+    ['Twenty Polish institutions feature in the QS World University Rankings 2027', 'why-degrees'],
+    ['Full-time students at approved or exempt universities need no work permit and face no hour limit', 'why-work'],
+    ['Graduates can stay on for nine months to find work or start a business, with no sponsor required', 'poland-city'],
+    ['227 approved institutions in 64 cities can admit international students', 'students-campus'],
+    ['Polish doctoral schools charge no tuition and award a scholarship to every full-time doctoral candidate', 'why-research'],
+    ['A national visa to arrive, then a residence permit for studies: your first permit runs 15 months', 'unis/uw'],
+    ['Partners and children under 18 can join you after two years on consecutive permits', 'family'],
+    ['EU long-term residence after five years, with each year of study counting as half', 'team-working']
+  ];
+  function initNewsTicker() {
+    var root = $('[data-news]');
+    if (!root) return;
+    var track = $('[data-news-track]', root), label = $('[data-news-label]', root);
+    function ago(iso) {
+      var h = (Date.now() - Date.parse(iso)) / 36e5;
+      if (!(h >= 0)) return '';
+      if (h < 1) return 'just now';
+      if (h < 24) return Math.round(h) + 'h ago';
+      var d = Math.round(h / 24);
+      return d === 1 ? 'yesterday' : d + ' days ago';
+    }
+    function item(n) {
+      return '<span class="news-item"><img src="' + esc(n.img) + '" alt="" width="26" height="26" loading="lazy" decoding="async">' +
+        '<b>' + esc(n.title) + '</b><small>' + esc([n.source, n.date ? ago(n.date) : ''].filter(Boolean).join(' · ')) + '</small></span>';
+    }
+    function paint(items, live) {
+      if (!items.length) return;
+      var row = items.map(item).join('');
+      // two copies side by side; the track slides by one copy and loops seamlessly
+      track.innerHTML = '<div class="news-set">' + row + '</div><div class="news-set" aria-hidden="true">' + row + '</div>';
+      root.classList.toggle('is-live', !!live);
+      label.textContent = live ? 'Live · Poland news' : 'Poland updates';
+      frame(function () {
+        var w = track.firstChild.getBoundingClientRect().width;
+        track.style.setProperty('--news-dur', Math.max(30, w / 55).toFixed(1) + 's');   // ~55px a second
+      });
+    }
+    paint(NEWS_FALLBACK.map(function (f) { return { title: f[0], source: 'Tutee Connect', img: './assets/img/photos/' + f[1] + '.webp' }; }), false);
+
+    var ctrl = window.AbortController ? new AbortController() : null;
+    var stop = setTimeout(function () { if (ctrl) ctrl.abort(); }, 6000);
+    fetch('/api/news', { signal: ctrl ? ctrl.signal : undefined, headers: { Accept: 'application/json' } })
+      .then(function (r) { return r.ok ? r.json() : null; })
+      .then(function (j) {
+        clearTimeout(stop);
+        // only plain headlines with one of this site's own photos are shown
+        var items = j && Array.isArray(j.items) ? j.items.filter(function (n) {
+          return n && typeof n.title === 'string' && n.title && /^\.\/assets\/img\/photos\/[\w-]+(\/[\w-]+)?\.webp$/.test(n.img || '');
+        }) : [];
+        if (items.length >= 3) paint(items, true);
+      })
+      .catch(function () { clearTimeout(stop); });
+
+    // only rolls while it is on screen
+    if ('IntersectionObserver' in window) {
+      new IntersectionObserver(function (es) { root.classList.toggle('is-paused', !es[0].isIntersecting); }).observe($('.news-in', root));
+    }
   }
 
   /* ------------------------------------------------------------------ *
@@ -3459,8 +3704,8 @@ ank field in the data is
     ['pointerover', 'pointerdown', 'focusin', 'click'].forEach(function (t) { document.addEventListener(t, start, true); });
   }
   var queue = [
-    initReveal, initHScroll, initRail, initMarquees, function () { initServices(window.PL_SERVICES || []); }, initSkyline, initDirectory,
-    initStack, initSteps, initBento, initParallax, initClipGrow, initFaq, initForms, initGlowWord,
+    initReveal, initHScroll, initRail, initMarquees, function () { initServices(window.PL_SERVICES || []); }, initSkyline, initDirectory, initNewsTicker,
+    initStack, initSteps, initBento, initParallax, initClipGrow, initFaq, initForms, initShortlistTray, initGlowWord,
     initButtons, initFlagCursor, initIdleSections, initFabTuck, startChatLater, initSceneLoop
   ];
   (function next() {
