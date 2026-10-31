@@ -2754,11 +2754,69 @@ ank field in the data is
     return { text: e.a === '__SERVICES__' ? servicesAnswer() : e.a, acts: e.acts, chips: KB_NEXT[e.keys[0]] || null, ctx: { uni: null } };
   }
 
+  /* "universities near Wawel": places people name instead of a city, and the city they're in */
+  var NEAR = / (near|nearby|nearest|close to|closest to|close by|next to|walking distance|distance from|around) /;
+  var LANDMARKS = [
+    ['Kraków', / (wawel\w*|rynek glowny|main market square|sukiennice|cloth hall|kazimierz|nowa huta|wieliczka|salt mine|auschwitz|oswiecim|zakopane|tatras?) /],
+    ['Warsaw', / (palace of culture|pkin|lazienki|wilanow|royal castle|old town warsaw|warsaw old town|chopin airport|praga|vistula boulevards?|copernicus science centre|national stadium) /],
+    ['Wrocław', / (ostrow tumski|centennial hall|hala stulecia|panorama raclawicka|wroclaw (old town|market square)) /],
+    ['Gdańsk', / (long market|dlugi targ|neptune|westerplatte|oliwa|sopot|malbork|motlawa|european solidarity centre|shipyard) /],
+    ['Poznań', / (poznan (old town|market square)|stary rynek poznan|malta lake|lake malta|poznan goats) /],
+    ['Łódź', / (piotrkowska|manufaktura) /],
+    ['Toruń', / (copernicus house|gingerbread museum) /],
+    ['Lublin', / (lublin castle|majdanek) /],
+    ['Katowice', / (spodek|silesian museum|nikiszowiec) /]
+  ];
+  /* a start month ("programmes in the January intake"): the page gives no dates, so say what's usual and hand over */
+  var MONTH_RE = / (jan\w*|feb\w*|mar(?:ch)?|apr(?:il)?|june?|july?|aug(?:ust)?|sept?(?:ember)?|oct(?:ober)?|nov(?:ember)?|dec(?:ember)?|(?:in|from|for|the) (may)) /;
+  var MONTH_NAMES = { jan: 'January', feb: 'February', mar: 'March', apr: 'April', may: 'May', jun: 'June', jul: 'July', aug: 'August', sep: 'September', oct: 'October', nov: 'November', dec: 'December' };
+  function intakeReply(q) {
+    if (/ (work\w*|jobs?|hours) /.test(q)) return null;
+    var m = MONTH_RE.exec(q), mon = m && MONTH_NAMES[(m[2] || m[1]).slice(0, 3)], text;
+    // "when is the intake?" with no month: the usual starts
+    if (!m && / (intakes?|start dates?|which semester) /.test(q)) text = 'The Polish academic year starts in **October** (the winter semester), and that is the main intake for international students. Some universities also have a **February** start (the summer semester) for a smaller set of programmes, mostly master\'s. There\'s no central application system: each university runs its own recruitment to its own deadlines, often months earlier for non-EU students because of the visa.';
+    else if (!m || !/ (intakes?|start\w*|begin\w*|commenc\w*|batch|session|semesters?|programmes?|programs?|courses?|admissions?|recruitment) /.test(q)) return null;
+    else if (mon === 'September' || mon === 'October') text = 'The Polish academic year starts in **October** (the winter semester), and that is the main intake for international students. Each university runs its own recruitment to its own deadlines, and for non-EU students they are often months earlier, to leave time for the visa.';
+    else if (mon === 'January' || mon === 'February' || mon === 'March') text = 'Some Polish universities also have a **February** start (the summer semester), for a smaller set of programmes, mostly master\'s. Most degrees start in **October**. Which programmes open in February changes every year, so I can\'t give you a reliable list here.';
+    else text = 'Polish degrees start in **October**, with a smaller **February** intake at some universities. A **' + mon + '** start isn\'t usual, so check with an advisor before you plan around it.';
+    return { text: text + '\n\nAn advisor can confirm the current intakes and deadlines for your programme, free.', acts: [ADVISOR], chips: ['Admission requirements', 'Request a callback'], ctx: { uni: null } };
+  }
+
+  // Questions this site can't answer reliably (distances and travel times, whether your marks are enough, what can
+  // still start next month, the best area to live, a university's exact English score): say so, then hand over.
+  var NEEDS_COUNSELLOR = [
+    [/\b(how far|distance (from|to|between)|how long (does it|will it|would it|to) (take|get|reach|travel|commute)|commut\w*|by (train|bus|metro|tram|mrt|subway|tube|car)|travel time|minutes? (from|to|away)|km (from|to|away)|close to the city|far from)\b/, null,
+      'I can\'t give reliable distances or travel times: they depend on the exact campus and where you\'d live.'],
+    [/\b(next|this|coming) (month|week|few weeks)\b|\bstart\w* (soon|immediately|asap|right away)\b|\b(still|currently) (open|accepting)\b/, null,
+      'Which courses can still take you that soon depends on each university\'s current deadlines and places, which change all the time.'],
+    [/\b\d{2}(\.\d+)? ?(%|percent)|\b(percentage|marks|cgpa|gpa|backlogs?|gap year|study gap|year gap|education gap)\b/, /\b(admission|admit|get in|get into|eligib\w*|accept\w*|apply|qualify|enough|chances?|possible)\b/,
+      'Whether your marks are enough depends on the university, the course and the rest of your profile, so I won\'t guess.'],
+    [/\b(best|good|safe|safest|cheap\w*|nice) (area|areas|suburbs?|neighbou?rhoods?|localit(y|ies)|places?|part of (the )?(city|town)) (to (live|stay)|for students?)\b|\bwhere (should|can|do) (i|students) (live|stay)\b/, null,
+      'The best area to live depends on your campus, budget and lifestyle, and this site doesn\'t compare neighbourhoods.'],
+    [/\b(ielts|pte|toefl|duolingo)\b.*\b(scores?|bands?|minimum)\b|\b(scores?|bands?|minimum)\b.*\b(ielts|pte|toefl|duolingo)\b/, null,
+      'Each university sets its own minimum English test score, and it varies by course, so I won\'t quote one.'],
+    [/\b(distance learning|distance education|online (course|courses|degree|degrees|study|studies|classes|programmes?|programs?)|study online|studying online|remote study)\b/, null,
+      'A student visa is for full-time study on campus, and this site does not cover online or distance courses.']
+  ];
+  // "How do I apply?" (to a university, not for a visa, loan or scholarship): how applying works here, then hand over
+  var APPLY_Q = /\b(how (do|can|should|would|will) (i|we|one|students?) apply|how to apply|application process|admission process|applying (to|for) (a |an |the )?(universit\w*|unis?|college\w*|courses?|programm?e?s?|admissions?)|apply (to|for) (a |an |the )?(universit\w*|unis?|college\w*|courses?|programm?e?s?|admissions?))\b/;
+  function asksHowToApply(q) { return APPLY_Q.test(q) && !/\b(visa|pass|permit|stamp|loans?|scholarships?|bursar\w*|grants?|jobs?|work)\b/.test(q); }
+  function needsCounsellor(q) {
+    for (var i = 0; i < NEEDS_COUNSELLOR.length; i++) { var n = NEEDS_COUNSELLOR[i]; if (n[0].test(q) && (!n[1] || n[1].test(q))) return n[2]; }
+    return '';
+  }
+  // "universities near <a place we know>" is answered by its city instead
+  function namesLandmark(q) { return /b(near|nearby|nearest|close to|closest to|next to|around|walking distance)b/.test(q) && LANDMARKS.some(function (l) { return l.some(function (x) { return x instanceof RegExp && x.test(q); }); }); }
+
   /* ---- the answer pipeline ---- */
-  function route(q, qt) {
+  function route(q, qt, asked) {
     if (/^ (hi|hello|hey|hii|hiya|namaste|good (morning|afternoon|evening)) /.test(q) && qt.length <= 2)
       return { text: "Hello! What would you like to know about studying in Poland? Try asking about visas, top universities, working while you study or bringing your family.", chips: ['Top universities in Poland', 'How do I get a Polish student visa?', 'Can I work while studying?'] };
     if (/ (thanks|thank you|thx|ty) /.test(q) && qt.length <= 3) return { text: "You're welcome! Ask me anything else about studying in Poland." };
+
+    var unsure = !namesLandmark(q) && !namesLandmark(asked) && (needsCounsellor(q) || needsCounsellor(asked));
+    if (unsure) return { text: unsure + ' An advisor can check it for you, free: use the [free evaluation form](#contact) or ask me for a callback.', acts: [ADVISOR], chips: ['Request a callback'], ctx: { uni: null } };
+    if (asksHowToApply(q)) { var ak = KB.filter(function (e) { return e.keys.indexOf('how to apply') > -1; })[0]; if (ak) return kbReply(ak); }
 
     var cities = findCities(q), field = findField(q), facet = facetOf(q);
     var compare = hasAny(q, ['versus', 'compare', 'comparison', 'difference', 'better', 'or', 'between']);
@@ -2787,6 +2845,15 @@ ank field in the data is
       return { text: "You can reach Tutee Connect here:\n📞 +91 73583 64959\n📧 info@tuteeconnect.com\n🌐 www.tuteeconnect.com\n📍 Chennai: 1st Floor, ALA Corner Complex, Virugambakkam - 600092\n📍 Dubai: Tutee Connect LLC FZ, Meydan Grandstand, U.A.E.",
         acts: [{ label: 'WhatsApp us', go: 'whatsapp' }, { label: 'Free evaluation form', go: 'contact' }], chips: ['Request a callback'] };
 
+    var byMonth = intakeReply(q);
+    if (byMonth) return byMonth;
+    // a landmark is read from the question as typed too: typo fixing may have changed its words
+    var spot = NEAR.test(q) && LANDMARKS.filter(function (l) { return l[1].test(q) || l[1].test(asked); })[0];
+    if (spot) cities = [spot[0]];
+    else if (NEAR.test(q) && !cities.length && !/ (rent|cost|costs|price|fees?|accommodation|housing|living) /.test(q) && hasAny(q, ['university', 'universities', 'uni', 'unis', 'college', 'colleges', 'institution', 'institutions', 'campus', 'study']))
+      return { text: 'I can match institutions to a Polish city, or to a well-known place in one (Wawel Castle, the Palace of Culture or Gdańsk\'s Long Market, say), but I didn\'t recognise the place in your question, and I can\'t work out distances. Tell me the city, e.g. *universities in Wrocław*, or ask an advisor.',
+        acts: [ADVISOR], chips: ['Universities in Warsaw', 'Universities in Kraków', 'Request a callback'] };
+
     if (cities.length >= 2) return compareCities(cities, field, q);
     var city = cities[0] || null;
     // "what about Wrocław?" keeps the subject; "and ICT?" keeps the city
@@ -2805,12 +2872,12 @@ ank field in the data is
       e.keys.forEach(function (k) { if (has(q, k)) s += 2 + foldText(k).trim().split(' ').length; });
       if (s > kbScore) { kbScore = s; kbBest = e; }
     });
-    if (city && (aboutUnis || aboutRank || field || qt.length === 1 || followUp)) {
+    if (city && (spot || aboutUnis || aboutRank || field || qt.length === 1 || followUp)) {
       var inCity = unis().filter(function (x) { return cityOf(x.location) === city && (!field || offers(x, field)); });
-      var note = '';
+      var note = spot ? 'That\'s in **' + city + '**, so here are the institutions there. This goes by city, not travel time; an advisor can help with commutes.\n' : '';
       // a subject carried over from the last question, with nothing here: show the whole city instead
       if (!inCity.length && carried) {
-        note = 'None of ' + city + "'s institutions list " + field + '. Here are all of them.\n';
+        note += 'None of ' + city + "'s institutions list " + field + '. Here are all of them.\n';
         field = null;
         inCity = unis().filter(function (x) { return cityOf(x.location) === city; });
       }
@@ -2861,7 +2928,7 @@ ank field in the data is
   function answer(text) {
     var asked = foldText(text);
     var q = ' ' + correct(expandRaw(text)) + ' ', qt = toks(q);
-    var res = route(q, qt);
+    var res = route(q, qt, asked);
     if (res.ctx) Object.keys(res.ctx).forEach(function (k) { chatCtx[k] = res.ctx[k]; });
     if (res.chips) res.chips = res.chips.filter(function (c) { return foldText(c) !== asked; }).slice(0, 3);
     return res;
